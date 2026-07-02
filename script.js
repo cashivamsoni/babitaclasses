@@ -167,7 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const allLinks = [
     { label: "Home", url: "#home" },
-    { label: "Blog", url: "https://3a1r7k.mimo.run/blog.html" },
+    { label: "Blog", url: "https://babitaclasses.vercel.app/blog.html" },
+    { label: "Results", url: "https://babitaclasses.vercel.app/result.html" },
     { label: "Function Videos", url: "#videos" },
     { label: "Our Faculty", url: "#faculty" },
     { label: "Write a Review", url: "https://g.page/r/CaFJqT5K-agpEAI/review" },
