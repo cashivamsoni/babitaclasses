@@ -21,7 +21,7 @@
       students: [
         { roll: 7, name: "Riya",    marks: 88.5, percentage: 88.5, rank: 1 },
         { roll: 1, name: "Anshika", marks: 82.5, percentage: 82.5, rank: 2 },
-        { roll: 2, name: "Arjan",   marks: 57,   percentage: 57,   rank: 3 }
+        { roll: 2, name: "Aryan",   marks: 57,   percentage: 57,   rank: 3 }
       ]
     }
   ];
