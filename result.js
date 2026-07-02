@@ -65,7 +65,7 @@
   function renderNotFound() {
     output.innerHTML =
       '<div class="card" style="padding:14px;margin-top:6px">' +
-      '<p class="small" style="margin:0">No result found for the entered roll number and name. Please double-check the details and try again. If you believe this is an error, please <a href="https://babitaclasses.vercel.app/#contact">contact us</a>.</p>' +
+      '<p class="small" style="margin:0">No result found for the entered roll number and name. Please double-check the details and try again. If you believe this is an error, please <a href="#contact">contact us</a>.</p>' +
       "</div>";
   }
 
