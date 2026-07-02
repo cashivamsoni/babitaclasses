@@ -79,19 +79,19 @@
   function renderResult(match) {
     const term = match.term;
     const s = match.student;
+    const resultStatus = s.percentage >= 40 ? "PASS" : "FAIL";
+    const statusColor = resultStatus === "PASS" ? "#2e7d32" : "#c62828";
     output.innerHTML =
       '<div class="card" style="padding:14px;margin-top:6px">' +
       "<h2>Result Found — " + escapeHtml(s.name) + "</h2>" +
       '<div style="overflow:auto">' +
       '<table aria-label="Result details">' +
       "<tbody>" +
-      "<tr><th>Term</th><td>" + escapeHtml(term.term) + " (" + escapeHtml(term.setCode) + ")</td></tr>" +
-      "<tr><th>Session</th><td>" + escapeHtml(term.session) + "</td></tr>" +
-      "<tr><th>Date Declared</th><td>" + escapeHtml(term.date) + "</td></tr>" +
       "<tr><th>Roll No.</th><td>" + escapeHtml(s.roll) + "</td></tr>" +
       "<tr><th>Student Name</th><td>" + escapeHtml(s.name) + "</td></tr>" +
       "<tr><th>Marks Obtained</th><td>" + escapeHtml(s.marks) + " / " + escapeHtml(term.maxMarks) + "</td></tr>" +
       "<tr><th>Percentage</th><td>" + escapeHtml(s.percentage) + "%</td></tr>" +
+      "<tr><th>Result</th><td><strong style=\"color:" + statusColor + "\">" + resultStatus + "</strong></td></tr>" +
       "<tr><th>Rank</th><td>" + escapeHtml(s.rank) + "</td></tr>" +
       "</tbody>" +
       "</table>" +
