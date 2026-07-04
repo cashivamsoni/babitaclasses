@@ -318,7 +318,7 @@
       const qrSize = 28;
       const qrX = pageWidth - marginX - qrSize;
       const qrY = Math.max(y, pageHeight - 55);
-      const qrData = await loadImageAsDataURL("https://babitaclasses.vercel.app/images/result-qr-code.png");
+      const qrData = await loadImageAsDataURL("https://babitaclasses.vercel.app/images/verify-result-qr-code.png");
       if (qrData) {
         doc.addImage(qrData, "PNG", qrX, qrY, qrSize, qrSize);
       }
@@ -331,8 +331,8 @@
       // Downloaded timestamp (bottom-left)
       const now = new Date();
       const timestamp =
-        pad2(now.getDate()) + pad2(now.getMonth() + 1) + now.getFullYear() +
-        " " + pad2(now.getHours()) + pad2(now.getMinutes()) + pad2(now.getSeconds());
+        pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
+        " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
       doc.text(
