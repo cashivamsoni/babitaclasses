@@ -134,6 +134,30 @@
         
       </section>
 
+      <!-- VERIFY RESULT -->
+      <section id="verify-result" class="section card">
+        <div class="section-title">
+          <h1>Verify a Result</h1>
+          <div class="muted">Enter Result ID</div>
+        </div>
+        <p class="small">
+          Every result has a unique Result ID printed on its downloaded/printed copy (for example, 2526TM101). Enter it below to verify its authenticity and view the details again.
+        </p>
+        <br>
+
+        <form id="verifyForm" autocomplete="off">
+          <div class="flex" style="flex-direction:column;align-items:stretch">
+            <input type="text" id="verifyIdInput" class="search" placeholder="Enter Result ID (e.g., 2526TM101)">
+          </div>
+          <div class="flex" style="margin-top:12px">
+            <button type="submit" class="btn-inline">Verify Result</button>
+            <button type="button" id="verifyResetBtn" class="btn-inline1" style="display:none">Verify Another ID</button>
+          </div>
+        </form>
+
+        <div id="verifyOutput" style="margin-top:16px"></div>
+      </section>
+
     </main>
 
       <img src="/images/bc-qr-code.png" class="qrcode"> <a class="btn-qr" href="https://drive.google.com/uc?export=download&id=1_y1cuZw3p1bnncBEU9ZiUwRUpJlLtYVF" target="_blank" rel="noopener">Download QR Code</a>
@@ -172,6 +196,7 @@
       Copyright 2020-26 https://babitaclasses.vercel.app/ All Rights Reserved. Last updated on 2 July 2026 © Babita Classes 2020-26 — Since 8 September 2020.<br>Designed &amp; Developed by Shivam Soni.<br><br><br><br><br><br>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="script.js"></script>
     <script src="result.js"></script>
   </body>
