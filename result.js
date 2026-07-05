@@ -323,9 +323,17 @@
       const principalX = sigStartX;
       const evaluatorX = sigStartX + sigWidth + sigGap;
 
-      if (principalSigData) doc.addImage(principalSigData, "PNG", principalX, sigImgY, sigWidth, sigHeight);
-      if (evaluatorSigData) doc.addImage(evaluatorSigData, "PNG", evaluatorX, sigImgY, sigWidth, sigHeight);
-
+     if (principalSigData) {
+        const pProps = doc.getImageProperties(principalSigData);
+        const pH = Math.min(sigHeight, sigWidth * (pProps.height / pProps.width));
+        doc.addImage(principalSigData, "PNG", principalX, sigImgY + (sigHeight - pH), sigWidth, pH);
+      }
+      if (evaluatorSigData) {
+        const eProps = doc.getImageProperties(evaluatorSigData);
+        const eH = Math.min(sigHeight, sigWidth * (eProps.height / eProps.width));
+        doc.addImage(evaluatorSigData, "PNG", evaluatorX, sigImgY + (sigHeight - eH), sigWidth, eH);
+      }
+       
       const sigCaptionY1 = sigImgY + sigHeight + 4;
       const sigCaptionY2 = sigCaptionY1 + 4;
       doc.setFont(FONT, "bold");
