@@ -511,6 +511,14 @@ slideshow.addEventListener('touchend', e => {
       collapseBox.classList.remove("expanded");
       toggleBtn.textContent = "Show More Sessions ▾";
       toggleBtn.setAttribute("aria-expanded", "false");
+
+      // Collapsing removes a lot of height above the current scroll
+      // position, which otherwise leaves the page looking jumbled.
+      // Landing on the Faculty section gives a clean, stable spot.
+      const facultySection = document.getElementById("faculty");
+      if (facultySection) {
+        facultySection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
   });
 
