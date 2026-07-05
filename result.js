@@ -50,6 +50,10 @@
     });
   });
 
+  // Tracks whichever result is currently on screen, so Ctrl+P / Cmd+P
+  // can download the same PDF instead of triggering a browser print.
+  let lastShownResult = null;
+
   /* ---------- Shared helpers ---------- */
   function escapeHtml(str) {
     return String(str)
@@ -149,6 +153,7 @@
       const match = findResult(rollVal, nameVal);
       if (match) {
         output.innerHTML = buildResultHTML(match.term, match.student);
+        lastShownResult = match;
       } else {
         renderNotFound(output);
       }
@@ -186,6 +191,7 @@
       const match = findResultById(idVal);
       if (match) {
         output.innerHTML = buildResultHTML(match.term, match.student);
+        lastShownResult = match;
       } else {
         output.innerHTML =
           '<div class="card" style="padding:14px;margin-top:6px">' +
@@ -241,6 +247,7 @@
       const pageWidth = 210, pageHeight = 297;
       const marginX = 15;
       const contentWidth = pageWidth - marginX * 2;
+      const FONT = "times"; // Times New Roman equivalent — used for every element below
 
       // Outer border
       doc.setDrawColor(0);
@@ -254,7 +261,7 @@
       }
 
       let y = 46;
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setFontSize(22);
       doc.text("BABITA CLASSES", pageWidth / 2, y, { align: "center" });
 
@@ -292,48 +299,72 @@
         const rowY = y + i * rowHeight;
         doc.rect(tableX, rowY, col1Width, rowHeight);
         doc.rect(tableX + col1Width, rowY, col2Width, rowHeight);
-        doc.setFont("helvetica", "bold");
+        doc.setFont(FONT, "bold");
         doc.text(row[0], tableX + col1Width / 2, rowY + rowHeight / 2 + 3, { align: "center" });
-        doc.setFont("helvetica", "normal");
+        doc.setFont(FONT, "normal");
         doc.text(String(row[1]), tableX + col1Width + col2Width / 2, rowY + rowHeight / 2 + 3, { align: "center" });
       });
 
-      y = y + rows.length * rowHeight + 10;
-      doc.setFont("helvetica", "bold");
+      const dateY = y + rows.length * rowHeight + 10;
+      doc.setFont(FONT, "bold");
       doc.setFontSize(11);
-      doc.text("Date of result declaration: " + term.date, marginX, y);
+      doc.text("Date of result declaration: " + term.date, marginX, dateY);
 
-      // Disclaimer
-      y += 8;
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      const disclaimer =
-        "Disclaimer: The results published on this page are correct at the time of release by Babita Classes and are valid for the purposes of further academic purposes. The organization accepts no responsibility thereafter for any errors or omissions caused due to transmission via the Internet or downloading/printing by the user. No material from this website may be copied, reproduced, published, uploaded, posted, transmitted, or distributed in any manner unless expressly authorized by Babita Classes. Users are strictly prohibited from changing, modifying, or preparing derivative works from the content of this site.\n" +
-        "For any discrepancy in results, clarifications, or confirmation, please address your inquiries to: Babita Classes: 1/2, Juhi Bamburahiya Colony, Kanpur, Uttar Pradesh \u2013 208014 Email: babitaclasses7@gmail.com Phone: +91-7388311148";
-      const disclaimerLines = doc.splitTextToSize(disclaimer, contentWidth);
-      doc.text(disclaimerLines, marginX, y);
-      y += disclaimerLines.length * 3.6 + 6;
+      // Signatures (Principal on the left, Evaluator on the right of the same row)
+      const sigWidth = 30, sigHeight = 14;
+      const sigGap = 6;
+      const sigBlockWidth = sigWidth * 2 + sigGap;
+      const sigStartX = pageWidth - marginX - sigBlockWidth;
+      const sigImgY = dateY - 6;
 
-      // QR code + verify text (bottom-right)
+      const principalSigData = await loadImageAsDataURL("https://babitaclasses.vercel.app/images/babita-signature.png");
+      const evaluatorSigData = await loadImageAsDataURL("https://babitaclasses.vercel.app/images/shivam-signature.png");
+
+      const principalX = sigStartX;
+      const evaluatorX = sigStartX + sigWidth + sigGap;
+
+      if (principalSigData) doc.addImage(principalSigData, "PNG", principalX, sigImgY, sigWidth, sigHeight);
+      if (evaluatorSigData) doc.addImage(evaluatorSigData, "PNG", evaluatorX, sigImgY, sigWidth, sigHeight);
+
+      const sigCaptionY1 = sigImgY + sigHeight + 4;
+      const sigCaptionY2 = sigCaptionY1 + 4;
+      doc.setFont(FONT, "bold");
+      doc.setFontSize(9);
+      doc.text("Babita Soni", principalX + sigWidth / 2, sigCaptionY1, { align: "center" });
+      doc.text("(Principal)", principalX + sigWidth / 2, sigCaptionY2, { align: "center" });
+      doc.text("Shivam Soni", evaluatorX + sigWidth / 2, sigCaptionY1, { align: "center" });
+      doc.text("(Evaluator)", evaluatorX + sigWidth / 2, sigCaptionY2, { align: "center" });
+
+      // QR code + verify text (bottom-left)
       const qrSize = 28;
-      const qrX = pageWidth - marginX - qrSize;
-      const qrY = Math.max(y, pageHeight - 55);
+      const qrX = marginX;
+      const qrY = sigCaptionY2 + 12;
       const qrData = await loadImageAsDataURL("https://babitaclasses.vercel.app/images/verify-result-qr-code.png");
       if (qrData) {
         doc.addImage(qrData, "PNG", qrX, qrY, qrSize, qrSize);
       }
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setFontSize(8);
       doc.text("Verify your result", qrX + qrSize / 2, qrY + qrSize + 4, { align: "center" });
       doc.text("Scan QR code > Enter", qrX + qrSize / 2, qrY + qrSize + 8, { align: "center" });
       doc.text("Result ID", qrX + qrSize / 2, qrY + qrSize + 12, { align: "center" });
 
-      // Downloaded timestamp (bottom-left)
+      // Disclaimer — normal weight, justified, spans full content width
+      const disclaimerY = qrY + qrSize + 12 + 10;
+      doc.setFont(FONT, "normal");
+      doc.setFontSize(9);
+      const disclaimer =
+        "Disclaimer: The results published on this page are correct at the time of release by Babita Classes and are valid for the purposes of further academic purposes. The organization accepts no responsibility thereafter for any errors or omissions caused due to transmission via the Internet or downloading/printing by the user. No material from this website may be copied, reproduced, published, uploaded, posted, transmitted, or distributed in any manner unless expressly authorized by Babita Classes. Users are strictly prohibited from changing, modifying, or preparing derivative works from the content of this site.\n" +
+        "For any discrepancy in results, clarifications, or confirmation, please address your inquiries to: Babita Classes: 1/2, Juhi Bamburahiya Colony, Kanpur, Uttar Pradesh \u2013 208014 Email: babitaclasses7@gmail.com Phone: +91-7388311148";
+      const disclaimerLines = doc.splitTextToSize(disclaimer, contentWidth);
+      doc.text(disclaimerLines, marginX, disclaimerY, { align: "justify", maxWidth: contentWidth });
+
+      // Downloaded timestamp (bottom-left, fixed position)
       const now = new Date();
       const timestamp =
         pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
         " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setFontSize(8);
       doc.text(
         "Downloaded from https://babitaclasses.vercel.app/result.html on " + timestamp,
@@ -356,5 +387,18 @@
     const id = btn.getAttribute("data-resultid");
     const rec = findResultById(id);
     if (rec) generateResultPDF(rec.term, rec.student);
+  });
+
+  // Intercept Ctrl+P / Cmd+P so a student "printing" their result gets
+  // the same official PDF format instead of a browser print-out.
+  document.addEventListener("keydown", function (e) {
+    const isPrintShortcut = (e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P");
+    if (!isPrintShortcut) return;
+    e.preventDefault();
+    if (lastShownResult) {
+      generateResultPDF(lastShownResult.term, lastShownResult.student);
+    } else {
+      alert("Please look up your result first (using your roll number & name, or your Result ID), then press Ctrl+P / Cmd+P again to download it as a PDF.");
+    }
   });
 })();
