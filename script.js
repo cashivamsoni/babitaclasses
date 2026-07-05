@@ -485,3 +485,40 @@ slideshow.addEventListener('touchend', e => {
   if (startX - endX > 50) plusSlides(1);     // swipe left → next
   else if (endX - startX > 50) plusSlides(-1); // swipe right → prev
 });
+/* ---------- Syllabus Section: Collapse/Expand ---------- */
+(function () {
+  const toggleBtn = document.getElementById("syllabusToggleBtn");
+  const collapseBox = document.getElementById("syllabusCollapse");
+  if (!toggleBtn || !collapseBox) return;
+
+  let isExpanded = false;
+
+  toggleBtn.addEventListener("click", function () {
+    isExpanded = !isExpanded;
+
+    if (isExpanded) {
+      collapseBox.classList.add("expanded");
+      collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
+      toggleBtn.textContent = "Show Less Sessions ▴";
+      toggleBtn.setAttribute("aria-expanded", "true");
+    } else {
+      // Set an explicit max-height first (from current scrollHeight) so the
+      // browser has a starting point to animate down from, then collapse.
+      collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
+      requestAnimationFrame(function () {
+        collapseBox.style.maxHeight = "0px";
+      });
+      collapseBox.classList.remove("expanded");
+      toggleBtn.textContent = "Show More Sessions ▾";
+      toggleBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  // Keep the expanded panel's height accurate if the viewport is resized
+  // (e.g. rotating a phone), so content never gets clipped.
+  window.addEventListener("resize", function () {
+    if (isExpanded) {
+      collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
+    }
+  });
+})();
