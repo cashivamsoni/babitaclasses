@@ -1171,3 +1171,15 @@ hr {
   left: 90%;
   animation-delay: 3s, 1.5s;
 }
+
+/* ---------- Syllabus Section: Collapse/Expand ---------- */
+.syllabus-collapse {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease;
+}
+
+.syllabus-collapse.expanded {
+  opacity: 1;
+}
