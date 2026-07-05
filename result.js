@@ -7,7 +7,7 @@
    declared — nothing else in this file needs to change.
 
    Result ID format: {SessionShort}TM{TermNumber}{Roll(2-digit)}
-   e.g. Session 2025-26, Term 1, Roll 1 -> 2526TM101
+   e.g. Session 2025-26, Term 1, Roll 1 -> 2526TM101 
    ========================================================= */
 
 (function () {
