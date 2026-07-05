@@ -54,16 +54,6 @@
   // can download the same PDF instead of triggering a browser print.
   let lastShownResult = null;
 
-  // Preloaded images (base64), so PDF generation doesn't have to wait on
-  // network fetches when triggered from a browser's native Print menu.
-  const IMAGE_CACHE = {};
-  const PDF_IMAGE_URLS = [
-    "https://babitaclasses.vercel.app/images/logo.jpg",
-    "https://babitaclasses.vercel.app/images/verify-result-qr-code.png",
-    "https://babitaclasses.vercel.app/images/babita-signature.png",
-    "https://babitaclasses.vercel.app/images/shivam-signature.png"
-  ];
-
   /* ---------- Shared helpers ---------- */
   function escapeHtml(str) {
     return String(str)
@@ -223,7 +213,6 @@
 
   /* ---------- PDF generation (matches official result-slip format) ---------- */
   function loadImageAsDataURL(url) {
-    if (IMAGE_CACHE[url]) return Promise.resolve(IMAGE_CACHE[url]);
     return fetch(url)
       .then(function (res) {
         if (!res.ok) throw new Error("Image fetch failed: " + url);
@@ -232,10 +221,7 @@
       .then(function (blob) {
         return new Promise(function (resolve, reject) {
           const reader = new FileReader();
-          reader.onloadend = function () {
-            IMAGE_CACHE[url] = reader.result;
-            resolve(reader.result);
-          };
+          reader.onloadend = function () { resolve(reader.result); };
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
@@ -403,7 +389,7 @@
     if (rec) generateResultPDF(rec.term, rec.student);
   });
 
-// Intercept Ctrl+P / Cmd+P so a student "printing" their result gets
+  // Intercept Ctrl+P / Cmd+P so a student "printing" their result gets
   // the same official PDF format instead of a browser print-out.
   document.addEventListener("keydown", function (e) {
     const isPrintShortcut = (e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P");
@@ -415,16 +401,4 @@
       alert("Please look up your result first (using your roll number & name, or your Result ID), then press Ctrl+P / Cmd+P again to download it as a PDF.");
     }
   });
-
-  // Also catch "Print" chosen from a browser's menu (e.g. Android Chrome's
-  // ⋮ menu), which fires the same underlying print event as Ctrl+P.
-  window.addEventListener("beforeprint", function () {
-    if (lastShownResult) {
-      generateResultPDF(lastShownResult.term, lastShownResult.student);
-    }
-  });
-
-  // Warm the image cache as soon as the script loads, so PDF generation
-  // triggered from a native "Print" menu doesn't stall on network fetches.
-  PDF_IMAGE_URLS.forEach(function (url) { loadImageAsDataURL(url); });
 })();
