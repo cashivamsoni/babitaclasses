@@ -512,14 +512,23 @@ slideshow.addEventListener('touchend', e => {
       toggleBtn.textContent = "Show More Sessions ▾";
       toggleBtn.setAttribute("aria-expanded", "false");
 
-      // Collapsing removes a lot of height above the current scroll
-      // position, which otherwise leaves the page looking jumbled.
-      // Scrolling back to the top of the Syllabus section keeps the
-      // "Show More Sessions" button in view, right where it was clicked.
-      const syllabusAnchor = document.getElementById("syllabus");
-      if (syllabusAnchor) {
-        syllabusAnchor.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+      // Collapsing removes a lot of height above the button, so it shifts
+      // upward as the animation plays. Wait for the collapse to actually
+      // finish, then scroll so the "Show More Sessions" button itself
+      // ends up visible — not just the top of the section.
+      let scrolled = false;
+      const scrollToToggleBtn = function () {
+        if (scrolled) return;
+        scrolled = true;
+        toggleBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+      };
+      collapseBox.addEventListener("transitionend", function onEnd(ev) {
+        if (ev.propertyName !== "max-height") return;
+        collapseBox.removeEventListener("transitionend", onEnd);
+        scrollToToggleBtn();
+      });
+      // Fallback in case transitionend doesn't fire (e.g. reduced-motion).
+      setTimeout(scrollToToggleBtn, 550);
     }
   });
 
