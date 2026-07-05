@@ -508,16 +508,32 @@ slideshow.addEventListener('touchend', e => {
       requestAnimationFrame(function () {
         collapseBox.style.maxHeight = "0px";
       });
-      collapseBox.classList.remove("expanded");
+     collapseBox.classList.remove("expanded");
       toggleBtn.textContent = "Show More Sessions ▾";
       toggleBtn.setAttribute("aria-expanded", "false");
 
-      // Collapsing removes a lot of height above the current scroll
-      // position, which otherwise leaves the page looking jumbled.
-      // Landing on the Faculty section gives a clean, stable spot.
+      // Wait for the collapse animation to actually finish before scrolling —
+      // scrolling while the layout above is still shrinking makes the
+      // browser chase a moving target and land in the wrong place.
       const facultySection = document.getElementById("faculty");
       if (facultySection) {
-        facultySection.scrollIntoView({ behavior: "smooth", block: "start" });
+        let scrolled = false;
+        const scrollToFaculty = function () {
+          if (scrolled) return;
+          scrolled = true;
+          facultySection.scrollIntoView({ behavior: "smooth", block: "start" });
+        };
+        collapseBox.addEventListener(
+          "transitionend",
+          function onEnd(ev) {
+            if (ev.propertyName !== "max-height") return;
+            collapseBox.removeEventListener("transitionend", onEnd);
+            scrollToFaculty();
+          }
+        );
+        // Fallback in case transitionend doesn't fire for any reason
+        // (e.g. reduced-motion settings skipping the animation).
+        setTimeout(scrollToFaculty, 550);
       }
     }
   });
