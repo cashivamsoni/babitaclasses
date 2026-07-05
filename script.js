@@ -502,23 +502,18 @@ slideshow.addEventListener('touchend', e => {
       toggleBtn.textContent = "Show Less Sessions ▴";
       toggleBtn.setAttribute("aria-expanded", "true");
     } else {
-      // Set an explicit max-height first (from current scrollHeight) so the
-      // browser has a starting point to animate down from, then collapse.
-      collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
+      // Capture the height BEFORE collapsing, then compensate the scroll
+      // position by that same amount, at the same time — one combined
+      // motion instead of a reflow-jump followed by a second correction.
+      const collapseHeight = collapseBox.scrollHeight;
+      collapseBox.style.maxHeight = collapseHeight + "px";
       requestAnimationFrame(function () {
         collapseBox.style.maxHeight = "0px";
       });
       collapseBox.classList.remove("expanded");
       toggleBtn.textContent = "Show More Sessions ▾";
       toggleBtn.setAttribute("aria-expanded", "false");
-
-      // Collapsing removes a lot of height above the button, so it shifts
-      // upward as the animation plays. Wait for the collapse to actually
-      // finish, then scroll so the "Show More Sessions" button itself
-      // ends up visible — not just the top of the section.
-      setTimeout(function () {
-        toggleBtn.scrollIntoView({ behavior: "auto", block: "center" });
-      }, 500);
+      window.scrollBy({ top: -collapseHeight, left: 0, behavior: "smooth" });
     }
   });
 
