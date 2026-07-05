@@ -7,7 +7,7 @@
    declared — nothing else in this file needs to change.
 
    Result ID format: {SessionShort}TM{TermNumber}{Roll(2-digit)}
-   e.g. Session 2025-26, Term 1, Roll 1 -> 2526TM101 
+   e.g. Session 2025-26, Term 1, Roll 1 -> 2526TM101
    ========================================================= */
 
 (function () {
@@ -389,7 +389,7 @@
     if (rec) generateResultPDF(rec.term, rec.student);
   });
 
-// Intercept Ctrl+P / Cmd+P so a student "printing" their result gets
+  // Intercept Ctrl+P / Cmd+P so a student "printing" their result gets
   // the same official PDF format instead of a browser print-out.
   document.addEventListener("keydown", function (e) {
     const isPrintShortcut = (e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P");
@@ -401,11 +401,4 @@
       alert("Please look up your result first (using your roll number & name, or your Result ID), then press Ctrl+P / Cmd+P again to download it as a PDF.");
     }
   });
-
-  // Also catch "Print" chosen from a browser's menu (e.g. Android Chrome's
-  // ⋮ menu), which fires the same underlying print event as Ctrl+P.
-  window.addEventListener("beforeprint", function () {
-    if (lastShownResult) {
-      generateResultPDF(lastShownResult.term, lastShownResult.student);
-    }
-  });
+})();
