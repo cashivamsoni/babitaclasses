@@ -516,7 +516,9 @@ slideshow.addEventListener('touchend', e => {
       // upward as the animation plays. Wait for the collapse to actually
       // finish, then scroll so the "Show More Sessions" button itself
       // ends up visible — not just the top of the section.
-      toggleBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(function () {
+        toggleBtn.scrollIntoView({ behavior: "auto", block: "center" });
+      }, 500);
     }
   });
 
