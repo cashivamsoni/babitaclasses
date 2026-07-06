@@ -4,6 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#ffd919">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/images/logo.jpg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.classList.add("dark-mode");
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="style.css">
     <title>Babita Classes - Home</title>
@@ -26,6 +39,7 @@
         <img src="/images/logo.jpg" alt="Logo" width="60px" height="60px" style="border: 2px solid #ffffff;box-shadow: 0 0 15px #ffffff;">
       </div>
       <h1>Babita Classes</h1>
+      <button id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
       <button id="menuToggle">☰ Menu</button>
       <nav id="mainNav" class="nav" aria-label="Main navigation">
         <a href="#home">Home</a>
@@ -401,7 +415,6 @@
           <br>
           <p class="small"><strong>Note: </strong>No formal tests and exams were conducted in the academic session 2024-25.</p>
 
-        <div id="syllabusCollapse" class="syllabus-collapse">
         <h3 style="margin-top:12px">Session 2023-24</h3>
         <div style="overflow:auto">
           <table aria-label="Syllabus 2023-24">
@@ -541,11 +554,6 @@
             </tbody>
           </table>
         </div>
-        </div>
-
-        <div class="flex" style="justify-content:center;margin-top:16px">
-          <button type="button" id="syllabusToggleBtn" class="btn-inline" aria-expanded="false" aria-controls="syllabusCollapse">Show More Sessions ▾</button>
-        </div>
       </section>
 
       <!-- OUR FACULTY -->
@@ -619,4 +627,4 @@
 
     <script src="script.js"></script>
   </body>
-</html>
+</html> 
