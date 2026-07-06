@@ -34,6 +34,35 @@
   });
 })();
 
+/* ---------- Theme Toggle (Light/Dark) ---------- */
+(function () {
+  const themeBtn = document.getElementById("themeToggle");
+  if (!themeBtn) return;
+  const root = document.documentElement;
+
+  function updateIcon() {
+    themeBtn.textContent = root.classList.contains("dark-mode") ? "☀️" : "🌙";
+  }
+  updateIcon();
+
+  themeBtn.addEventListener("click", function () {
+    root.classList.toggle("dark-mode");
+    try {
+      localStorage.setItem("theme", root.classList.contains("dark-mode") ? "dark" : "light");
+    } catch (e) {}
+    updateIcon();
+  });
+})();
+
+/* ---------- PWA Service Worker Registration ---------- */
+(function () {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/service-worker.js").catch(function () {});
+    });
+  }
+})();
+
 /* ---------- Welcome Popup ---------- */
 (function () {
   const closeBtn = document.getElementById("popupCloseUnique");
@@ -524,4 +553,4 @@ slideshow.addEventListener('touchend', e => {
       collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
     }
   });
-})();
+})(); 
