@@ -11,58 +11,27 @@
   const nav = document.getElementById("mainNav");
   if (!toggleBtn || !nav) return;
 
-  function setOpen(isOpen) {
-    nav.classList.toggle("show", isOpen);
-    toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-  }
-
   toggleBtn.addEventListener("click", function (e) {
     e.stopPropagation();
-    setOpen(!nav.classList.contains("show"));
+    nav.classList.toggle("show");
+    toggleBtn.textContent = nav.classList.contains("show") ? "×" : "☰ Menu";
   });
 
   // Close when any nav link is clicked
   document.querySelectorAll("#mainNav a").forEach(function (link) {
     link.addEventListener("click", function () {
-      setOpen(false);
+      nav.classList.remove("show");
+      toggleBtn.textContent = "☰ Menu";
     });
   });
 
   // Close when clicking outside the header/nav area
   document.addEventListener("click", function (e) {
-    if (!nav.contains(e.target) && e.target !== toggleBtn && !toggleBtn.contains(e.target)) {
-      setOpen(false);
+    if (!nav.contains(e.target) && e.target !== toggleBtn) {
+      nav.classList.remove("show");
+      toggleBtn.textContent = "☰ Menu";
     }
   });
-})();
-
-/* ---------- Theme Toggle (Light/Dark) ---------- */
-(function () {
-  const themeBtn = document.getElementById("themeToggle");
-  if (!themeBtn) return;
-  const root = document.documentElement;
-
-  function updateIcon() {
-    themeBtn.textContent = root.classList.contains("dark-mode") ? "☀️" : "🌙";
-  }
-  updateIcon();
-
-  themeBtn.addEventListener("click", function () {
-    root.classList.toggle("dark-mode");
-    try {
-      localStorage.setItem("theme", root.classList.contains("dark-mode") ? "dark" : "light");
-    } catch (e) {}
-    updateIcon();
-  });
-})();
-
-/* ---------- PWA Service Worker Registration ---------- */
-(function () {
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/service-worker.js").catch(function () {});
-    });
-  }
 })();
 
 /* ---------- Welcome Popup ---------- */
