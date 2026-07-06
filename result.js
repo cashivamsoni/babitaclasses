@@ -401,4 +401,4 @@
       alert("Please look up your result first (using your roll number & name, or your Result ID), then press Ctrl+P / Cmd+P again to download it as a PDF.");
     }
   });
-})(); 
+})();
