@@ -4,19 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#ffd919">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/images/logo.jpg">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script>
-      (function () {
-        try {
-          if (localStorage.getItem("theme") === "dark") {
-            document.documentElement.classList.add("dark-mode");
-          }
-        } catch (e) {}
-      })();
-    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="style.css">
     <title>Babita Classes - Blog</title>
@@ -40,16 +27,7 @@
         <img src="/images/logo.jpg" alt="Logo" width="60px" height="60px">
       </div>
       <h1>Babita Classes</h1>
-      <div class="header-controls">
-        <button id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
-        <button id="menuToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
-          <span class="hamburger-box">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-          </span>
-        </button>
-      </div>
+      <button id="menuToggle">☰ Menu</button>
       <nav id="mainNav" class="nav" aria-label="Main navigation">
         <a href="https://babitaclasses.vercel.app/">Home</a>
         <a href="https://babitaclasses.vercel.app/blog.html">Blog</a>
