@@ -11,25 +11,27 @@
   const nav = document.getElementById("mainNav");
   if (!toggleBtn || !nav) return;
 
+  function setOpen(isOpen) {
+    nav.classList.toggle("show", isOpen);
+    toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  }
+
   toggleBtn.addEventListener("click", function (e) {
     e.stopPropagation();
-    nav.classList.toggle("show");
-    toggleBtn.textContent = nav.classList.contains("show") ? "×" : "☰ Menu";
+    setOpen(!nav.classList.contains("show"));
   });
 
   // Close when any nav link is clicked
   document.querySelectorAll("#mainNav a").forEach(function (link) {
     link.addEventListener("click", function () {
-      nav.classList.remove("show");
-      toggleBtn.textContent = "☰ Menu";
+      setOpen(false);
     });
   });
 
   // Close when clicking outside the header/nav area
   document.addEventListener("click", function (e) {
-    if (!nav.contains(e.target) && e.target !== toggleBtn) {
-      nav.classList.remove("show");
-      toggleBtn.textContent = "☰ Menu";
+    if (!nav.contains(e.target) && e.target !== toggleBtn && !toggleBtn.contains(e.target)) {
+      setOpen(false);
     }
   });
 })();
