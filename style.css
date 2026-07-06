@@ -93,6 +93,29 @@ header h1 {
   box-shadow: 0px 0px 15px solid #ffffff;
 }
 
+/* ---------- Theme Toggle ---------- */
+#themeToggle {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #ffffff;
+  padding: 8px 12px;
+  margin-left: auto;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.4s ease;
+}
+
+#themeToggle:hover {
+  transform: translateY(-3px) scale(1.1);
+  background-color: rgba(153, 0, 0, 0.5);
+  border: 2px solid #ffffff;
+}
+
+#menuToggle {
+  margin-left: 0;
+}
+
 nav {
   display: none;
   margin-top: 10px;
@@ -1171,15 +1194,90 @@ hr {
   left: 90%;
   animation-delay: 3s, 1.5s;
 }
-
-/* ---------- Syllabus Section: Collapse/Expand ---------- */
-.syllabus-collapse {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.5s ease, opacity 0.4s ease;
+/* ---------- Dark Mode Overrides ---------- */
+html.dark-mode body {
+  background: #14161a;
+  color: #eaeaea;
 }
 
-.syllabus-collapse.expanded {
-  opacity: 1;
+html.dark-mode header {
+  background: rgba(20, 22, 26, 0.55);
+  border-bottom: 2px solid #333;
+  box-shadow: 0 0 15px #000;
 }
+
+html.dark-mode header h1 {
+  color: #ffffff;
+  text-shadow: 0 0 5px #000, 0 0 5px #000;
+}
+
+html.dark-mode #menuToggle,
+html.dark-mode #themeToggle {
+  background: rgba(255, 255, 255, 0.12);
+  color: #eaeaea;
+  border-color: #555;
+}
+
+html.dark-mode nav {
+  background: rgba(20, 22, 26, 0.85);
+}
+
+html.dark-mode nav a {
+  color: #eaeaea;
+}
+
+html.dark-mode .card,
+html.dark-mode .section,
+html.dark-mode .searchb {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: #444;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+html.dark-mode p,
+html.dark-mode p.small,
+html.dark-mode .muted,
+html.dark-mode h1,
+html.dark-mode h2,
+html.dark-mode h3,
+html.dark-mode summary,
+html.dark-mode details,
+html.dark-mode label {
+  color: #eaeaea;
+}
+
+html.dark-mode .search {
+  background: rgba(255, 255, 255, 0.08);
+  color: #eaeaea;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+html.dark-mode th,
+html.dark-mode td {
+  border-color: #444;
+  color: #eaeaea;
+}
+
+html.dark-mode #popupBoxUnique,
+html.dark-mode .modal-box {
+  background: #1f2126;
+  color: #eaeaea;
+  border-color: #444;
+}
+
+html.dark-mode .modal-box small {
+  color: #bbb;
+}
+
+html.dark-mode footer {
+  background: linear-gradient(90deg, #4d0000, #3a0000);
+}
+
+html.dark-mode hr {
+  background-color: #555;
+}
+
+html.dark-mode #resultOutput,
+html.dark-mode #verifyOutput {
+  color: #eaeaea;
+} 
