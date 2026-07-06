@@ -40,8 +40,16 @@
         <img src="/images/logo.jpg" alt="Logo" width="60px" height="60px">
       </div>
       <h1>Babita Classes</h1>
-      <button id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
-      <button id="menuToggle">☰ Menu</button>
+      <div class="header-controls">
+        <button id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+        <button id="menuToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span class="hamburger-box">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+          </span>
+        </button>
+      </div>
       <nav id="mainNav" class="nav" aria-label="Main navigation">
         <a href="https://babitaclasses.vercel.app/">Home</a>
         <a href="https://babitaclasses.vercel.app/blog.html">Blog</a>
