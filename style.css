@@ -21,7 +21,6 @@
     Arial;
 }
 
-
 * {
   box-sizing: border-box;
 }
@@ -328,6 +327,16 @@ details {
 .btn-inline1:hover {
   transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
+}
+
+.syllabus-collapse {
+  overflow: hidden;
+  max-height: 0px;
+  transition: max-height 0.5s ease;
+}
+
+.syllabus-collapse.expanded {
+  overflow: visible;
 }
 
 .btn-qr {
@@ -1171,4 +1180,4 @@ hr {
 .snowflake:nth-of-type(9) {
   left: 90%;
   animation-delay: 3s, 1.5s;
-}
+} 
