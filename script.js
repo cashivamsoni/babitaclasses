@@ -487,41 +487,40 @@ slideshow.addEventListener('touchend', e => {
 });
 /* ---------- Syllabus Section: Collapse/Expand ---------- */
 (function () {
-  const toggleBtns = document.querySelectorAll(".syllabusToggleBtn");
+  const toggleBtn = document.getElementById("syllabusToggleBtn");
+  const toggleWrap = document.getElementById("syllabusToggleWrap");
+  const anchor = document.getElementById("syllabusToggleAnchor");
   const collapseBox = document.getElementById("syllabusCollapse");
-  if (!toggleBtns.length || !collapseBox) return;
+  if (!toggleBtn || !toggleWrap || !anchor || !collapseBox) return;
 
   let isExpanded = false;
 
-  function setButtonsState(expanded) {
-    toggleBtns.forEach(function (btn) {
-      btn.textContent = expanded ? "Show Less Sessions ▴" : "Show More Sessions ▾";
-      btn.setAttribute("aria-expanded", expanded ? "true" : "false");
-    });
-  }
-
-  toggleBtns.forEach(function (toggleBtn) {
-    toggleBtn.addEventListener("click", function () {
+  toggleBtn.addEventListener("click", function () {
     isExpanded = !isExpanded;
 
     if (isExpanded) {
+      // Move the button to the end of the collapsible content first, so it
+      // travels down with the expanding sessions instead of staying put.
+      collapseBox.appendChild(toggleWrap);
       collapseBox.classList.add("expanded");
       collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
-      setButtonsState(true);
+      toggleBtn.textContent = "Show Less Sessions ▴";
+      toggleBtn.setAttribute("aria-expanded", "true");
     } else {
       // Capture the height BEFORE collapsing, then compensate the scroll
       // position by that same amount, at the same time — one combined
       // motion instead of a reflow-jump followed by a second correction.
       const collapseHeight = collapseBox.scrollHeight;
+      anchor.parentNode.insertBefore(toggleWrap, anchor);
       collapseBox.style.maxHeight = collapseHeight + "px";
       requestAnimationFrame(function () {
         collapseBox.style.maxHeight = "0px";
       });
       collapseBox.classList.remove("expanded");
-      setButtonsState(false);
+      toggleBtn.textContent = "Show More Sessions ▾";
+      toggleBtn.setAttribute("aria-expanded", "false");
       window.scrollBy({ top: -collapseHeight, left: 0, behavior: "smooth" });
     }
-    });
   });
 
   // Keep the expanded panel's height accurate if the viewport is resized
