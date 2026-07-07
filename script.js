@@ -530,4 +530,4 @@ slideshow.addEventListener('touchend', e => {
       collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
     }
   });
-})(); 
+})();  
