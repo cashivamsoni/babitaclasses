@@ -1,6 +1,6 @@
 /* =========================================================
    Babita Classes — Shared Stylesheet
-   Used by: index.html and  Blog.html
+   Used by: index.html and Blog.html
    ========================================================= */
 
 /* ---------- CSS Variables & Base ---------- */
@@ -985,16 +985,6 @@ footer {
   max-height: 75vh;
 }
 
-.modal-header {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: #FFD919;
-  margin: -20px -20px 15px -20px;
-  padding: 20px 45px 10px 20px;
-  border-radius: 15px 15px 0 0;
-}
-
 .modal-box h2 {
   color: #990000;
   margin-top: 0;
@@ -1190,4 +1180,4 @@ hr {
 .snowflake:nth-of-type(9) {
   left: 90%;
   animation-delay: 3s, 1.5s;
-} 
+}  
