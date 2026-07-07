@@ -487,20 +487,27 @@ slideshow.addEventListener('touchend', e => {
 });
 /* ---------- Syllabus Section: Collapse/Expand ---------- */
 (function () {
-  const toggleBtn = document.getElementById("syllabusToggleBtn");
+  const toggleBtns = document.querySelectorAll(".syllabusToggleBtn");
   const collapseBox = document.getElementById("syllabusCollapse");
-  if (!toggleBtn || !collapseBox) return;
+  if (!toggleBtns.length || !collapseBox) return;
 
   let isExpanded = false;
 
-  toggleBtn.addEventListener("click", function () {
+  function setButtonsState(expanded) {
+    toggleBtns.forEach(function (btn) {
+      btn.textContent = expanded ? "Show Less Sessions ▴" : "Show More Sessions ▾";
+      btn.setAttribute("aria-expanded", expanded ? "true" : "false");
+    });
+  }
+
+  toggleBtns.forEach(function (toggleBtn) {
+    toggleBtn.addEventListener("click", function () {
     isExpanded = !isExpanded;
 
     if (isExpanded) {
       collapseBox.classList.add("expanded");
       collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
-      toggleBtn.textContent = "Show Less Sessions ▴";
-      toggleBtn.setAttribute("aria-expanded", "true");
+      setButtonsState(true);
     } else {
       // Capture the height BEFORE collapsing, then compensate the scroll
       // position by that same amount, at the same time — one combined
@@ -511,10 +518,10 @@ slideshow.addEventListener('touchend', e => {
         collapseBox.style.maxHeight = "0px";
       });
       collapseBox.classList.remove("expanded");
-      toggleBtn.textContent = "Show More Sessions ▾";
-      toggleBtn.setAttribute("aria-expanded", "false");
+      setButtonsState(false);
       window.scrollBy({ top: -collapseHeight, left: 0, behavior: "smooth" });
     }
+    });
   });
 
   // Keep the expanded panel's height accurate if the viewport is resized
@@ -524,4 +531,4 @@ slideshow.addEventListener('touchend', e => {
       collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
     }
   });
-})();
+})(); 
