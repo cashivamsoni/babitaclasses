@@ -1007,6 +1007,17 @@ footer {
   margin-bottom: 10px;
 }
 
+.modal-header {
+  position: sticky;
+  top: -20px;
+  margin: -20px -20px 15px -20px;
+  padding: 20px 55px 12px 20px;
+  background-color: #FFD919;
+  z-index: 5;
+  border-top-left-radius: 13px;
+  border-top-right-radius: 13px;
+}
+
 .modal-close {
   position: absolute;
   top: 12px;
@@ -1018,6 +1029,7 @@ footer {
   padding: 2.5px 8px;
   cursor: pointer;
   font-size: 20px;
+  z-index: 10;
 }
 
 .modal-close:hover {
@@ -1190,4 +1202,4 @@ hr {
 .snowflake:nth-of-type(9) {
   left: 90%;
   animation-delay: 3s, 1.5s;
-} 
+}
