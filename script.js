@@ -3,26 +3,6 @@
    Used by: index.html and blog.html
    ========================================================= */
 
-/* ---------- PWA: Service Worker Registration ---------- */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/sw.js").catch(function (err) {
-      console.warn("Service worker registration failed:", err);
-    });
-  });
-
-  // When a newly-deployed service worker takes control of this page,
-  // automatically reload once so the user sees the latest content
-  // immediately instead of needing to manually refresh a second time.
-  let swRefreshing = false;
-  navigator.serviceWorker.addEventListener("controllerchange", function () {
-    if (swRefreshing) return;
-    swRefreshing = true;
-    window.location.reload();
-  });
-}
-
-
 
 /* ---------- Light/Dark Mode Toggle ---------- */
 (function () {
