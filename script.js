@@ -23,7 +23,7 @@
       nav.classList.remove("show");
       toggleBtn.classList.remove("open");
     });
-  });
+  }); 
 
   // Close when clicking outside the header/nav area
   document.addEventListener("click", function (e) {
