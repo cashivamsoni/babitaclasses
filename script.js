@@ -272,8 +272,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const a = document.createElement("a");
       a.className = "url-btn";
       a.href = l.url;
-      a.target = "_blank";
-      a.rel = "noopener";
+      const isInternal = l.url.startsWith("#") || l.url.includes("babitaclasses.vercel.app");
+      if (!isInternal) {
+        a.target = "_blank";
+        a.rel = "noopener";
+      }
       a.textContent = l.label;
       linksGrid.appendChild(a);
     });
