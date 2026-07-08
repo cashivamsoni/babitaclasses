@@ -69,11 +69,38 @@ header h1 {
 }
 
 /* ---------- Navigation ---------- */
-#menuToggle {
+#themeToggle {
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid #ffffff;
   box-shadow: 0px 0px 15px solid #ffffff;
   margin-left: auto;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  transition: all 0.4s ease;
+}
+
+#themeToggle:hover {
+  transform: translateY(-3px) scale(1.035);
+  background-color: rgba(153, 0, 0, 0.5);
+  border: 2px solid #ffffff;
+  box-shadow: 0px 0px 15px solid #ffffff;
+}
+
+#menuToggle {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #ffffff;
+  box-shadow: 0px 0px 15px solid #ffffff;
+  margin-left: 10px;
   margin-right: 20px;
   cursor: pointer;
   border-radius: 50%;
@@ -1240,4 +1267,94 @@ hr {
 .snowflake:nth-of-type(9) {
   left: 90%;
   animation-delay: 3s, 1.5s;
+} 
+
+/* =========================================================
+   Dark Mode
+   Toggled via [data-theme="dark"] on <html>, script.js
+   ========================================================= */
+
+[data-theme="dark"] {
+  --muted: #e6e0d0;
+}
+
+[data-theme="dark"] body {
+  background: #332900;
+  color: #f2efe6;
+}
+
+/* Cards / sections / search / blog cards: darker tone of #ffd919 instead of white-frosted glass */
+[data-theme="dark"] .card,
+[data-theme="dark"] .section,
+[data-theme="dark"] .searchb,
+[data-theme="dark"] .blog-card,
+[data-theme="dark"] .faculty-card {
+  background: rgba(30, 24, 0, 0.65);
+}
+
+[data-theme="dark"] .modal-box,
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] #popupBoxUnique {
+  background-color: #332900;
+}
+
+/* Text that was hardcoded black/dark-gray for the light theme */
+[data-theme="dark"] p.small,
+[data-theme="dark"] .blog-card h3,
+[data-theme="dark"] .blog-card p {
+  color: #f2efe6;
+}
+
+[data-theme="dark"] .blog-card small,
+[data-theme="dark"] .modal-box small {
+  color: #cfc9b8;
+}
+
+[data-theme="dark"] .modal-box h2 {
+  color: #FFD919;
+}
+
+/* Table borders/text visible against the dark background */
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Search input field */
+[data-theme="dark"] .search {
+  background: rgba(20, 16, 0, 0.85);
+  color: #f2efe6;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .search::placeholder {
+  color: #cfc9b8;
+}
+
+/* Search results dropdown */
+[data-theme="dark"] #searchList a,
+[data-theme="dark"] #videoList a {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff9999;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .bc-search-clear,
+[data-theme="dark"] .bc-link-clear {
+  color: #ff9999;
+}
+
+[data-theme="dark"] hr {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Direct text links (plain <a> with no class) inside dark surfaces */
+[data-theme="dark"] .card a:not([class]),
+[data-theme="dark"] .section a:not([class]),
+[data-theme="dark"] .blog-card a:not([class]),
+[data-theme="dark"] .modal-box a:not([class]),
+[data-theme="dark"] .searchb a:not([class]),
+[data-theme="dark"] td a:not([class]),
+[data-theme="dark"] th a:not([class]) {
+  color: #ffffff;
 }
