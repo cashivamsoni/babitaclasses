@@ -5,6 +5,31 @@
 
 
 
+/* ---------- Light/Dark Mode Toggle ---------- */
+(function () {
+  const themeToggle = document.getElementById("themeToggle");
+  if (!themeToggle) return;
+  const root = document.documentElement;
+
+  function applyTheme(theme) {
+    if (theme === "dark") {
+      root.setAttribute("data-theme", "dark");
+      themeToggle.textContent = "☀️";
+    } else {
+      root.removeAttribute("data-theme");
+      themeToggle.textContent = "🌙";
+    }
+  }
+
+  applyTheme(localStorage.getItem("theme") === "dark" ? "dark" : "light");
+
+  themeToggle.addEventListener("click", function () {
+    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(next);
+    localStorage.setItem("theme", next);
+  });
+})();
+
 /* ---------- Menu Toggle ---------- */
 (function () {
   const toggleBtn = document.getElementById("menuToggle");
@@ -23,7 +48,7 @@
       nav.classList.remove("show");
       toggleBtn.classList.remove("open");
     });
-  }); 
+  });
 
   // Close when clicking outside the header/nav area
   document.addEventListener("click", function (e) {
@@ -530,4 +555,4 @@ slideshow.addEventListener('touchend', e => {
       collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
     }
   });
-})(); 
+})();
