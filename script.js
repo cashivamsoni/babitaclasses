@@ -13,10 +13,10 @@
   function applyTheme(theme) {
     if (theme === "dark") {
       root.setAttribute("data-theme", "dark");
-      themeToggle.textContent = "☀️";
+      themeToggle.textContent = "Light Mode";
     } else {
       root.removeAttribute("data-theme");
-      themeToggle.textContent = "🌙";
+      themeToggle.textContent = "Dark Mode";
     }
   }
 
