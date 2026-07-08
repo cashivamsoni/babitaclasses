@@ -10,6 +10,16 @@ if ("serviceWorker" in navigator) {
       console.warn("Service worker registration failed:", err);
     });
   });
+
+  // When a newly-deployed service worker takes control of this page,
+  // automatically reload once so the user sees the latest content
+  // immediately instead of needing to manually refresh a second time.
+  let swRefreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", function () {
+    if (swRefreshing) return;
+    swRefreshing = true;
+    window.location.reload();
+  });
 }
 
 
