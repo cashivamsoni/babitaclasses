@@ -9,14 +9,17 @@
   const themeToggle = document.getElementById("themeToggle");
   if (!themeToggle) return;
   const root = document.documentElement;
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
 
   function applyTheme(theme) {
     if (theme === "dark") {
       root.setAttribute("data-theme", "dark");
       themeToggle.textContent = "Light Mode";
+      if (metaThemeColor) metaThemeColor.setAttribute("content", "#332900");
     } else {
       root.removeAttribute("data-theme");
       themeToggle.textContent = "Dark Mode";
+      if (metaThemeColor) metaThemeColor.setAttribute("content", "#ffd919");
     }
   }
 
