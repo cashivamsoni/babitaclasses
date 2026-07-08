@@ -1,5 +1,14 @@
-/* Babita Classes — Minimal Service Worker (PWA) */
-const CACHE_NAME = "babita-classes-v1";
+/* Babita Classes — Service Worker (PWA) */
+
+/* IMPORTANT: bump this version string on every deploy that changes any
+   cached file (html/css/js). Changing this string is what makes the
+   browser detect that sw.js itself has changed, which triggers a fresh
+   install + cache refresh. If you forget to bump it, mobile devices that
+   already have the old service worker installed will keep serving the
+   old cached files even after you push new code to Vercel/GitHub. */
+const CACHE_VERSION = "v2";
+const CACHE_NAME = `babita-classes-${CACHE_VERSION}`;
+
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
@@ -40,22 +49,21 @@ self.addEventListener("activate", function (event) {
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
 
+  // Network-first: always try to get the latest version from the network.
+  // Only fall back to the cache if the network request fails (e.g. offline).
   event.respondWith(
-    caches.match(event.request).then(function (cached) {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then(function (response) {
-          if (response && response.status === 200 && response.type === "basic") {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(function (cache) {
-              cache.put(event.request, clone);
-            });
-          }
-          return response;
-        })
-        .catch(function () {
-          return cached;
-        });
-    })
+    fetch(event.request)
+      .then(function (response) {
+        if (response && response.status === 200 && response.type === "basic") {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(function (cache) {
+            cache.put(event.request, clone);
+          });
+        }
+        return response;
+      })
+      .catch(function () {
+        return caches.match(event.request);
+      })
   );
-});
+}); 
