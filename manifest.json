@@ -1,0 +1,24 @@
+{
+  "name": "Babita Classes",
+  "short_name": "Babita Classes",
+  "description": "Babita Classes - Free coaching organization in Kanpur, Uttar Pradesh, founded by Babita Soni.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffd919",
+  "theme_color": "#ffd919",
+  "icons": [
+    {
+      "src": "https://babitaclasses.vercel.app/images/favicon.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://babitaclasses.vercel.app/images/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
