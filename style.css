@@ -341,7 +341,7 @@ details {
   margin-right: auto;
   width: fit-content;
   padding: 8px 10px;
-  border-radius: 15px;
+  border-radius: 20px;
   background: linear-gradient(90deg, #990000, #800000);
   color: #FFF;
   text-decoration: none;
@@ -696,7 +696,7 @@ tr {
   border: 2px solid white;
   box-shadow: 0 0 15px #FFFFFF;
   padding: 10px 16px;
-  border-radius: 15px;
+  border-radius: 20px;
   cursor: pointer;
   font-size: 22px;
   font-weight: normal;
@@ -718,7 +718,7 @@ tr {
   right: 20px;
   padding: 10px;
   z-index: 10;
-  border-radius: 15px;
+  border-radius: 20px;
   background: linear-gradient(90deg, #990000, #800000);
   color: #FFFFFF;
   border: 2px solid white;
@@ -741,7 +741,7 @@ tr {
   right: 20px;
   padding: 10px;
   z-index: 10;
-  border-radius: 15px;
+  border-radius: 20px;
   text-decoration: none;
   background: linear-gradient(90deg, #990000, #800000);
   color: #FFFFFF;
