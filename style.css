@@ -420,7 +420,7 @@ tr {
 /* ---------- Search ---------- */
 .searchb {
   width: calc(100% - 40px);
-  max-width: 1100px;
+  max-width: 1064px;
   background: rgba(255, 255, 255, 0.40);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -894,7 +894,7 @@ footer {
   border: 2px solid #FFFFFF;
   border-radius: 15px;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1064px;
   margin-left: 0px;
   margin-right: 0px;
   padding: 15px;
