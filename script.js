@@ -41,8 +41,8 @@
     toggleBtn.classList.toggle("open");
   });
 
-  // Close when any nav link is clicked
-  document.querySelectorAll("#mainNav a").forEach(function (link) {
+  // Close when any nav link or the theme toggle is clicked
+  document.querySelectorAll("#mainNav a, #mainNav button").forEach(function (link) {
     link.addEventListener("click", function () {
       nav.classList.remove("show");
       toggleBtn.classList.remove("open");
