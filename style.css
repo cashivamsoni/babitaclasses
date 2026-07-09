@@ -835,7 +835,7 @@ tr {
 
 .notice-heading {
   position: absolute;
-  left: 40%;
+  left: 50%;
   top: 0px;
   transform: translateX(-50%);
   font-size: 20px;
