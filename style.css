@@ -837,7 +837,6 @@ tr {
   position: absolute;
   left: 50%;
   top: 0px;
-  width: auto;
   transform: translateX(-50%);
   font-size: 20px;
   color: #000000;
@@ -881,7 +880,7 @@ tr {
 }
 
 #noticeboard {
-  scroll-margin-top: 150px;
+  scroll-margin-top: 100px;
 }
 
 /* ----- New Banner ----- */
@@ -1340,4 +1339,4 @@ hr {
 [data-theme="dark"] td a:not([class]),
 [data-theme="dark"] th a:not([class]) {
   color: #ffffff;
-}
+} 
