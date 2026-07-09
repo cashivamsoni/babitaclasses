@@ -844,6 +844,7 @@ tr {
   border-radius: 6px;
   z-index: 2;
   border: none;
+  white-space: nowrap;
 }
 
 .notice-marquee {
@@ -1339,4 +1340,4 @@ hr {
 [data-theme="dark"] td a:not([class]),
 [data-theme="dark"] th a:not([class]) {
   color: #ffffff;
-} 
+}
