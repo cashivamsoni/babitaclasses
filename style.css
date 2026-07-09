@@ -817,6 +817,7 @@ tr {
   color: #FFFFFF;
   background-color: #990000;
   padding: 0.5em;
+  border-radius: 8px 8px 0 0;
 }
 
 .notice-board {
@@ -830,7 +831,7 @@ tr {
   height: 200px;
   z-index: 1;
   display: block;
-  border-radius: 8px;
+  border-radius: 0 0 8px 8px;
 }
 
 .notice-heading {
@@ -1335,4 +1336,4 @@ hr {
 [data-theme="dark"] td a:not([class]),
 [data-theme="dark"] th a:not([class]) {
   color: #ffffff;
-}
+} 
