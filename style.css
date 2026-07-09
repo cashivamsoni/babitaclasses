@@ -798,7 +798,7 @@ tr {
   right: 12px;
   background: #000000;
   color: #FFF;
-  border: none;
+  border: 2px solid #FFFFFF;
   border-radius: 50%;
   padding: 2.5px 8px;
   cursor: pointer;
@@ -1066,7 +1066,7 @@ footer {
   right: 12px;
   background: #000;
   color: #FFF;
-  border: none;
+  border: 2px solid #FFFFFF;
   border-radius: 50%;
   width: 28px;
   height: 28px;
