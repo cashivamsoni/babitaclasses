@@ -3,6 +3,25 @@
    Used by: index.html and blog.html
    ========================================================= */
 
+/* ---------- Cleanup: remove old PWA service worker/cache ---------- */
+/* The site previously registered a service worker for offline/PWA support.
+   That has been removed, but browsers that already installed it will keep
+   serving its cached (stale) version forever unless it's unregistered. */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function (registrations) {
+    registrations.forEach(function (registration) {
+      registration.unregister();
+    });
+  });
+}
+if (window.caches) {
+  caches.keys().then(function (names) {
+    names.forEach(function (name) {
+      caches.delete(name);
+    });
+  });
+}
+
 
 /* ---------- Light/Dark Mode Toggle ---------- */
 (function () {
@@ -560,4 +579,4 @@ slideshow.addEventListener('touchend', e => {
       collapseBox.style.maxHeight = collapseBox.scrollHeight + "px";
     }
   });
-})();
+})(); 
