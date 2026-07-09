@@ -173,6 +173,58 @@ window.addEventListener("click", function (event) {
     document.body.style.overflow = ""; // restore scroll
   }
 });
+
+/* ---------- Image Lightbox (What's New banner, Gallery, Blog posts) ---------- */
+(function () {
+  const overlay = document.getElementById("imgLightboxOverlay");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const closeBtn = document.getElementById("lightboxClose");
+  if (!overlay || !lightboxImg || !closeBtn) return;
+
+  function openLightbox(src, alt) {
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || "Preview";
+    overlay.style.display = "flex";
+    document.body.style.overflow = "hidden"; // lock scroll
+  }
+
+  function closeLightbox() {
+    overlay.style.display = "none";
+    lightboxImg.src = "";
+    // Only unlock scroll if no other modal/popup is still open underneath
+    const blogModalOpen = Array.prototype.some.call(
+      document.querySelectorAll(".modal-overlay"),
+      function (el) {
+        return el.style.display === "flex";
+      }
+    );
+    const welcomeOpen =
+      document.getElementById("popupOverlayUnique") &&
+      document.getElementById("popupOverlayUnique").style.display === "flex";
+    if (!blogModalOpen && !welcomeOpen) {
+      document.body.style.overflow = ""; // restore scroll
+    }
+  }
+
+  // Open on tap for eligible images
+  document.addEventListener("click", function (event) {
+    const img = event.target.closest(
+      "#WhatsNew img.newbanner, #gallery .slide img, .modal-box img"
+    );
+    if (img) {
+      openLightbox(img.src, img.alt);
+    }
+  });
+
+  closeBtn.addEventListener("click", closeLightbox);
+
+  // Close on outside click (click on overlay itself, not the image)
+  overlay.addEventListener("click", function (event) {
+    if (event.target === overlay) {
+      closeLightbox();
+    }
+  });
+})();
 /* ----- Lifted Animation For Babita Classes Website ----- */
 // Animate sections, faculty cards, and QR codes every time they scroll into view
 document.addEventListener("DOMContentLoaded", () => {
