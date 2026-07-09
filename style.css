@@ -879,6 +879,10 @@ tr {
   scroll-margin-top: 120px;
 }
 
+#noticeboard {
+  scroll-margin-top: 120px;
+}
+
 /* ----- New Banner ----- */
 .newbanner {
   flex: 1;
