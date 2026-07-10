@@ -177,8 +177,8 @@ window.addEventListener("click", function (event) {
 /* ---------- Image Lightbox (What's New banner, Gallery, Blog post images) ---------- */
 (function () {
   const overlay = document.getElementById("imgLightboxOverlay");
-  const lightboxImg = document.getElementById("imgLightboxImg");
-  const closeBtn = document.getElementById("imgLightboxClose");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const closeBtn = document.getElementById("lightboxClose");
   if (!overlay || !lightboxImg || !closeBtn) return;
 
   function otherOverlayOpen() {
