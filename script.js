@@ -3,14 +3,22 @@
    Used by: index.html and blog.html
    ========================================================= */
 
-/* ---------- PWA: Service Worker Registration ---------- */
-/* sw.js uses a network-first strategy (always fetches the latest
-   version when online, only falls back to cache when offline), so
-   this replaces the old worker automatically without needing a
-   manual unregister step. */
+/* ---------- Cleanup: remove PWA service worker/cache ---------- */
+/* A service worker was briefly added for offline/PWA support and has now
+   been removed. Browsers that already installed it will keep serving its
+   cached (stale) version forever unless it's explicitly unregistered here. */
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/sw.js");
+  navigator.serviceWorker.getRegistrations().then(function (registrations) {
+    registrations.forEach(function (registration) {
+      registration.unregister();
+    });
+  });
+}
+if (window.caches) {
+  caches.keys().then(function (names) {
+    names.forEach(function (name) {
+      caches.delete(name);
+    });
   });
 }
 
