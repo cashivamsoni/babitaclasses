@@ -1153,6 +1153,15 @@ hr {
   background-color: #ff0000;
 }
 
+/* Mobile only: show a bordered placeholder frame immediately while the image loads */
+@media (max-width: 768px) {
+  .lightbox-box img {
+    min-width: 220px;
+    min-height: 220px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
 /* ----- Slideshow ----- */
 .slideshow-container {
   position: relative;
