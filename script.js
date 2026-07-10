@@ -179,7 +179,8 @@ window.addEventListener("click", function (event) {
   const overlay = document.getElementById("imgLightboxOverlay");
   const lightboxImg = document.getElementById("lightboxImg");
   const closeBtn = document.getElementById("lightboxClose");
-  if (!overlay || !lightboxImg || !closeBtn) return;
+  const lightboxBox = overlay ? overlay.querySelector(".lightbox-box") : null;
+  if (!overlay || !lightboxImg || !closeBtn || !lightboxBox) return;
 
   function otherOverlayOpen() {
     var stillOpen = false;
@@ -192,10 +193,20 @@ window.addEventListener("click", function (event) {
   }
 
   function openLightbox(src, alt) {
-    lightboxImg.src = src;
+    lightboxBox.classList.add("is-loading");
+    lightboxImg.onload = function () {
+      lightboxBox.classList.remove("is-loading");
+    };
+    lightboxImg.onerror = function () {
+      lightboxBox.classList.remove("is-loading");
+    };
     lightboxImg.alt = alt || "Preview";
+    lightboxImg.src = src;
     overlay.style.display = "flex";
     document.body.style.overflow = "hidden"; // lock scroll
+    if (lightboxImg.complete) {
+      lightboxBox.classList.remove("is-loading"); // already cached, no need for a placeholder
+    }
   }
 
   function closeLightbox() {
