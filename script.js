@@ -3,22 +3,14 @@
    Used by: index.html and blog.html
    ========================================================= */
 
-/* ---------- Cleanup: remove old PWA service worker/cache ---------- */
-/* The site previously registered a service worker for offline/PWA support.
-   That has been removed, but browsers that already installed it will keep
-   serving its cached (stale) version forever unless it's unregistered. */
+/* ---------- PWA: Service Worker Registration ---------- */
+/* sw.js uses a network-first strategy (always fetches the latest
+   version when online, only falls back to cache when offline), so
+   this replaces the old worker automatically without needing a
+   manual unregister step. */
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function (registrations) {
-    registrations.forEach(function (registration) {
-      registration.unregister();
-    });
-  });
-}
-if (window.caches) {
-  caches.keys().then(function (names) {
-    names.forEach(function (name) {
-      caches.delete(name);
-    });
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js");
   });
 }
 
@@ -174,12 +166,22 @@ window.addEventListener("click", function (event) {
   }
 });
 
-/* ---------- Image Lightbox (What's New banner, Gallery, Blog posts) ---------- */
+/* ---------- Image Lightbox (What's New banner, Gallery, Blog post images) ---------- */
 (function () {
   const overlay = document.getElementById("imgLightboxOverlay");
-  const lightboxImg = document.getElementById("lightboxImg");
-  const closeBtn = document.getElementById("lightboxClose");
+  const lightboxImg = document.getElementById("imgLightboxImg");
+  const closeBtn = document.getElementById("imgLightboxClose");
   if (!overlay || !lightboxImg || !closeBtn) return;
+
+  function otherOverlayOpen() {
+    var stillOpen = false;
+    document.querySelectorAll(".modal-overlay").forEach(function (m) {
+      if (getComputedStyle(m).display !== "none") stillOpen = true;
+    });
+    var welcome = document.getElementById("popupOverlayUnique");
+    if (welcome && getComputedStyle(welcome).display !== "none") stillOpen = true;
+    return stillOpen;
+  }
 
   function openLightbox(src, alt) {
     lightboxImg.src = src;
@@ -191,38 +193,20 @@ window.addEventListener("click", function (event) {
   function closeLightbox() {
     overlay.style.display = "none";
     lightboxImg.src = "";
-    // Only unlock scroll if no other modal/popup is still open underneath
-    const blogModalOpen = Array.prototype.some.call(
-      document.querySelectorAll(".modal-overlay"),
-      function (el) {
-        return el.style.display === "flex";
-      }
-    );
-    const welcomeOpen =
-      document.getElementById("popupOverlayUnique") &&
-      document.getElementById("popupOverlayUnique").style.display === "flex";
-    if (!blogModalOpen && !welcomeOpen) {
-      document.body.style.overflow = ""; // restore scroll
+    if (!otherOverlayOpen()) {
+      document.body.style.overflow = ""; // restore scroll (unless a blog/welcome modal is still open behind it)
     }
   }
 
-  // Open on tap for eligible images
-  document.addEventListener("click", function (event) {
-    const img = event.target.closest(
-      "#WhatsNew img.newbanner, #gallery .slide img, .modal-box img"
-    );
-    if (img) {
-      openLightbox(img.src, img.alt);
-    }
+  document.addEventListener("click", function (e) {
+    const img = e.target.closest(".newbanner, .slideshow-container .slide img, .modal-box img");
+    if (img) openLightbox(img.src, img.alt);
   });
 
   closeBtn.addEventListener("click", closeLightbox);
 
-  // Close on outside click (click on overlay itself, not the image)
-  overlay.addEventListener("click", function (event) {
-    if (event.target === overlay) {
-      closeLightbox();
-    }
+  overlay.addEventListener("click", function (e) {
+    if (e.target === overlay) closeLightbox();
   });
 })();
 /* ----- Lifted Animation For Babita Classes Website ----- */
