@@ -200,7 +200,6 @@ window.addEventListener("click", function (event) {
 
   function closeLightbox() {
     overlay.style.display = "none";
-    lightboxImg.src = "";
     if (!otherOverlayOpen()) {
       document.body.style.overflow = ""; // restore scroll (unless a blog/welcome modal is still open behind it)
     }
