@@ -1411,3 +1411,12 @@ hr {
 [data-theme="dark"] th a:not([class]) {
   color: #ffffff;
 }
+
+/* =========================================================
+   Mobile-only 90% display scale (desktop untouched)
+   ========================================================= */
+@media (max-width: 768px) {
+  html {
+    zoom: 0.9;
+  }
+} 
