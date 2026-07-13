@@ -1365,10 +1365,31 @@ hr {
 .url-grid-scroll::-webkit-scrollbar-button,
 #searchList::-webkit-scrollbar-button,
 #videoList::-webkit-scrollbar-button,
-.modal-box::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
+.modal-box::-webkit-scrollbar-button,
+.url-grid-scroll::-webkit-scrollbar-button:single-button,
+#searchList::-webkit-scrollbar-button:single-button,
+#videoList::-webkit-scrollbar-button:single-button,
+.modal-box::-webkit-scrollbar-button:single-button,
+.url-grid-scroll::-webkit-scrollbar-button:vertical:start,
+#searchList::-webkit-scrollbar-button:vertical:start,
+#videoList::-webkit-scrollbar-button:vertical:start,
+.modal-box::-webkit-scrollbar-button:vertical:start,
+.url-grid-scroll::-webkit-scrollbar-button:vertical:end,
+#searchList::-webkit-scrollbar-button:vertical:end,
+#videoList::-webkit-scrollbar-button:vertical:end,
+.modal-box::-webkit-scrollbar-button:vertical:end,
+.url-grid-scroll::-webkit-scrollbar-button:increment,
+#searchList::-webkit-scrollbar-button:increment,
+#videoList::-webkit-scrollbar-button:increment,
+.modal-box::-webkit-scrollbar-button:increment,
+.url-grid-scroll::-webkit-scrollbar-button:decrement,
+#searchList::-webkit-scrollbar-button:decrement,
+#videoList::-webkit-scrollbar-button:decrement,
+.modal-box::-webkit-scrollbar-button:decrement {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 /* =========================================================
