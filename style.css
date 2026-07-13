@@ -1334,12 +1334,14 @@ hr {
 
 /* ---------- Custom Scrollbars (internal scroll areas only) ----------
    Applies to every scrollable element on the page EXCEPT html/body,
-   so the main browser scrollbar always stays the normal native one. */
-:not(html):not(body) {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
-}
+   so the main browser scrollbar always stays the normal native one.
 
+   NOTE: scrollbar-width/scrollbar-color are intentionally NOT set here.
+   In Chromium browsers (Chrome, Edge) those standard properties silently
+   override ALL ::-webkit-scrollbar-* customization below, including the
+   arrow-button removal — that was the cause of arrows still showing in
+   Edge. Firefox doesn't support ::-webkit-scrollbar at all, so it gets
+   its own separate scrollbar-width/scrollbar-color fallback further down. */
 :not(html):not(body)::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -1377,6 +1379,15 @@ hr {
 
 :not(html):not(body)::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/* Firefox doesn't support ::-webkit-scrollbar at all, so it's safe to give
+   it the standard properties here without affecting Edge/Chrome/Safari. */
+@supports not selector(::-webkit-scrollbar) {
+  :not(html):not(body) {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+  }
 }
 
 /* =========================================================
@@ -1471,8 +1482,10 @@ hr {
 }
 
 /* Internal scrollbars: lighter thumb so it's visible on the dark background */
-[data-theme="dark"] :not(html):not(body) {
-  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+@supports not selector(::-webkit-scrollbar) {
+  [data-theme="dark"] :not(html):not(body) {
+    scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+  }
 }
 
 [data-theme="dark"] :not(html):not(body)::-webkit-scrollbar-thumb {
