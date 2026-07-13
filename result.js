@@ -96,7 +96,7 @@
     return (
       '<div class="card" style="padding:14px;margin-top:6px">' +
       "<h2>Result Found — " + escapeHtml(student.name) + "</h2>" +
-      '<div style="overflow:auto">' +
+      '<div class="table-scroll" style="overflow:auto">' +
       '<table aria-label="Result details">' +
       "<tbody>" +
       "<tr><th>Roll No.</th><td>" + escapeHtml(student.roll) + "</td></tr>" +
