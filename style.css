@@ -1322,6 +1322,46 @@ hr {
   animation-delay: 3s, 1.5s;
 } 
 
+/* ---------- Custom Scrollbars (internal scroll areas only) ---------- */
+.url-grid-scroll,
+#searchList,
+#videoList,
+.modal-box {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+.url-grid-scroll::-webkit-scrollbar,
+#searchList::-webkit-scrollbar,
+#videoList::-webkit-scrollbar,
+.modal-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.url-grid-scroll::-webkit-scrollbar-track,
+#searchList::-webkit-scrollbar-track,
+#videoList::-webkit-scrollbar-track,
+.modal-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.url-grid-scroll::-webkit-scrollbar-thumb,
+#searchList::-webkit-scrollbar-thumb,
+#videoList::-webkit-scrollbar-thumb,
+.modal-box::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.url-grid-scroll::-webkit-scrollbar-thumb:hover,
+#searchList::-webkit-scrollbar-thumb:hover,
+#videoList::-webkit-scrollbar-thumb:hover,
+.modal-box::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
 /* =========================================================
    Dark Mode
    Toggled via [data-theme="dark"] on <html>, script.js
@@ -1412,6 +1452,58 @@ hr {
   color: #ffffff;
 }
 
+/* Internal scrollbars: lighter thumb so it's visible on the dark background */
+[data-theme="dark"] .url-grid-scroll,
+[data-theme="dark"] #searchList,
+[data-theme="dark"] #videoList,
+[data-theme="dark"] .modal-box {
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+
+[data-theme="dark"] .url-grid-scroll::-webkit-scrollbar-thumb,
+[data-theme="dark"] #searchList::-webkit-scrollbar-thumb,
+[data-theme="dark"] #videoList::-webkit-scrollbar-thumb,
+[data-theme="dark"] .modal-box::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+[data-theme="dark"] .url-grid-scroll::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] #searchList::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] #videoList::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] .modal-box::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
+/* Buttons: darker gradient for dark mode so they don't clash with the theme */
+[data-theme="dark"] .url-btn,
+[data-theme="dark"] .btn-inline,
+[data-theme="dark"] .btn-inline1,
+[data-theme="dark"] .btn-qr,
+[data-theme="dark"] #topBtn,
+[data-theme="dark"] #shareBtn,
+[data-theme="dark"] #CallNowBtn,
+[data-theme="dark"] .worksheet-button,
+[data-theme="dark"] .read-more-btn {
+  background: linear-gradient(90deg, #660000, #4d0000);
+}
+
+[data-theme="dark"] .url-btn:hover,
+[data-theme="dark"] .btn-inline:hover,
+[data-theme="dark"] .btn-inline1:hover,
+[data-theme="dark"] .btn-qr:hover,
+[data-theme="dark"] #topBtn:hover,
+[data-theme="dark"] #shareBtn:hover,
+[data-theme="dark"] #CallNowBtn:hover,
+[data-theme="dark"] .worksheet-button:hover,
+[data-theme="dark"] .read-more-btn:hover {
+  background: linear-gradient(90deg, #7a0000, #5c0000);
+}
+
+/* Footer: darker gradient to match dark mode buttons */
+[data-theme="dark"] footer {
+  background: linear-gradient(90deg, #660000, #4d0000);
+}
+
 /* =========================================================
    Mobile-only 90% display scale (desktop untouched)
    ========================================================= */
@@ -1419,4 +1511,4 @@ hr {
   html {
     zoom: 0.9;
   }
-} 
+}
