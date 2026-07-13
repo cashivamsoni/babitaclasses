@@ -451,68 +451,6 @@ tr {
   box-shadow: none;
   padding-right: 6px;
 }
-
-/* =========================================================
-   In-Page Scrollbars
-   Applies only to scrollable elements *within* the page
-   (tables, dropdown lists, modals, url grid). The browser's
-   own outer/rightmost page scrollbar is intentionally left
-   untouched — no rule here targets html/body.
-   ========================================================= */
-.url-grid-scroll,
-#searchList,
-#videoList,
-.modal-box,
-.table-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #990000 rgba(0, 0, 0, 0.10);
-}
-
-.url-grid-scroll::-webkit-scrollbar,
-#searchList::-webkit-scrollbar,
-#videoList::-webkit-scrollbar,
-.modal-box::-webkit-scrollbar,
-.table-scroll::-webkit-scrollbar {
-  width: 9px;
-  height: 9px;
-}
-
-.url-grid-scroll::-webkit-scrollbar-track,
-#searchList::-webkit-scrollbar-track,
-#videoList::-webkit-scrollbar-track,
-.modal-box::-webkit-scrollbar-track,
-.table-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.10);
-  border-radius: 50px;
-}
-
-.url-grid-scroll::-webkit-scrollbar-thumb,
-#searchList::-webkit-scrollbar-thumb,
-#videoList::-webkit-scrollbar-thumb,
-.modal-box::-webkit-scrollbar-thumb,
-.table-scroll::-webkit-scrollbar-thumb {
-  background-color: #990000;
-  background-image: linear-gradient(180deg, #990000, #800000);
-  border-radius: 50px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  min-height: 32px;
-}
-
-.url-grid-scroll::-webkit-scrollbar-thumb:hover,
-#searchList::-webkit-scrollbar-thumb:hover,
-#videoList::-webkit-scrollbar-thumb:hover,
-.modal-box::-webkit-scrollbar-thumb:hover,
-.table-scroll::-webkit-scrollbar-thumb:hover {
-  background-image: linear-gradient(180deg, #b30000, #990000);
-}
-
-.url-grid-scroll::-webkit-scrollbar-corner,
-.modal-box::-webkit-scrollbar-corner,
-.table-scroll::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
 /* ---------- Search ---------- */
 .searchb {
   width: calc(100% - 40px);
@@ -1474,109 +1412,6 @@ hr {
   color: #ffffff;
 }
 
-/* ---------- In-Page Scrollbars ---------- */
-[data-theme="dark"] .url-grid-scroll,
-[data-theme="dark"] #searchList,
-[data-theme="dark"] #videoList,
-[data-theme="dark"] .modal-box,
-[data-theme="dark"] .table-scroll {
-  scrollbar-color: #ffd919 rgba(255, 255, 255, 0.12);
-}
-
-[data-theme="dark"] .url-grid-scroll::-webkit-scrollbar-track,
-[data-theme="dark"] #searchList::-webkit-scrollbar-track,
-[data-theme="dark"] #videoList::-webkit-scrollbar-track,
-[data-theme="dark"] .modal-box::-webkit-scrollbar-track,
-[data-theme="dark"] .table-scroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-[data-theme="dark"] .url-grid-scroll::-webkit-scrollbar-thumb,
-[data-theme="dark"] #searchList::-webkit-scrollbar-thumb,
-[data-theme="dark"] #videoList::-webkit-scrollbar-thumb,
-[data-theme="dark"] .modal-box::-webkit-scrollbar-thumb,
-[data-theme="dark"] .table-scroll::-webkit-scrollbar-thumb {
-  background-color: #ffd919;
-  background-image: linear-gradient(180deg, #ffd919, #cc9900);
-}
-
-[data-theme="dark"] .url-grid-scroll::-webkit-scrollbar-thumb:hover,
-[data-theme="dark"] #searchList::-webkit-scrollbar-thumb:hover,
-[data-theme="dark"] #videoList::-webkit-scrollbar-thumb:hover,
-[data-theme="dark"] .modal-box::-webkit-scrollbar-thumb:hover,
-[data-theme="dark"] .table-scroll::-webkit-scrollbar-thumb:hover {
-  background-image: linear-gradient(180deg, #ffe14d, #e0ac00);
-}
-
-/* ---------- Header Nav Buttons (menu toggle, nav pills, dark-mode toggle) ---------- */
-[data-theme="dark"] #menuToggle {
-  background: rgba(255, 217, 25, 0.15);
-  border-color: #ffd919;
-}
-
-[data-theme="dark"] #menuToggle span {
-  background: #ffd919;
-}
-
-[data-theme="dark"] #menuToggle:hover {
-  background-color: rgba(153, 0, 0, 0.6);
-  border-color: #ffd919;
-}
-
-[data-theme="dark"] #menuToggle:hover span {
-  background: #ffffff;
-}
-
-[data-theme="dark"] nav a,
-[data-theme="dark"] nav #themeToggle {
-  background: rgba(255, 217, 25, 0.12);
-  color: #ffd919;
-  border-color: rgba(255, 217, 25, 0.45);
-}
-
-[data-theme="dark"] nav a:hover,
-[data-theme="dark"] nav #themeToggle:hover {
-  background-color: rgba(153, 0, 0, 0.6);
-  color: #ffffff;
-  border-color: #ffd919;
-  box-shadow: 0 0 15px rgba(255, 217, 25, 0.5);
-}
-
-/* ---------- CTA / Action Buttons ---------- */
-[data-theme="dark"] .btn-inline,
-[data-theme="dark"] .btn-inline1,
-[data-theme="dark"] .url-btn,
-[data-theme="dark"] .btn-qr,
-[data-theme="dark"] .worksheet-button,
-[data-theme="dark"] .read-more-btn,
-[data-theme="dark"] #topBtn,
-[data-theme="dark"] #shareBtn,
-[data-theme="dark"] #CallNowBtn {
-  background: linear-gradient(90deg, #7a0000, #5c0000);
-  border-color: #ffd919;
-  box-shadow: 0 0 15px rgba(255, 217, 25, 0.55);
-}
-
-[data-theme="dark"] .btn-inline:hover,
-[data-theme="dark"] .btn-inline1:hover,
-[data-theme="dark"] .url-btn:hover,
-[data-theme="dark"] .btn-qr:hover,
-[data-theme="dark"] .worksheet-button:hover,
-[data-theme="dark"] .read-more-btn:hover,
-[data-theme="dark"] #topBtn:hover,
-[data-theme="dark"] #shareBtn:hover,
-[data-theme="dark"] #CallNowBtn:hover {
-  background: linear-gradient(90deg, #990000, #800000);
-  box-shadow: 0 0 22px rgba(255, 217, 25, 0.85);
-}
-
-/* ---------- Footer ---------- */
-[data-theme="dark"] footer {
-  background: linear-gradient(90deg, #5c0000, #3d0000);
-  border-top: 2px solid rgba(255, 217, 25, 0.5);
-  box-shadow: 0 0 15px rgba(255, 217, 25, 0.3);
-}
-
 /* =========================================================
    Mobile-only 90% display scale (desktop untouched)
    ========================================================= */
@@ -1584,4 +1419,4 @@ hr {
   html {
     zoom: 0.9;
   }
-}
+} 
