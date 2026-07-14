@@ -1466,7 +1466,7 @@ hr {
 [data-theme="dark"] #CallNowBtn:hover,
 [data-theme="dark"] .worksheet-button:hover,
 [data-theme="dark"] .read-more-btn:hover {
-  background: linear-gradient(90deg, #990000, #700000);
+  background: linear-gradient(90deg, #660000, #4d0000);
 }
 
 /* ---------- Footer (dark mode) ---------- */
