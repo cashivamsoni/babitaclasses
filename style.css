@@ -1412,6 +1412,82 @@ hr {
   color: #ffffff;
 }
 
+/* ---------- Buttons (dark mode) ---------- */
+/* Menu toggle + collapsed nav pills: swap the light frosted look for a
+   dark-surface one that still uses the site's maroon/gold accents */
+[data-theme="dark"] #menuToggle {
+  background: rgba(255, 217, 25, 0.15);
+  border-color: rgba(255, 217, 25, 0.6);
+}
+
+[data-theme="dark"] #menuToggle span {
+  background: #f2efe6;
+}
+
+[data-theme="dark"] #menuToggle:hover {
+  background-color: rgba(153, 0, 0, 0.6);
+  border-color: #FFD919;
+  box-shadow: 0 0 15px rgba(255, 217, 25, 0.6);
+}
+
+[data-theme="dark"] #menuToggle:hover span {
+  background: #ffffff;
+}
+
+[data-theme="dark"] nav a,
+[data-theme="dark"] nav #themeToggle {
+  background: rgba(255, 217, 25, 0.12);
+  color: #f2efe6;
+  border-color: rgba(255, 217, 25, 0.5);
+}
+
+[data-theme="dark"] nav a:hover,
+[data-theme="dark"] nav #themeToggle:hover {
+  background-color: rgba(153, 0, 0, 0.6);
+  color: #ffffff;
+  border-color: #FFD919;
+  box-shadow: 0 0 15px rgba(255, 217, 25, 0.6);
+}
+
+/* Maroon-gradient action buttons: keep the same gradient (it already
+   reads fine on the dark background) but swap the glow from white to
+   the dark theme's gold accent, on both the base and hover states */
+[data-theme="dark"] .btn-inline,
+[data-theme="dark"] .btn-inline1,
+[data-theme="dark"] .btn-qr,
+[data-theme="dark"] .url-btn,
+[data-theme="dark"] #topBtn,
+[data-theme="dark"] #shareBtn,
+[data-theme="dark"] #CallNowBtn,
+[data-theme="dark"] .worksheet-button,
+[data-theme="dark"] .read-more-btn {
+  border-color: #FFD919;
+  box-shadow: 0 0 15px rgba(255, 217, 25, 0.6);
+}
+
+[data-theme="dark"] .btn-inline:hover,
+[data-theme="dark"] .btn-inline1:hover,
+[data-theme="dark"] .btn-qr:hover,
+[data-theme="dark"] .url-btn:hover,
+[data-theme="dark"] #topBtn:hover,
+[data-theme="dark"] #shareBtn:hover,
+[data-theme="dark"] #CallNowBtn:hover,
+[data-theme="dark"] .worksheet-button:hover,
+[data-theme="dark"] .read-more-btn:hover {
+  box-shadow: 0 0 20px rgba(255, 217, 25, 0.85);
+}
+
+/* ---------- Footer (dark mode) ---------- */
+[data-theme="dark"] footer {
+  background: linear-gradient(90deg, #661a1a, #4d1414);
+}
+
+[data-theme="dark"] footer a,
+[data-theme="dark"] .contact a {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
 /* =========================================================
    Mobile-only 90% display scale (desktop untouched)
    ========================================================= */
