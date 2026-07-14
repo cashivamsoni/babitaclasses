@@ -237,7 +237,8 @@ document.addEventListener("DOMContentLoaded", () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add("visible");
-          observer.unobserve(entry.target); // reveal once, never re-hide/reposition
+        } else {
+          entry.target.classList.remove("visible");
         }
       });
     },
