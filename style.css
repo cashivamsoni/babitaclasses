@@ -1419,4 +1419,22 @@ hr {
   html {
     zoom: 0.9;
   }
-} 
+}
+
+/* Styled scrollbar for inner scrollable panels (e.g. search/link lists,
+   modals) — explicitly excludes html/body so the main page scrollbar
+   stays the browser's normal native one. */
+:not(html):not(body)::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+:not(html):not(body)::-webkit-scrollbar-track {
+  background: transparent;
+}
+:not(html):not(body)::-webkit-scrollbar-thumb {
+  background: #c4c4d0;
+  border-radius: 3px;
+}
+:not(html):not(body)::-webkit-scrollbar-thumb:hover {
+  background: #a8a8b8;
+}
