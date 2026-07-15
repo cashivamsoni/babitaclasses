@@ -719,7 +719,7 @@ tr {
 /* ---------- Share Button ---------- */
 #shareBtn {
   position: fixed;
-  bottom: 20px;
+  bottom: 85px;
   right: 20px;
   padding: 10px;
   z-index: 10;
@@ -742,7 +742,7 @@ tr {
 /* ---------- Call Now Button ---------- */
 #CallNowBtn {
   position: fixed;
-  bottom: 80px;
+  bottom: 20px;
   right: 20px;
   padding: 10px;
   z-index: 10;
