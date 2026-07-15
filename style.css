@@ -871,8 +871,6 @@ tr {
 
 /* ---------- Syllabus Section offset ---------- */
 #syllabus {
-  padding-top: 120px;
-  margin-top: -120px;
   scroll-margin-top: 40px;
 }
 
