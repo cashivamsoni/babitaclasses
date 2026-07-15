@@ -512,6 +512,13 @@ input.style.boxSizing = "border-box";
       videoItems[i].style.display = matches ? '' : 'none';
     }
     clearBtn.style.display = value.length > 0 ? "block" : "none";
+
+    // #videoList is a max-height:200px scrollable box. If it was scrolled down
+    // before typing (or from a previous search), that scroll offset stays put
+    // after filtering. With a short/shorter result set, that stale offset can
+    // push the remaining item(s) partly or fully past the visible/clickable
+    // area — worse the fewer results there are. Reset it every time we filter.
+    videoListEl.scrollTop = 0;
   }
 
   videoInput.addEventListener('input', function () {
