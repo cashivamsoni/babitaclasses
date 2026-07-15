@@ -916,6 +916,12 @@ footer {
   background: linear-gradient(90deg, #990000, #800000);
 }
 
+footer a,
+.contact a {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
 /* ---------- Blog-specific styles ---------- */
 .blog-feed {
   display: flex;
