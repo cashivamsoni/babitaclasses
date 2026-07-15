@@ -542,6 +542,18 @@ input.style.boxSizing = "border-box";
     filterVideoItems("");
     videoInput.focus();
   });
+
+  // While searching, the keyboard stays open (input is focused). The first tap on a
+  // result link ends up just closing the keyboard instead of registering the click,
+  // so the link click seems to "do nothing" right after searching. Blurring on
+  // touchstart/mousedown closes the keyboard a beat earlier, before the tap resolves,
+  // so the click on the link fires normally.
+  videoListEl.addEventListener("touchstart", function () {
+    if (document.activeElement === videoInput) videoInput.blur();
+  }, { passive: true });
+  videoListEl.addEventListener("mousedown", function () {
+    if (document.activeElement === videoInput) videoInput.blur();
+  });
 })();
 
 
