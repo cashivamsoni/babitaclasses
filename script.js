@@ -267,8 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const allLinks = [
     { label: "Home", url: "#home" },
-    { label: "Blog", url: "https://babitaclasses.vercel.app/blog.html" },
-    { label: "Results", url: "https://babitaclasses.vercel.app/result.html" },
+    { label: "Blog", url: "https://babitaclasses.vercel.app/blog" },
+    { label: "Results", url: "https://babitaclasses.vercel.app/result" },
     { label: "Function Videos", url: "#videos" },
     { label: "Our Faculty", url: "#faculty" },
     { label: "Write a Review", url: "https://g.page/r/CaFJqT5K-agpEAI/review" },
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { label: "Syllabus, Datesheet & Results", url: "#syllabus" },
     { label: "Terms & Conditions", url: "https://drive.google.com/uc?export=download&id=1fJxtiwyud6oNEQ4xecHO3fUf0GvcOnQw" },
     { label: "From Director's Desk", url: "#fromdirectorsdesk" },
-    { label: "News Article in Swatantra Prabhat Kanpur", url: "https://3a17rk.mimo.run/Blog.html/" },
+    { label: "News Article in Swatantra Prabhat Kanpur", url: "https://babitaclasses.vercel.app/blog" },
     { label: "Book Appointment (WhatsApp)", url: "https://wa.link/x6klar" },
     { label: "Contact Form", url: "https://forms.gle/wL59oarRVWdysP9u8" },
     { label: "Admission Form", url: "https://forms.gle/S234T8QQgLCSvd5GA" },
