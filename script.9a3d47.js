@@ -29,15 +29,20 @@ if (window.caches) {
   if (!themeToggle) return;
   const root = document.documentElement;
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  const themeIcon = themeToggle.querySelector(".theme-icon");
 
   function applyTheme(theme) {
     if (theme === "dark") {
       root.setAttribute("data-theme", "dark");
-      themeToggle.textContent = "Light Mode";
+      themeToggle.setAttribute("aria-label", "Switch to light mode");
+      themeToggle.title = "Light Mode";
+      if (themeIcon) themeIcon.className = "fa fa-sun-o theme-icon";
       if (metaThemeColor) metaThemeColor.setAttribute("content", "#332900");
     } else {
       root.removeAttribute("data-theme");
-      themeToggle.textContent = "Dark Mode";
+      themeToggle.setAttribute("aria-label", "Switch to dark mode");
+      themeToggle.title = "Dark Mode";
+      if (themeIcon) themeIcon.className = "fa fa-moon-o theme-icon";
       if (metaThemeColor) metaThemeColor.setAttribute("content", "#ffd919");
     }
   }
@@ -49,6 +54,98 @@ if (window.caches) {
     applyTheme(next);
     localStorage.setItem("theme", next);
   });
+})();
+
+/* ---------- Floral Quick-Actions Hub (Call / Share / Theme / Translate) ---------- */
+(function () {
+  const hub = document.getElementById("floralHub");
+  const hubToggle = document.getElementById("hubToggle");
+  if (!hub || !hubToggle) return;
+
+  function closeHub() {
+    hub.classList.remove("open");
+    hubToggle.setAttribute("aria-expanded", "false");
+  }
+
+  hubToggle.addEventListener("click", function (e) {
+    e.stopPropagation();
+    const isOpen = hub.classList.toggle("open");
+    hubToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
+
+  // Close after using a petal (Call / Share / Theme / Translate)
+  hub.querySelectorAll(".hub-petal").forEach(function (petal) {
+    petal.addEventListener("click", function () {
+      closeHub();
+    });
+  });
+
+  // Close when clicking outside the hub
+  document.addEventListener("click", function (e) {
+    if (!hub.contains(e.target)) closeHub();
+  });
+
+  // Close on Escape
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeHub();
+  });
+})();
+
+/* ---------- English / Hindi Translation Toggle ---------- */
+(function () {
+  const translateToggle = document.getElementById("translateToggle");
+  const root = document.documentElement;
+
+  // Demo dictionary: header title + homepage hero content.
+  // Add more data-i18n="key" elements + matching entries here to extend.
+  const translations = {
+    en: {
+      siteTitle: "Babita Classes",
+      heroHeading: "Welcome to Babita Classes",
+      heroBody:
+        "Babita Classes is a free of cost Non-Profit Organization founded by Babita Soni on 8 September 2020, situated in Kanpur. We not only teach them for free but also provide them with stationery items; along with this, we also give them many mental and physical activities. If you want to admit any poor child to Babita Classes, you can call us.",
+      heroAttention:
+        "ATTENTION: You are viewing the new website of Babita Classes launched on 24 May 2026.",
+      quickActionsTitle: "Quick actions",
+      quickActionsNote: "Use the menu bar top buttons to jump to any section.",
+    },
+    hi: {
+      siteTitle: "बबीता क्लासेज़",
+      heroHeading: "बबीता क्लासेज़ में आपका स्वागत है",
+      heroBody:
+        "बबीता क्लासेज़ एक निःशुल्क गैर-लाभकारी संस्था है, जिसकी स्थापना बबीता सोनी ने 8 सितंबर 2020 को कानपुर में की थी। हम बच्चों को न केवल मुफ़्त में पढ़ाते हैं बल्कि उन्हें स्टेशनरी सामग्री भी उपलब्ध कराते हैं; इसके साथ ही हम उन्हें कई मानसिक और शारीरिक गतिविधियाँ भी कराते हैं। यदि आप किसी ज़रूरतमंद बच्चे का दाखिला बबीता क्लासेज़ में कराना चाहते हैं, तो हमें कॉल करें।",
+      heroAttention:
+        "ध्यान दें: आप बबीता क्लासेज़ की नई वेबसाइट देख रहे हैं, जो 24 मई 2026 को लॉन्च हुई थी।",
+      quickActionsTitle: "त्वरित कार्य",
+      quickActionsNote: "किसी भी सेक्शन पर जाने के लिए ऊपर मेनू बार के बटनों का उपयोग करें।",
+    },
+  };
+
+  function applyLang(lang) {
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      const key = el.getAttribute("data-i18n");
+      if (dict[key]) el.textContent = dict[key];
+    });
+    root.setAttribute("lang", lang);
+    if (translateToggle) {
+      translateToggle.title = lang === "hi" ? "Switch to English" : "हिंदी में बदलें";
+      translateToggle.setAttribute(
+        "aria-label",
+        lang === "hi" ? "Switch to English" : "Switch to Hindi"
+      );
+    }
+  }
+
+  applyLang(localStorage.getItem("lang") === "hi" ? "hi" : "en");
+
+  if (translateToggle) {
+    translateToggle.addEventListener("click", function () {
+      const next = root.getAttribute("lang") === "hi" ? "en" : "hi";
+      applyLang(next);
+      localStorage.setItem("lang", next);
+    });
+  }
 })();
 
 /* ---------- Menu Toggle ---------- */
