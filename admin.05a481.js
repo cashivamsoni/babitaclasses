@@ -82,6 +82,7 @@ loginForm.addEventListener("submit", async (e) => {
     await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
   } catch (err) {
     loginError.textContent = "Login failed — check your email and password.";
+    console.error(err);
   } finally {
     submitBtn.disabled = false;
   }
@@ -113,8 +114,9 @@ async function markUpdatedToday() {
     saveStatus.textContent = "Site marked as updated today.";
     saveStatus.className = "msg success";
   } catch (err) {
-    saveStatus.textContent = "Could not update — check your connection.";
+    saveStatus.textContent = "Could not update: " + (err.code || err.message);
     saveStatus.className = "msg error";
+    console.error(err);
   }
 }
 
@@ -126,8 +128,9 @@ async function loadMarquee() {
       marqueeInput.value = snap.data().marqueeText;
     }
   } catch (err) {
-    marqueeStatus.textContent = "Could not load current marquee text.";
+    marqueeStatus.textContent = "Could not load marquee: " + (err.code || err.message);
     marqueeStatus.className = "msg error";
+    console.error(err);
   }
 }
 
@@ -146,8 +149,9 @@ marqueeSaveBtn.addEventListener("click", async () => {
     marqueeStatus.textContent = "Marquee updated.";
     marqueeStatus.className = "msg success";
   } catch (err) {
-    marqueeStatus.textContent = "Save failed — try again.";
+    marqueeStatus.textContent = "Save failed: " + (err.code || err.message);
     marqueeStatus.className = "msg error";
+    console.error(err);
   } finally {
     marqueeSaveBtn.disabled = false;
   }
@@ -181,8 +185,9 @@ async function renderNotices() {
           await updateDoc(doc(db, "notices", docSnap.id), { text: trimmed });
           await renderNotices();
         } catch (err) {
-          noticeStatus.textContent = "Edit failed — try again.";
+          noticeStatus.textContent = "Edit failed: " + (err.code || err.message);
           noticeStatus.className = "msg error";
+          console.error(err);
         }
       });
       li.appendChild(editBtn);
@@ -197,8 +202,9 @@ async function renderNotices() {
           await deleteDoc(doc(db, "notices", docSnap.id));
           await renderNotices();
         } catch (err) {
-          noticeStatus.textContent = "Delete failed — try again.";
+          noticeStatus.textContent = "Delete failed: " + (err.code || err.message);
           noticeStatus.className = "msg error";
+          console.error(err);
         }
       });
       li.appendChild(deleteBtn);
@@ -206,8 +212,9 @@ async function renderNotices() {
       noticeList.appendChild(li);
     });
   } catch (err) {
-    noticeStatus.textContent = "Could not load notices.";
+    noticeStatus.textContent = "Could not load notices: " + (err.code || err.message);
     noticeStatus.className = "msg error";
+    console.error(err);
   }
 }
 
@@ -228,8 +235,9 @@ noticeAddBtn.addEventListener("click", async () => {
     noticeStatus.className = "msg success";
     await renderNotices();
   } catch (err) {
-    noticeStatus.textContent = "Could not add notice — try again.";
+    noticeStatus.textContent = "Could not add notice: " + (err.code || err.message);
     noticeStatus.className = "msg error";
+    console.error(err);
   } finally {
     noticeAddBtn.disabled = false;
   }
