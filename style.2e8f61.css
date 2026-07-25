@@ -741,11 +741,12 @@ tr {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: box-shadow 0.4s ease;
+  transition: all 0.5s ease;
   z-index: 2;
 }
 
 #floralMain:hover {
+  transform: scale(1.1);
   box-shadow: 0 0 20px #FFFFFF;
 }
 
@@ -786,6 +787,11 @@ tr {
 #floralMenu.open .petal:nth-child(3) { transition-delay: 0.08s; transform: translate(-68px, -32px) scale(1); }
 #floralMenu.open .petal:nth-child(4) { transition-delay: 0.13s; transform: translate(-68px, 32px) scale(1); }
 #floralMenu.open .petal:nth-child(5) { transition-delay: 0.18s; transform: translate(-14px, 74px) scale(1); }
+
+#floralMenu.open .petal:nth-child(2):hover { transform: translate(-14px, -73px) scale(1.1); }
+#floralMenu.open .petal:nth-child(3):hover { transform: translate(-68px, -32px) scale(1.1); }
+#floralMenu.open .petal:nth-child(4):hover { transform: translate(-68px, 32px) scale(1.1); }
+#floralMenu.open .petal:nth-child(5):hover { transform: translate(-14px, 74px) scale(1.1); }
 
 /* ---------- Welcome Popup ---------- */
 #popupOverlayUnique {
