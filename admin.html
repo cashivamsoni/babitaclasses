@@ -73,6 +73,26 @@
       }
       .error { color: #c0392b; }
       .success { color: #1e8f2e; }
+      #noticeList li {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+      }
+      #noticeList li span {
+        flex: 1;
+      }
+      #noticeList button {
+        width: auto;
+        margin: 0;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      #noticeList .edit-btn { background: #007bff; }
+      #noticeList .delete-btn { background: #c0392b; }
     </style>
   </head>
   <body>
@@ -89,7 +109,7 @@
       </form>
     </div>
 
-    <div id="adminView" class="card" style="display:none">
+    <div id="adminView" class="card" style="display:none; max-width:480px;">
       <h1>Admin Panel</h1>
       <p style="text-align:center; color:#555; font-size:14px;">
         Logged in — today's date has been set as the site's "Last Updated" date automatically.
@@ -98,7 +118,24 @@
         Last Updated: <strong id="lastUpdatedDisplay">—</strong>
       </p>
       <p id="saveStatus" class="msg"></p>
-      <button id="logoutBtn" type="button">Logout</button>
+
+      <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+
+      <label for="marqueeInput">Top Marquee Text</label>
+      <textarea id="marqueeInput" rows="3" style="width:100%; padding:10px 12px; font-size:14px; border:1px solid #ccc; border-radius:8px; font-family:inherit; resize:vertical;"></textarea>
+      <button id="marqueeSaveBtn" type="button">Save Marquee</button>
+      <p id="marqueeStatus" class="msg"></p>
+
+      <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+
+      <label for="noticeInput">Add a Notice</label>
+      <input type="text" id="noticeInput" placeholder="e.g. Diwali holidays from ...">
+      <button id="noticeAddBtn" type="button">Add Notice</button>
+      <p id="noticeStatus" class="msg"></p>
+      <p style="font-size:12px; color:#777; margin:10px 0 4px;">Newest 3 notices show the "New" badge automatically.</p>
+      <ul id="noticeList" style="list-style:none; padding:0; margin:6px 0 0;"></ul>
+
+      <button id="logoutBtn" type="button" style="margin-top:20px;">Logout</button>
     </div>
 
     <script type="module" src="admin.05a481.js"></script>
