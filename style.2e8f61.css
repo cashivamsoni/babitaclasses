@@ -750,6 +750,14 @@ tr {
   box-shadow: 0 0 20px #FFFFFF;
 }
 
+#floralMain i {
+  transition: transform 0.3s ease;
+}
+
+#floralMain[aria-expanded="true"] i {
+  transform: rotate(45deg);
+}
+
 .petal {
   position: absolute;
   top: 0;
