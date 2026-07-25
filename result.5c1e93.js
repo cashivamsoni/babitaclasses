@@ -367,7 +367,7 @@
       doc.setFont(FONT, "bold");
       doc.setFontSize(8);
       doc.text(
-        "Downloaded from https://babitaclasses.vercel.app/result.html on " + timestamp,
+        "Downloaded from https://babitaclasses.vercel.app/result on " + timestamp,
         marginX,
         pageHeight - 14
       );
