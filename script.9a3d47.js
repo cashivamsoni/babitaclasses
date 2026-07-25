@@ -154,14 +154,14 @@ if (window.caches) {
   function closeMenu() {
     menu.classList.remove("open");
     mainBtn.setAttribute("aria-expanded", "false");
-    if (mainIcon) mainIcon.className = "fa fa-ellipsis-h";
+    if (mainIcon) mainIcon.className = "fa fa-plus";
   }
 
   mainBtn.addEventListener("click", function (e) {
     e.stopPropagation();
     const isOpen = menu.classList.toggle("open");
     mainBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    if (mainIcon) mainIcon.className = isOpen ? "fa fa-times" : "fa fa-ellipsis-h";
+    if (mainIcon) mainIcon.className = isOpen ? "fa fa-times" : "fa fa-plus";
   });
 
   // Close after tapping any petal (its own click handler still fires first)
