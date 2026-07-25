@@ -1554,7 +1554,8 @@ hr {
   stroke-linejoin: round;
   stroke-dasharray: 130 270;
   stroke-dashoffset: 0;
-  font: 700 4.6em/1 "Open Sans", Impact, sans-serif;
+  font: 700 5em/1 "Open Sans", Impact, sans-serif;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   animation: whatsnew-stroke 6s infinite linear;
 }
