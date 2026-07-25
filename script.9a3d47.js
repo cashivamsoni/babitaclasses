@@ -29,15 +29,20 @@ if (window.caches) {
   if (!themeToggle) return;
   const root = document.documentElement;
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  const themeIcon = themeToggle.querySelector("i");
 
   function applyTheme(theme) {
     if (theme === "dark") {
       root.setAttribute("data-theme", "dark");
-      themeToggle.textContent = "Light Mode";
+      themeToggle.setAttribute("aria-label", "Switch to light mode");
+      themeToggle.setAttribute("title", "Switch to light mode");
+      if (themeIcon) themeIcon.className = "fa fa-sun-o";
       if (metaThemeColor) metaThemeColor.setAttribute("content", "#332900");
     } else {
       root.removeAttribute("data-theme");
-      themeToggle.textContent = "Dark Mode";
+      themeToggle.setAttribute("aria-label", "Switch to dark mode");
+      themeToggle.setAttribute("title", "Switch to dark mode");
+      if (themeIcon) themeIcon.className = "fa fa-moon-o";
       if (metaThemeColor) metaThemeColor.setAttribute("content", "#ffd919");
     }
   }
@@ -136,6 +141,37 @@ if (window.caches) {
     } else {
       alert("Sharing not supported on this browser. Copy the link instead!");
     }
+  });
+})();
+
+/* ---------- Floral Quick Menu ---------- */
+(function () {
+  const menu = document.getElementById("floralMenu");
+  const mainBtn = document.getElementById("floralMain");
+  if (!menu || !mainBtn) return;
+  const mainIcon = mainBtn.querySelector("i");
+
+  function closeMenu() {
+    menu.classList.remove("open");
+    mainBtn.setAttribute("aria-expanded", "false");
+    if (mainIcon) mainIcon.className = "fa fa-ellipsis-h";
+  }
+
+  mainBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    const isOpen = menu.classList.toggle("open");
+    mainBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    if (mainIcon) mainIcon.className = isOpen ? "fa fa-times" : "fa fa-ellipsis-h";
+  });
+
+  // Close after tapping any petal (its own click handler still fires first)
+  menu.querySelectorAll(".petal").forEach(function (petal) {
+    petal.addEventListener("click", closeMenu);
+  });
+
+  // Close when tapping anywhere outside the menu
+  document.addEventListener("click", function (e) {
+    if (!menu.contains(e.target)) closeMenu();
   });
 })();
 
