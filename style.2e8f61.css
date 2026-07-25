@@ -1545,42 +1545,58 @@ hr {
   display: block;
   width: 100%;
   max-width: 640px;
-  height: 130px;
-  margin: -6px auto -2px;
+  height: 100px;
+  margin: -14px auto -12px;
 }
 .whatsnew-anim .wn-text {
   fill: none;
-  stroke-width: 7;
+  stroke-width: 4.5;
   stroke-linejoin: round;
-  stroke-dasharray: 70 330;
+  stroke-dasharray: 130 270;
   stroke-dashoffset: 0;
   font: 700 4.6em/1 "Open Sans", Impact, sans-serif;
   text-transform: uppercase;
   animation: whatsnew-stroke 6s infinite linear;
 }
-.whatsnew-anim .wn-text:nth-child(5n + 1) {
+.whatsnew-anim .wn-text:nth-child(10n + 1) {
   stroke: #ff0000;
+  animation-delay: 0s;
+}
+.whatsnew-anim .wn-text:nth-child(10n + 2) {
+  stroke: #ff8800;
+  animation-delay: -0.6s;
+}
+.whatsnew-anim .wn-text:nth-child(10n + 3) {
+  stroke: #1eff00;
   animation-delay: -1.2s;
 }
-.whatsnew-anim .wn-text:nth-child(5n + 2) {
-  stroke: #ff8800;
+.whatsnew-anim .wn-text:nth-child(10n + 4) {
+  stroke: #007bff;
+  animation-delay: -1.8s;
+}
+.whatsnew-anim .wn-text:nth-child(10n + 5) {
+  stroke: #7700ff;
   animation-delay: -2.4s;
 }
-.whatsnew-anim .wn-text:nth-child(5n + 3) {
-  stroke: #1eff00;
+.whatsnew-anim .wn-text:nth-child(10n + 6) {
+  stroke: #ff0090;
+  animation-delay: -3s;
+}
+.whatsnew-anim .wn-text:nth-child(10n + 7) {
+  stroke: #ff0000;
   animation-delay: -3.6s;
 }
-.whatsnew-anim .wn-text:nth-child(5n + 4) {
-  stroke: #007bff;
+.whatsnew-anim .wn-text:nth-child(10n + 8) {
+  stroke: #ff8800;
+  animation-delay: -4.2s;
+}
+.whatsnew-anim .wn-text:nth-child(10n + 9) {
+  stroke: #1eff00;
   animation-delay: -4.8s;
 }
-.whatsnew-anim .wn-text:nth-child(5n + 5) {
-  stroke: #7700ff;
-  animation-delay: -6s;
-}
-.whatsnew-anim .wn-text:nth-child(5n + 6) {
-  stroke: #ff0090;
-  animation-delay: -7.2s;
+.whatsnew-anim .wn-text:nth-child(10n + 10) {
+  stroke: #007bff;
+  animation-delay: -5.4s;
 }
 @keyframes whatsnew-stroke {
   100% {
