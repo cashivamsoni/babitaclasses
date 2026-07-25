@@ -175,6 +175,25 @@ if (window.caches) {
   });
 })();
 
+/* ---------- Translate (English/Hindi) ---------- */
+(function () {
+  const translateBtn = document.getElementById("floralNewBtn");
+  if (!translateBtn) return;
+
+  translateBtn.addEventListener("click", function () {
+    const onTranslatedPage = window.location.hostname.includes(".translate.goog");
+    if (onTranslatedPage) {
+      // Go back to the original English page
+      history.back();
+    } else {
+      const targetUrl =
+        "https://translate.google.com/translate?sl=en&tl=hi&u=" +
+        encodeURIComponent(window.location.href);
+      window.location.href = targetUrl;
+    }
+  });
+})();
+
 /* ---------- Modal (Blog) ---------- */
 function openModal(id) {
   const el = document.getElementById(id);
