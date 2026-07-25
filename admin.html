@@ -91,9 +91,12 @@
 
     <div id="adminView" class="card" style="display:none">
       <h1>Admin Panel</h1>
-      <label for="lastUpdatedInput">Last Updated Date</label>
-      <input type="date" id="lastUpdatedInput">
-      <button id="saveBtn">Save</button>
+      <p style="text-align:center; color:#555; font-size:14px;">
+        Logged in — today's date has been set as the site's "Last Updated" date automatically.
+      </p>
+      <p style="text-align:center; font-size:15px; margin:14px 0;">
+        Last Updated: <strong id="lastUpdatedDisplay">—</strong>
+      </p>
       <p id="saveStatus" class="msg"></p>
       <button id="logoutBtn" type="button">Logout</button>
     </div>
