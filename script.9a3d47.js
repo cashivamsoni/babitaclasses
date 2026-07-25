@@ -161,7 +161,7 @@ if (window.caches) {
     e.stopPropagation();
     const isOpen = menu.classList.toggle("open");
     mainBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    if (mainIcon) mainIcon.className = isOpen ? "fa fa-times" : "fa fa-plus";
+    if (mainIcon) mainIcon.className = "fa fa-plus";
   });
 
   // Close after tapping any petal (its own click handler still fires first)
