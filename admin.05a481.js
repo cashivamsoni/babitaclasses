@@ -9,7 +9,6 @@ import {
 import {
   getFirestore,
   doc,
-  getDoc,
   setDoc,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
@@ -37,8 +36,7 @@ const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
 const loginError = document.getElementById("loginError");
 
-const lastUpdatedInput = document.getElementById("lastUpdatedInput");
-const saveBtn = document.getElementById("saveBtn");
+const lastUpdatedDisplay = document.getElementById("lastUpdatedDisplay");
 const saveStatus = document.getElementById("saveStatus");
 const logoutBtn = document.getElementById("logoutBtn");
 
@@ -47,7 +45,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginView.style.display = "none";
     adminView.style.display = "block";
-    await loadLastUpdated();
+    await markUpdatedToday();
   } else {
     adminView.style.display = "none";
     loginView.style.display = "block";
@@ -71,39 +69,31 @@ loginForm.addEventListener("submit", async (e) => {
 
 logoutBtn.addEventListener("click", () => signOut(auth));
 
-// ---------- Last updated date ----------
-async function loadLastUpdated() {
-  saveStatus.textContent = "";
+// ---------- Last updated date: auto-set to today on every login ----------
+function todayISO() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatReadable(isoDate) {
+  const d = new Date(isoDate + "T00:00:00");
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}
+
+async function markUpdatedToday() {
+  saveStatus.textContent = "Updating...";
   saveStatus.className = "msg";
+  const today = todayISO();
   try {
-    const snap = await getDoc(SITE_DOC);
-    if (snap.exists() && snap.data().lastUpdated) {
-      lastUpdatedInput.value = snap.data().lastUpdated;
-    }
+    await setDoc(SITE_DOC, { lastUpdated: today }, { merge: true });
+    lastUpdatedDisplay.textContent = formatReadable(today);
+    saveStatus.textContent = "Site marked as updated today.";
+    saveStatus.className = "msg success";
   } catch (err) {
-    saveStatus.textContent = "Could not load the current date.";
+    saveStatus.textContent = "Could not update — check your connection.";
     saveStatus.className = "msg error";
   }
 }
-
-saveBtn.addEventListener("click", async () => {
-  const value = lastUpdatedInput.value;
-  if (!value) {
-    saveStatus.textContent = "Pick a date first.";
-    saveStatus.className = "msg error";
-    return;
-  }
-  saveBtn.disabled = true;
-  saveStatus.textContent = "Saving...";
-  saveStatus.className = "msg";
-  try {
-    await setDoc(SITE_DOC, { lastUpdated: value }, { merge: true });
-    saveStatus.textContent = "Saved.";
-    saveStatus.className = "msg success";
-  } catch (err) {
-    saveStatus.textContent = "Save failed — try again.";
-    saveStatus.className = "msg error";
-  } finally {
-    saveBtn.disabled = false;
-  }
-});
