@@ -1538,3 +1538,52 @@ hr {
 :not(html):not(body)::-webkit-scrollbar-thumb:hover {
   background: #a8a8b8;
 }
+/* Animated rainbow "NEW" heading for What's New section */
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:800);
+
+.whatsnew-anim {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: 120px;
+  margin: 0 auto;
+}
+.whatsnew-anim .wn-text {
+  fill: none;
+  stroke-width: 9;
+  stroke-linejoin: round;
+  stroke-dasharray: 70 330;
+  stroke-dashoffset: 0;
+  font: 700 6em/1 "Open Sans", Impact, sans-serif;
+  text-transform: uppercase;
+  animation: whatsnew-stroke 6s infinite linear;
+}
+.whatsnew-anim .wn-text:nth-child(5n + 1) {
+  stroke: #ff0000;
+  animation-delay: -1.2s;
+}
+.whatsnew-anim .wn-text:nth-child(5n + 2) {
+  stroke: #ff8800;
+  animation-delay: -2.4s;
+}
+.whatsnew-anim .wn-text:nth-child(5n + 3) {
+  stroke: #1eff00;
+  animation-delay: -3.6s;
+}
+.whatsnew-anim .wn-text:nth-child(5n + 4) {
+  stroke: #007bff;
+  animation-delay: -4.8s;
+}
+.whatsnew-anim .wn-text:nth-child(5n + 5) {
+  stroke: #7700ff;
+  animation-delay: -6s;
+}
+.whatsnew-anim .wn-text:nth-child(5n + 6) {
+  stroke: #ff0090;
+  animation-delay: -7.2s;
+}
+@keyframes whatsnew-stroke {
+  100% {
+    stroke-dashoffset: -400;
+  }
+}
