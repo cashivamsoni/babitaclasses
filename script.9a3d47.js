@@ -709,15 +709,19 @@ slideshow.addEventListener('touchend', e => {
   });
 })();
 
-/* ---------- Last Updated date (from Firebase, set via admin panel) ---------- */
+/* ---------- Last Updated date + Marquee (from Firebase, set via admin panel) ---------- */
 (function () {
   const dateEl = document.getElementById("lastUpdatedDate");
-  if (!dateEl) return;
+  const marqueeEl = document.getElementById("topMarquee");
+  const noticeListEl = document.getElementById("noticeMarqueeList");
+  if (!dateEl && !marqueeEl && !noticeListEl) return;
 
   (async function () {
     try {
       const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js");
-      const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js");
+      const { getFirestore, doc, getDoc, collection, query, orderBy, getDocs } = await import(
+        "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js"
+      );
 
       const firebaseConfig = {
         apiKey: "AIzaSyCeIXfg73jN9d6rvzkeenfUja3lyCVPWMA",
@@ -730,20 +734,47 @@ slideshow.addEventListener('touchend', e => {
 
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
-      const snap = await getDoc(doc(db, "site", "meta"));
 
-      if (snap.exists() && snap.data().lastUpdated) {
-        const d = new Date(snap.data().lastUpdated + "T00:00:00");
-        dateEl.textContent = d.toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        });
+      // Last updated date + marquee text (both live in site/meta)
+      const snap = await getDoc(doc(db, "site", "meta"));
+      if (snap.exists()) {
+        const data = snap.data();
+        if (dateEl && data.lastUpdated) {
+          const d = new Date(data.lastUpdated + "T00:00:00");
+          dateEl.textContent = d.toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+        }
+        if (marqueeEl && data.marqueeText) {
+          marqueeEl.textContent = data.marqueeText;
+        }
       }
-      // If the fetch succeeds but there's no data yet, the fallback date
-      // already in the HTML stays as-is.
+
+      // Notice board (latest first; newest 3 get the "New" gif)
+      if (noticeListEl) {
+        const q = query(collection(db, "notices"), orderBy("createdAt", "desc"));
+        const noticesSnap = await getDocs(q);
+        if (!noticesSnap.empty) {
+          let html = "";
+          let i = 0;
+          noticesSnap.forEach((docSnap) => {
+            const text = docSnap.data().text || "";
+            const isNew = i < 3;
+            html += "<a>" + text;
+            if (isNew) {
+              html +=
+                ' <img src="https://i.imgur.com/XUQBLw8.gif" style="height:17.5px;width:50px;" alt="New" loading="lazy">';
+            }
+            html += "</a><br>";
+            i++;
+          });
+          noticeListEl.innerHTML = html;
+        }
+      }
     } catch (err) {
-      // Network/Firebase issue — keep the fallback date already in the HTML.
+      // Keep the fallback content already in the HTML.
     }
   })();
 })();
