@@ -708,3 +708,42 @@ slideshow.addEventListener('touchend', e => {
     }
   });
 })();
+
+/* ---------- Last Updated date (from Firebase, set via admin panel) ---------- */
+(function () {
+  const dateEl = document.getElementById("lastUpdatedDate");
+  if (!dateEl) return;
+
+  (async function () {
+    try {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js");
+      const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js");
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCeIXfg73jN9d6rvzkeenfUja3lyCVPWMA",
+        authDomain: "babitaclasses-eb3e4.firebaseapp.com",
+        projectId: "babitaclasses-eb3e4",
+        storageBucket: "babitaclasses-eb3e4.firebasestorage.app",
+        messagingSenderId: "191824554368",
+        appId: "1:191824554368:web:bb9f7af3c4634f7616f965",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const snap = await getDoc(doc(db, "site", "meta"));
+
+      if (snap.exists() && snap.data().lastUpdated) {
+        const d = new Date(snap.data().lastUpdated + "T00:00:00");
+        dateEl.textContent = d.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+      }
+      // If the fetch succeeds but there's no data yet, the fallback date
+      // already in the HTML stays as-is.
+    } catch (err) {
+      // Network/Firebase issue — keep the fallback date already in the HTML.
+    }
+  })();
+})();
