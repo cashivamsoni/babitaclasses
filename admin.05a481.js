@@ -9,7 +9,16 @@ import {
 import {
   getFirestore,
   doc,
+  getDoc,
   setDoc,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  getDocs,
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -40,12 +49,23 @@ const lastUpdatedDisplay = document.getElementById("lastUpdatedDisplay");
 const saveStatus = document.getElementById("saveStatus");
 const logoutBtn = document.getElementById("logoutBtn");
 
+const marqueeInput = document.getElementById("marqueeInput");
+const marqueeSaveBtn = document.getElementById("marqueeSaveBtn");
+const marqueeStatus = document.getElementById("marqueeStatus");
+
+const noticeInput = document.getElementById("noticeInput");
+const noticeAddBtn = document.getElementById("noticeAddBtn");
+const noticeStatus = document.getElementById("noticeStatus");
+const noticeList = document.getElementById("noticeList");
+
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginView.style.display = "none";
     adminView.style.display = "block";
     await markUpdatedToday();
+    await loadMarquee();
+    await renderNotices();
   } else {
     adminView.style.display = "none";
     loginView.style.display = "block";
@@ -97,3 +117,120 @@ async function markUpdatedToday() {
     saveStatus.className = "msg error";
   }
 }
+
+// ---------- Top marquee text ----------
+async function loadMarquee() {
+  try {
+    const snap = await getDoc(SITE_DOC);
+    if (snap.exists() && snap.data().marqueeText) {
+      marqueeInput.value = snap.data().marqueeText;
+    }
+  } catch (err) {
+    marqueeStatus.textContent = "Could not load current marquee text.";
+    marqueeStatus.className = "msg error";
+  }
+}
+
+marqueeSaveBtn.addEventListener("click", async () => {
+  const value = marqueeInput.value.trim();
+  if (!value) {
+    marqueeStatus.textContent = "Marquee text can't be empty.";
+    marqueeStatus.className = "msg error";
+    return;
+  }
+  marqueeSaveBtn.disabled = true;
+  marqueeStatus.textContent = "Saving...";
+  marqueeStatus.className = "msg";
+  try {
+    await setDoc(SITE_DOC, { marqueeText: value }, { merge: true });
+    marqueeStatus.textContent = "Marquee updated.";
+    marqueeStatus.className = "msg success";
+  } catch (err) {
+    marqueeStatus.textContent = "Save failed — try again.";
+    marqueeStatus.className = "msg error";
+  } finally {
+    marqueeSaveBtn.disabled = false;
+  }
+});
+
+// ---------- Notices (add / edit / delete) ----------
+const NOTICES_COL = collection(db, "notices");
+
+async function renderNotices() {
+  noticeList.innerHTML = "";
+  try {
+    const q = query(NOTICES_COL, orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    snap.forEach((docSnap) => {
+      const li = document.createElement("li");
+
+      const span = document.createElement("span");
+      span.textContent = docSnap.data().text || "";
+      li.appendChild(span);
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", async () => {
+        const updated = prompt("Edit notice:", docSnap.data().text || "");
+        if (updated === null) return;
+        const trimmed = updated.trim();
+        if (!trimmed) return;
+        try {
+          await updateDoc(doc(db, "notices", docSnap.id), { text: trimmed });
+          await renderNotices();
+        } catch (err) {
+          noticeStatus.textContent = "Edit failed — try again.";
+          noticeStatus.className = "msg error";
+        }
+      });
+      li.appendChild(editBtn);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", async () => {
+        if (!confirm("Delete this notice?")) return;
+        try {
+          await deleteDoc(doc(db, "notices", docSnap.id));
+          await renderNotices();
+        } catch (err) {
+          noticeStatus.textContent = "Delete failed — try again.";
+          noticeStatus.className = "msg error";
+        }
+      });
+      li.appendChild(deleteBtn);
+
+      noticeList.appendChild(li);
+    });
+  } catch (err) {
+    noticeStatus.textContent = "Could not load notices.";
+    noticeStatus.className = "msg error";
+  }
+}
+
+noticeAddBtn.addEventListener("click", async () => {
+  const value = noticeInput.value.trim();
+  if (!value) {
+    noticeStatus.textContent = "Type a notice first.";
+    noticeStatus.className = "msg error";
+    return;
+  }
+  noticeAddBtn.disabled = true;
+  noticeStatus.textContent = "Adding...";
+  noticeStatus.className = "msg";
+  try {
+    await addDoc(NOTICES_COL, { text: value, createdAt: serverTimestamp() });
+    noticeInput.value = "";
+    noticeStatus.textContent = "Notice added.";
+    noticeStatus.className = "msg success";
+    await renderNotices();
+  } catch (err) {
+    noticeStatus.textContent = "Could not add notice — try again.";
+    noticeStatus.className = "msg error";
+  } finally {
+    noticeAddBtn.disabled = false;
+  }
+});
