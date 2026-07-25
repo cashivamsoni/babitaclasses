@@ -1538,21 +1538,22 @@ hr {
 :not(html):not(body)::-webkit-scrollbar-thumb:hover {
   background: #a8a8b8;
 }
-/* Animated rainbow "NEW" heading for What's New section */
+/* Animated rainbow "WHAT'S NEW" heading for What's New section */
 @import url(https://fonts.googleapis.com/css?family=Open+Sans:800);
 
 .whatsnew-anim {
   display: block;
   width: 100%;
-  max-width: 640px;
-  height: 100px;
-  margin: -14px auto -12px;
+  max-width: 660px;
+  height: 108px;
+  margin: -10px auto -8px;
+  overflow: visible;
 }
 .whatsnew-anim .wn-text {
   fill: none;
   stroke-width: 4.5;
   stroke-linejoin: round;
-  stroke-dasharray: 130 270;
+  stroke-dasharray: 90 310;
   stroke-dashoffset: 0;
   font: 700 5em/1 "Open Sans", Impact, sans-serif;
   text-transform: uppercase;
