@@ -129,8 +129,7 @@ nav {
   text-align: right;
 }
 
-nav a,
-nav #themeToggle {
+nav a {
   display: block;
   padding: 5px 20px;
   color: #000000;
@@ -147,8 +146,7 @@ nav #themeToggle {
   cursor: pointer;
 }
 
-nav a:hover,
-nav #themeToggle:hover {
+nav a:hover {
   transform: translateY(-3px) scale(1.035);
   background-color: rgba(153, 0, 0, 0.5);
   color: #ffffff;
@@ -716,52 +714,78 @@ tr {
   box-shadow: 0 0 20px #FFFFFF;
 }
 
-/* ---------- Share Button ---------- */
-#shareBtn {
+/* ---------- Floral Quick Menu ---------- */
+#floralMenu {
   position: fixed;
-  bottom: 85px;
+  top: 50%;
   right: 20px;
-  padding: 10px;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
   z-index: 10;
-  border-radius: 20px;
+}
+
+#floralMain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   background: linear-gradient(90deg, #990000, #800000);
   color: #FFFFFF;
   border: 2px solid white;
   box-shadow: 0 0 15px #FFFFFF;
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
-  transition: all 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.4s ease;
+  z-index: 2;
 }
 
-#shareBtn:hover {
-  transform: translateY(-3px) scale(1.1);
-  font-weight: bold;
+#floralMain:hover {
   box-shadow: 0 0 20px #FFFFFF;
 }
 
-/* ---------- Call Now Button ---------- */
-#CallNowBtn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 10px;
-  z-index: 10;
-  border-radius: 20px;
+.petal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #990000, #800000);
+  color: #FFFFFF;
+  border: 2px solid white;
+  box-shadow: 0 0 15px #FFFFFF;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
-  background: linear-gradient(90deg, #990000, #800000);
-  color: #FFFFFF;
-  border: 2px solid white;
-  box-shadow: 0 0 15px #FFFFFF;
-  font-size: 22px;
-  cursor: pointer;
-  transition: all 0.5s ease;
+  opacity: 0;
+  transform: translate(0, 0) scale(0.3);
+  transition: transform 0.35s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
 }
 
-#CallNowBtn:hover {
-  transform: translateY(-3px) scale(1.1);
-  font-weight: bold;
+.petal:hover {
   box-shadow: 0 0 20px #FFFFFF;
 }
+
+#floralMenu.open .petal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#floralMenu.open .petal:nth-child(2) { transition-delay: 0.03s; transform: translate(-14px, -73px) scale(1); }
+#floralMenu.open .petal:nth-child(3) { transition-delay: 0.08s; transform: translate(-68px, -32px) scale(1); }
+#floralMenu.open .petal:nth-child(4) { transition-delay: 0.13s; transform: translate(-68px, 32px) scale(1); }
+#floralMenu.open .petal:nth-child(5) { transition-delay: 0.18s; transform: translate(-14px, 74px) scale(1); }
 
 /* ---------- Welcome Popup ---------- */
 #popupOverlayUnique {
@@ -1435,14 +1459,12 @@ hr {
   background: #ffffff;
 }
 
-[data-theme="dark"] nav a,
-[data-theme="dark"] nav #themeToggle {
+[data-theme="dark"] nav a {
   background: rgba(30, 24, 0, 0.6);
   color: #f2efe6;
 }
 
-[data-theme="dark"] nav a:hover,
-[data-theme="dark"] nav #themeToggle:hover {
+[data-theme="dark"] nav a:hover {
   background-color: rgba(153, 0, 0, 0.7);
   color: #ffffff;
 }
@@ -1454,8 +1476,8 @@ hr {
 [data-theme="dark"] .btn-qr,
 [data-theme="dark"] .url-btn,
 [data-theme="dark"] #topBtn,
-[data-theme="dark"] #shareBtn,
-[data-theme="dark"] #CallNowBtn,
+[data-theme="dark"] #floralMain,
+[data-theme="dark"] .petal,
 [data-theme="dark"] .worksheet-button,
 [data-theme="dark"] .read-more-btn {
   background: linear-gradient(90deg, #660000, #4d0000);
@@ -1466,8 +1488,8 @@ hr {
 [data-theme="dark"] .btn-qr:hover,
 [data-theme="dark"] .url-btn:hover,
 [data-theme="dark"] #topBtn:hover,
-[data-theme="dark"] #shareBtn:hover,
-[data-theme="dark"] #CallNowBtn:hover,
+[data-theme="dark"] #floralMain:hover,
+[data-theme="dark"] .petal:hover,
 [data-theme="dark"] .worksheet-button:hover,
 [data-theme="dark"] .read-more-btn:hover {
   background: linear-gradient(90deg, #660000, #4d0000);
