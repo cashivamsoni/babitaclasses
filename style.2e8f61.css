@@ -1545,15 +1545,15 @@ hr {
   display: block;
   width: 100%;
   max-width: 660px;
-  height: 108px;
-  margin: -10px auto -8px;
+  height: 90px;
+  margin: -16px auto -14px;
   overflow: visible;
 }
 .whatsnew-anim .wn-text {
   fill: none;
   stroke-width: 4.5;
   stroke-linejoin: round;
-  stroke-dasharray: 18 126;
+  stroke-dasharray: 20 124;
   stroke-dashoffset: 0;
   font: 700 5em/1 "Open Sans", Impact, sans-serif;
   text-transform: uppercase;
