@@ -64,6 +64,10 @@ const noticeList = document.getElementById("noticeList");
 const noticeDeleteSelectedBtn = document.getElementById("noticeDeleteSelectedBtn");
 const noticeSelectModeBtn = document.getElementById("noticeSelectModeBtn");
 
+const undoToast = document.getElementById("undoToast");
+const undoToastMsg = document.getElementById("undoToastMsg");
+const undoToastBtn = document.getElementById("undoToastBtn");
+
 const wnTextInput = document.getElementById("wnTextInput");
 const wnImageUrlInput = document.getElementById("wnImageUrlInput");
 const wnImagePreview = document.getElementById("wnImagePreview");
@@ -185,6 +189,37 @@ marqueeSaveBtn.addEventListener("click", async () => {
   }
 });
 
+// ---------- Undo toast (6s window) ----------
+let undoTimer = null;
+let currentUndoHandler = null;
+
+function showUndoToast(message, undoFn) {
+  clearTimeout(undoTimer);
+  if (currentUndoHandler) {
+    undoToastBtn.removeEventListener("click", currentUndoHandler);
+  }
+
+  undoToastMsg.textContent = message;
+  undoToast.style.display = "flex";
+
+  currentUndoHandler = async () => {
+    clearTimeout(undoTimer);
+    undoToast.style.display = "none";
+    undoToastBtn.removeEventListener("click", currentUndoHandler);
+    currentUndoHandler = null;
+    await undoFn();
+  };
+  undoToastBtn.addEventListener("click", currentUndoHandler);
+
+  undoTimer = setTimeout(() => {
+    undoToast.style.display = "none";
+    if (currentUndoHandler) {
+      undoToastBtn.removeEventListener("click", currentUndoHandler);
+      currentUndoHandler = null;
+    }
+  }, 6000);
+}
+
 // ---------- Notices (add / edit / delete) ----------
 const NOTICES_COL = collection(db, "notices");
 
@@ -200,6 +235,7 @@ async function renderNotices() {
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.dataset.id = docSnap.id;
+      checkbox._noticeData = docSnap.data();
       checkbox.addEventListener("change", updateDeleteSelectedVisibility);
       li.appendChild(checkbox);
 
@@ -212,13 +248,18 @@ async function renderNotices() {
       editBtn.className = "edit-btn";
       editBtn.textContent = "Edit";
       editBtn.addEventListener("click", async () => {
-        const updated = prompt("Edit notice:", docSnap.data().text || "");
+        const previousText = docSnap.data().text || "";
+        const updated = prompt("Edit notice:", previousText);
         if (updated === null) return;
         const trimmed = updated.trim();
         if (!trimmed) return;
         try {
           await updateDoc(doc(db, "notices", docSnap.id), { text: trimmed });
           await renderNotices();
+          showUndoToast("Notice updated.", async () => {
+            await updateDoc(doc(db, "notices", docSnap.id), { text: previousText });
+            await renderNotices();
+          });
         } catch (err) {
           noticeStatus.textContent = "Edit failed: " + (err.code || err.message);
           noticeStatus.className = "msg error";
@@ -233,9 +274,15 @@ async function renderNotices() {
       deleteBtn.textContent = "Delete";
       deleteBtn.addEventListener("click", async () => {
         if (!confirm("Delete this notice?")) return;
+        const deletedId = docSnap.id;
+        const deletedData = docSnap.data();
         try {
-          await deleteDoc(doc(db, "notices", docSnap.id));
+          await deleteDoc(doc(db, "notices", deletedId));
           await renderNotices();
+          showUndoToast("Notice deleted.", async () => {
+            await setDoc(doc(db, "notices", deletedId), deletedData);
+            await renderNotices();
+          });
         } catch (err) {
           noticeStatus.textContent = "Delete failed: " + (err.code || err.message);
           noticeStatus.className = "msg error";
@@ -277,12 +324,20 @@ noticeDeleteSelectedBtn.addEventListener("click", async () => {
   noticeStatus.textContent = "Deleting...";
   noticeStatus.className = "msg";
   try {
+    const deleted = [];
     for (const cb of checked) {
+      deleted.push({ id: cb.dataset.id, data: cb._noticeData });
       await deleteDoc(doc(db, "notices", cb.dataset.id));
     }
     noticeStatus.textContent = "Selected notices deleted.";
     noticeStatus.className = "msg success";
     await renderNotices();
+    showUndoToast(deleted.length + " notice(s) deleted.", async () => {
+      for (const item of deleted) {
+        await setDoc(doc(db, "notices", item.id), item.data);
+      }
+      await renderNotices();
+    });
   } catch (err) {
     noticeStatus.textContent = "Delete failed: " + (err.code || err.message);
     noticeStatus.className = "msg error";
@@ -303,11 +358,15 @@ noticeAddBtn.addEventListener("click", async () => {
   noticeStatus.textContent = "Adding...";
   noticeStatus.className = "msg";
   try {
-    await addDoc(NOTICES_COL, { text: value, createdAt: serverTimestamp() });
+    const newDoc = await addDoc(NOTICES_COL, { text: value, createdAt: serverTimestamp() });
     noticeInput.value = "";
     noticeStatus.textContent = "Notice added.";
     noticeStatus.className = "msg success";
     await renderNotices();
+    showUndoToast("Notice added.", async () => {
+      await deleteDoc(doc(db, "notices", newDoc.id));
+      await renderNotices();
+    });
   } catch (err) {
     noticeStatus.textContent = "Could not add notice: " + (err.code || err.message);
     noticeStatus.className = "msg error";
