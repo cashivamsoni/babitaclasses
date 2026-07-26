@@ -638,6 +638,7 @@ function currentSlide(n) {
 function showSlides(n) {
   let slides = document.getElementsByClassName("slide");
   let dots = document.getElementsByClassName("dot");
+  if (slides.length === 0) return;
   if (n > slides.length) { slideIndex = 1 }
   if (n < 1) { slideIndex = slides.length }
   for (let i = 0; i < slides.length; i++) {
@@ -655,13 +656,15 @@ setInterval(() => { plusSlides(1); }, 4000);
 
 // Swipe support for mobile
 const slideshow = document.querySelector('.slideshow-container');
-let startX = 0;
-slideshow.addEventListener('touchstart', e => startX = e.touches[0].clientX);
-slideshow.addEventListener('touchend', e => {
-  let endX = e.changedTouches[0].clientX;
-  if (startX - endX > 50) plusSlides(1);     // swipe left → next
-  else if (endX - startX > 50) plusSlides(-1); // swipe right → prev
-});
+if (slideshow) {
+  let startX = 0;
+  slideshow.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+  slideshow.addEventListener('touchend', e => {
+    let endX = e.changedTouches[0].clientX;
+    if (startX - endX > 50) plusSlides(1);     // swipe left → next
+    else if (endX - startX > 50) plusSlides(-1); // swipe right → prev
+  });
+}
 /* ---------- Syllabus Section: Collapse/Expand ---------- */
 (function () {
   const toggleBtn = document.getElementById("syllabusToggleBtn");
