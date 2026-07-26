@@ -74,7 +74,7 @@
       }
       .error { color: #c0392b; }
       .success { color: #1e8f2e; }
-      #noticeList li {
+      #noticeList li, #videoAdminList li {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -82,26 +82,26 @@
         border-bottom: 1px solid #f0f0f0;
         font-size: 13px;
       }
-      #noticeList li input[type="checkbox"] {
+      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"] {
         width: auto;
         flex: none;
         display: none;
       }
-      #noticeList.bulk-mode li input[type="checkbox"] {
+      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"] {
         display: inline-block;
       }
-      #noticeList li span {
+      #noticeList li span, #videoAdminList li span {
         flex: 1;
       }
-      #noticeList button {
+      #noticeList button, #videoAdminList button {
         width: auto;
         margin: 0;
         padding: 4px 10px;
         font-size: 12px;
         font-weight: 500;
       }
-      #noticeList .edit-btn { background: #007bff; }
-      #noticeList .delete-btn { background: #c0392b; }
+      #noticeList .edit-btn, #videoAdminList .edit-btn { background: #007bff; }
+      #noticeList .delete-btn, #videoAdminList .delete-btn { background: #c0392b; }
       .hub-grid {
         display: flex;
         flex-direction: column;
@@ -230,6 +230,41 @@
 
       <button id="wnSaveBtn" type="button">Save What's New</button>
       <p id="wnStatus" class="msg"></p>
+
+      <hr class="section-divider">
+
+      <p style="font-weight:600; margin:0 0 4px;">Gallery Images (8 photos)</p>
+      <label for="galleryInput1">Photo 1 URL</label>
+      <input type="text" id="galleryInput1" placeholder="https://... or /images/...">
+      <label for="galleryInput2">Photo 2 URL</label>
+      <input type="text" id="galleryInput2" placeholder="https://... or /images/...">
+      <label for="galleryInput3">Photo 3 URL</label>
+      <input type="text" id="galleryInput3" placeholder="https://... or /images/...">
+      <label for="galleryInput4">Photo 4 URL</label>
+      <input type="text" id="galleryInput4" placeholder="https://... or /images/...">
+      <label for="galleryInput5">Photo 5 URL</label>
+      <input type="text" id="galleryInput5" placeholder="https://... or /images/...">
+      <label for="galleryInput6">Photo 6 URL</label>
+      <input type="text" id="galleryInput6" placeholder="https://... or /images/...">
+      <label for="galleryInput7">Photo 7 URL</label>
+      <input type="text" id="galleryInput7" placeholder="https://... or /images/...">
+      <label for="galleryInput8">Photo 8 URL</label>
+      <input type="text" id="galleryInput8" placeholder="https://... or /images/...">
+      <button id="gallerySaveBtn" type="button">Save Gallery</button>
+      <p id="galleryStatus" class="msg"></p>
+
+      <hr class="section-divider">
+
+      <p style="font-weight:600; margin:0 0 4px;">Function Videos</p>
+      <label for="videoTitleInput">Title</label>
+      <input type="text" id="videoTitleInput" placeholder="e.g. Holi Celebration 2026">
+      <label for="videoUrlInput">Video/Post URL</label>
+      <input type="text" id="videoUrlInput" placeholder="https://youtu.be/...">
+      <button id="videoAddBtn" type="button">Add Video</button>
+      <p id="videoStatus" class="msg"></p>
+      <button id="videoSelectModeBtn" type="button" style="width:auto; margin:8px 0; padding:6px 14px; font-size:12px; background:#555;">Select</button>
+      <ul id="videoAdminList" style="list-style:none; padding:0; margin:6px 0 0; max-height:280px; overflow-y:auto;"></ul>
+      <button id="videoDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
 
       <hr class="section-divider">
 
