@@ -73,7 +73,6 @@ const undoToastBtn = document.getElementById("undoToastBtn");
 
 const wnTextInput = document.getElementById("wnTextInput");
 const wnImageUrlInput = document.getElementById("wnImageUrlInput");
-const wnImagePreview = document.getElementById("wnImagePreview");
 const wnBtnTextInput = document.getElementById("wnBtnTextInput");
 const wnBtnUrlInput = document.getElementById("wnBtnUrlInput");
 const wnSaveBtn = document.getElementById("wnSaveBtn");
@@ -414,15 +413,6 @@ const WN_DEFAULTS = {
   btnUrl: "https://www.facebook.com/share/p/1EHf5KEr9N/",
 };
 
-function updateWnPreview(url) {
-  if (!url) {
-    wnImagePreview.style.display = "none";
-    return;
-  }
-  wnImagePreview.src = url;
-  wnImagePreview.style.display = "block";
-}
-
 async function loadWhatsNew() {
   try {
     const snap = await getDoc(SITE_DOC);
@@ -431,7 +421,6 @@ async function loadWhatsNew() {
     wnImageUrlInput.value = data.whatsNewImage || WN_DEFAULTS.image;
     wnBtnTextInput.value = data.whatsNewBtnText || WN_DEFAULTS.btnText;
     wnBtnUrlInput.value = data.whatsNewBtnUrl || WN_DEFAULTS.btnUrl;
-    updateWnPreview(wnImageUrlInput.value);
     previousWnState = {
       text: wnTextInput.value,
       image: wnImageUrlInput.value,
@@ -445,7 +434,6 @@ async function loadWhatsNew() {
   }
 }
 
-wnImageUrlInput.addEventListener("input", () => updateWnPreview(wnImageUrlInput.value));
 
 wnSaveBtn.addEventListener("click", async () => {
   const text = wnTextInput.value.trim();
@@ -492,7 +480,6 @@ wnSaveBtn.addEventListener("click", async () => {
       wnImageUrlInput.value = previousState.image;
       wnBtnTextInput.value = previousState.btnText;
       wnBtnUrlInput.value = previousState.btnUrl;
-      updateWnPreview(previousState.image);
       previousWnState = previousState;
     });
   } catch (err) {
