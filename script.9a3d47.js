@@ -750,6 +750,14 @@ slideshow.addEventListener('touchend', e => {
         if (marqueeEl && data.marqueeText) {
           marqueeEl.textContent = data.marqueeText;
         }
+
+        const wnTextEl = document.getElementById("whatsNewText");
+        const wnImageEl = document.getElementById("whatsNewImage");
+        const wnBtnEl = document.getElementById("whatsNewBtn");
+        if (wnTextEl && data.whatsNewText) wnTextEl.textContent = data.whatsNewText;
+        if (wnImageEl && data.whatsNewImage) wnImageEl.src = data.whatsNewImage;
+        if (wnBtnEl && data.whatsNewBtnText) wnBtnEl.textContent = data.whatsNewBtnText;
+        if (wnBtnEl && data.whatsNewBtnUrl) wnBtnEl.href = data.whatsNewBtnUrl;
       }
 
       // Notice board (latest first; newest 3 get the "New" gif)
