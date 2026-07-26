@@ -39,7 +39,10 @@ const SITE_DOC = doc(db, "site", "meta");
 
 // ---------- Elements ----------
 const loginView = document.getElementById("loginView");
+const adminHub = document.getElementById("adminHub");
 const adminView = document.getElementById("adminView");
+const hubHomeBtn = document.getElementById("hubHomeBtn");
+const backToHubBtn = document.getElementById("backToHubBtn");
 const loginForm = document.getElementById("loginForm");
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
@@ -72,16 +75,28 @@ const wnStatus = document.getElementById("wnStatus");
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginView.style.display = "none";
-    adminView.style.display = "block";
+    adminView.style.display = "none";
+    adminHub.style.display = "block";
     await markUpdatedToday();
     await loadMarquee();
     await loadWhatsNew();
     await renderNotices();
   } else {
+    adminHub.style.display = "none";
     adminView.style.display = "none";
     loginView.style.display = "block";
     loginForm.reset();
   }
+});
+
+hubHomeBtn.addEventListener("click", () => {
+  adminHub.style.display = "none";
+  adminView.style.display = "block";
+});
+
+backToHubBtn.addEventListener("click", () => {
+  adminView.style.display = "none";
+  adminHub.style.display = "block";
 });
 
 loginForm.addEventListener("submit", async (e) => {
