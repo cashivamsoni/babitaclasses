@@ -58,6 +58,7 @@ const noticeAddBtn = document.getElementById("noticeAddBtn");
 const noticeStatus = document.getElementById("noticeStatus");
 const noticeList = document.getElementById("noticeList");
 const noticeDeleteSelectedBtn = document.getElementById("noticeDeleteSelectedBtn");
+const noticeSelectModeBtn = document.getElementById("noticeSelectModeBtn");
 
 const wnTextInput = document.getElementById("wnTextInput");
 const wnImageUrlInput = document.getElementById("wnImageUrlInput");
@@ -239,6 +240,16 @@ function updateDeleteSelectedVisibility() {
   const anyChecked = noticeList.querySelector('input[type="checkbox"]:checked');
   noticeDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
 }
+
+noticeSelectModeBtn.addEventListener("click", () => {
+  const enabling = !noticeList.classList.contains("bulk-mode");
+  noticeList.classList.toggle("bulk-mode", enabling);
+  noticeSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
+  if (!enabling) {
+    noticeList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+    noticeDeleteSelectedBtn.style.display = "none";
+  }
+});
 
 noticeDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = noticeList.querySelectorAll('input[type="checkbox"]:checked');
