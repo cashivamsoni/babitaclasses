@@ -717,7 +717,9 @@ if (slideshow) {
   const dateEl = document.getElementById("lastUpdatedDate");
   const marqueeEl = document.getElementById("topMarquee");
   const noticeListEl = document.getElementById("noticeMarqueeList");
-  if (!dateEl && !marqueeEl && !noticeListEl) return;
+  const videoListEl = document.getElementById("videoList");
+  const hasGalleryImgs = document.getElementById("galleryImg1");
+  if (!dateEl && !marqueeEl && !noticeListEl && !videoListEl && !hasGalleryImgs) return;
 
   (async function () {
     try {
@@ -761,6 +763,13 @@ if (slideshow) {
         if (wnImageEl && data.whatsNewImage) wnImageEl.src = data.whatsNewImage;
         if (wnBtnEl && data.whatsNewBtnText) wnBtnEl.textContent = data.whatsNewBtnText;
         if (wnBtnEl && data.whatsNewBtnUrl) wnBtnEl.href = data.whatsNewBtnUrl;
+
+        if (Array.isArray(data.galleryImages)) {
+          data.galleryImages.forEach((url, i) => {
+            const imgEl = document.getElementById("galleryImg" + (i + 1));
+            if (imgEl && url) imgEl.src = url;
+          });
+        }
       }
 
       // Notice board (latest first; newest 3 get the "New" gif)
@@ -782,6 +791,21 @@ if (slideshow) {
             i++;
           });
           noticeListEl.innerHTML = html;
+        }
+      }
+
+      // Function videos (latest first)
+      if (videoListEl) {
+        const vq = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+        const videosSnap = await getDocs(vq);
+        if (!videosSnap.empty) {
+          let vHtml = "";
+          videosSnap.forEach((docSnap) => {
+            const d = docSnap.data();
+            vHtml +=
+              '<li><a href="' + d.url + '" target="_blank">' + (d.title || "") + "</a></li>";
+          });
+          videoListEl.innerHTML = vHtml;
         }
       }
     } catch (err) {
