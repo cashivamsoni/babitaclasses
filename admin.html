@@ -131,9 +131,40 @@
         border: none;
         border-top: 2px solid #bbb;
       }
+      #undoToast {
+        display: none;
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+        background: #222;
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        z-index: 100;
+      }
+      #undoToastBtn {
+        width: auto;
+        margin: 0;
+        padding: 0;
+        background: none;
+        color: #6fb8ff;
+        font-weight: 700;
+        text-decoration: underline;
+        font-size: 13px;
+      }
     </style>
   </head>
   <body>
+
+    <div id="undoToast">
+      <span id="undoToastMsg"></span>
+      <button id="undoToastBtn" type="button">Undo</button>
+    </div>
 
     <div id="loginView" class="card">
       <h1>Admin Login</h1>
@@ -147,7 +178,7 @@
       </form>
     </div>
 
-    <div id="adminHub" class="card" style="display:none;">
+    <div id="adminHub" class="card" style="display:none; max-width:460px;">
       <h1>Admin Panel</h1>
       <div class="hub-grid">
         <button id="hubHomeBtn" type="button" class="hub-btn">Homepage</button>
