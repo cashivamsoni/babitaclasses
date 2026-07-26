@@ -58,6 +58,14 @@ const noticeAddBtn = document.getElementById("noticeAddBtn");
 const noticeStatus = document.getElementById("noticeStatus");
 const noticeList = document.getElementById("noticeList");
 
+const wnTextInput = document.getElementById("wnTextInput");
+const wnImageUrlInput = document.getElementById("wnImageUrlInput");
+const wnImagePreview = document.getElementById("wnImagePreview");
+const wnBtnTextInput = document.getElementById("wnBtnTextInput");
+const wnBtnUrlInput = document.getElementById("wnBtnUrlInput");
+const wnSaveBtn = document.getElementById("wnSaveBtn");
+const wnStatus = document.getElementById("wnStatus");
+
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -65,6 +73,7 @@ onAuthStateChanged(auth, async (user) => {
     adminView.style.display = "block";
     await markUpdatedToday();
     await loadMarquee();
+    await loadWhatsNew();
     await renderNotices();
   } else {
     adminView.style.display = "none";
@@ -240,5 +249,80 @@ noticeAddBtn.addEventListener("click", async () => {
     console.error(err);
   } finally {
     noticeAddBtn.disabled = false;
+  }
+});
+
+// ---------- What's New section (text, image, button) ----------
+// Fallbacks match what's currently hardcoded on the live site, so the
+// admin form shows the real current content even before anything is
+// saved to Firestore.
+const WN_DEFAULTS = {
+  text: "The UP Board (UPMSP) has declared the results for class 10th and 12th and our student Vasu got 61.5% in class 10th with 73 marks in English.",
+  image: "/images/newbanner.png",
+  btnText: "Open Facebook Post",
+  btnUrl: "https://www.facebook.com/share/p/1EHf5KEr9N/",
+};
+
+function updateWnPreview(url) {
+  if (!url) {
+    wnImagePreview.style.display = "none";
+    return;
+  }
+  wnImagePreview.src = url;
+  wnImagePreview.style.display = "block";
+}
+
+async function loadWhatsNew() {
+  try {
+    const snap = await getDoc(SITE_DOC);
+    const data = snap.exists() ? snap.data() : {};
+    wnTextInput.value = data.whatsNewText || WN_DEFAULTS.text;
+    wnImageUrlInput.value = data.whatsNewImage || WN_DEFAULTS.image;
+    wnBtnTextInput.value = data.whatsNewBtnText || WN_DEFAULTS.btnText;
+    wnBtnUrlInput.value = data.whatsNewBtnUrl || WN_DEFAULTS.btnUrl;
+    updateWnPreview(wnImageUrlInput.value);
+  } catch (err) {
+    wnStatus.textContent = "Could not load current content: " + (err.code || err.message);
+    wnStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+wnImageUrlInput.addEventListener("input", () => updateWnPreview(wnImageUrlInput.value));
+
+wnSaveBtn.addEventListener("click", async () => {
+  const text = wnTextInput.value.trim();
+  const image = wnImageUrlInput.value.trim();
+  const btnText = wnBtnTextInput.value.trim();
+  const btnUrl = wnBtnUrlInput.value.trim();
+
+  if (!text || !image || !btnText || !btnUrl) {
+    wnStatus.textContent = "All four fields need a value.";
+    wnStatus.className = "msg error";
+    return;
+  }
+
+  wnSaveBtn.disabled = true;
+  wnStatus.textContent = "Saving...";
+  wnStatus.className = "msg";
+  try {
+    await setDoc(
+      SITE_DOC,
+      {
+        whatsNewText: text,
+        whatsNewImage: image,
+        whatsNewBtnText: btnText,
+        whatsNewBtnUrl: btnUrl,
+      },
+      { merge: true }
+    );
+    wnStatus.textContent = "What's New section updated.";
+    wnStatus.className = "msg success";
+  } catch (err) {
+    wnStatus.textContent = "Save failed: " + (err.code || err.message);
+    wnStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    wnSaveBtn.disabled = false;
   }
 });
