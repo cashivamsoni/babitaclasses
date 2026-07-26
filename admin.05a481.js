@@ -50,7 +50,8 @@ const loginError = document.getElementById("loginError");
 
 const lastUpdatedDisplay = document.getElementById("lastUpdatedDisplay");
 const saveStatus = document.getElementById("saveStatus");
-const logoutBtn = document.getElementById("logoutBtn");
+const hubLogoutBtn = document.getElementById("hubLogoutBtn");
+const editorLogoutBtn = document.getElementById("editorLogoutBtn");
 
 const marqueeInput = document.getElementById("marqueeInput");
 const marqueeSaveBtn = document.getElementById("marqueeSaveBtn");
@@ -114,7 +115,8 @@ loginForm.addEventListener("submit", async (e) => {
   }
 });
 
-logoutBtn.addEventListener("click", () => signOut(auth));
+hubLogoutBtn.addEventListener("click", () => signOut(auth));
+editorLogoutBtn.addEventListener("click", () => signOut(auth));
 
 // ---------- Last updated date: auto-set to today on every login ----------
 function todayISO() {
