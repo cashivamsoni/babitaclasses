@@ -82,6 +82,10 @@
         border-bottom: 1px solid #f0f0f0;
         font-size: 13px;
       }
+      #noticeList li input[type="checkbox"] {
+        width: auto;
+        flex: none;
+      }
       #noticeList li span {
         flex: 1;
       }
@@ -128,6 +132,7 @@
       <p id="noticeStatus" class="msg"></p>
       <p style="font-size:12px; color:#777; margin:10px 0 4px;">Newest 3 notices show the "New" badge automatically.</p>
       <ul id="noticeList" style="list-style:none; padding:0; margin:6px 0 0;"></ul>
+      <button id="noticeDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
 
       <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
 
