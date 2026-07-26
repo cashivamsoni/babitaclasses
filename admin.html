@@ -85,6 +85,10 @@
       #noticeList li input[type="checkbox"] {
         width: auto;
         flex: none;
+        display: none;
+      }
+      #noticeList.bulk-mode li input[type="checkbox"] {
+        display: inline-block;
       }
       #noticeList li span {
         flex: 1;
@@ -131,6 +135,7 @@
       <button id="noticeAddBtn" type="button">Add Notice</button>
       <p id="noticeStatus" class="msg"></p>
       <p style="font-size:12px; color:#777; margin:10px 0 4px;">Newest 3 notices show the "New" badge automatically.</p>
+      <button id="noticeSelectModeBtn" type="button" style="width:auto; margin:0 0 8px; padding:6px 14px; font-size:12px; background:#555;">Select</button>
       <ul id="noticeList" style="list-style:none; padding:0; margin:6px 0 0;"></ul>
       <button id="noticeDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
 
