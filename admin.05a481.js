@@ -57,6 +57,7 @@ const noticeInput = document.getElementById("noticeInput");
 const noticeAddBtn = document.getElementById("noticeAddBtn");
 const noticeStatus = document.getElementById("noticeStatus");
 const noticeList = document.getElementById("noticeList");
+const noticeDeleteSelectedBtn = document.getElementById("noticeDeleteSelectedBtn");
 
 const wnTextInput = document.getElementById("wnTextInput");
 const wnImageUrlInput = document.getElementById("wnImageUrlInput");
@@ -171,11 +172,18 @@ const NOTICES_COL = collection(db, "notices");
 
 async function renderNotices() {
   noticeList.innerHTML = "";
+  noticeDeleteSelectedBtn.style.display = "none";
   try {
     const q = query(NOTICES_COL, orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
     snap.forEach((docSnap) => {
       const li = document.createElement("li");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.dataset.id = docSnap.id;
+      checkbox.addEventListener("change", updateDeleteSelectedVisibility);
+      li.appendChild(checkbox);
 
       const span = document.createElement("span");
       span.textContent = docSnap.data().text || "";
@@ -226,6 +234,35 @@ async function renderNotices() {
     console.error(err);
   }
 }
+
+function updateDeleteSelectedVisibility() {
+  const anyChecked = noticeList.querySelector('input[type="checkbox"]:checked');
+  noticeDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+}
+
+noticeDeleteSelectedBtn.addEventListener("click", async () => {
+  const checked = noticeList.querySelectorAll('input[type="checkbox"]:checked');
+  if (checked.length === 0) return;
+  if (!confirm("Delete " + checked.length + " selected notice(s)?")) return;
+
+  noticeDeleteSelectedBtn.disabled = true;
+  noticeStatus.textContent = "Deleting...";
+  noticeStatus.className = "msg";
+  try {
+    for (const cb of checked) {
+      await deleteDoc(doc(db, "notices", cb.dataset.id));
+    }
+    noticeStatus.textContent = "Selected notices deleted.";
+    noticeStatus.className = "msg success";
+    await renderNotices();
+  } catch (err) {
+    noticeStatus.textContent = "Delete failed: " + (err.code || err.message);
+    noticeStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    noticeDeleteSelectedBtn.disabled = false;
+  }
+});
 
 noticeAddBtn.addEventListener("click", async () => {
   const value = noticeInput.value.trim();
