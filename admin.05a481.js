@@ -36,6 +36,9 @@ const db = getFirestore(app);
 
 // Single doc that holds simple site-wide fields (starting with lastUpdated)
 const SITE_DOC = doc(db, "site", "meta");
+let previousMarqueeText = "";
+let previousWnState = {};
+let previousGalleryUrls = [];
 
 // ---------- Elements ----------
 const loginView = document.getElementById("loginView");
@@ -76,6 +79,20 @@ const wnBtnUrlInput = document.getElementById("wnBtnUrlInput");
 const wnSaveBtn = document.getElementById("wnSaveBtn");
 const wnStatus = document.getElementById("wnStatus");
 
+const galleryInputs = [1, 2, 3, 4, 5, 6, 7, 8].map((n) =>
+  document.getElementById("galleryInput" + n)
+);
+const gallerySaveBtn = document.getElementById("gallerySaveBtn");
+const galleryStatus = document.getElementById("galleryStatus");
+
+const videoTitleInput = document.getElementById("videoTitleInput");
+const videoUrlInput = document.getElementById("videoUrlInput");
+const videoAddBtn = document.getElementById("videoAddBtn");
+const videoStatus = document.getElementById("videoStatus");
+const videoAdminList = document.getElementById("videoAdminList");
+const videoSelectModeBtn = document.getElementById("videoSelectModeBtn");
+const videoDeleteSelectedBtn = document.getElementById("videoDeleteSelectedBtn");
+
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -85,7 +102,9 @@ onAuthStateChanged(auth, async (user) => {
     await markUpdatedToday();
     await loadMarquee();
     await loadWhatsNew();
+    await loadGallery();
     await renderNotices();
+    await renderVideos();
   } else {
     adminHub.style.display = "none";
     adminView.style.display = "none";
@@ -159,6 +178,7 @@ async function loadMarquee() {
     if (snap.exists() && snap.data().marqueeText) {
       marqueeInput.value = snap.data().marqueeText;
     }
+    previousMarqueeText = marqueeInput.value;
   } catch (err) {
     marqueeStatus.textContent = "Could not load marquee: " + (err.code || err.message);
     marqueeStatus.className = "msg error";
@@ -173,13 +193,20 @@ marqueeSaveBtn.addEventListener("click", async () => {
     marqueeStatus.className = "msg error";
     return;
   }
+  const previousValue = previousMarqueeText;
   marqueeSaveBtn.disabled = true;
   marqueeStatus.textContent = "Saving...";
   marqueeStatus.className = "msg";
   try {
     await setDoc(SITE_DOC, { marqueeText: value }, { merge: true });
+    previousMarqueeText = value;
     marqueeStatus.textContent = "Marquee updated.";
     marqueeStatus.className = "msg success";
+    showUndoToast("Marquee updated.", async () => {
+      await setDoc(SITE_DOC, { marqueeText: previousValue }, { merge: true });
+      marqueeInput.value = previousValue;
+      previousMarqueeText = previousValue;
+    });
   } catch (err) {
     marqueeStatus.textContent = "Save failed: " + (err.code || err.message);
     marqueeStatus.className = "msg error";
@@ -405,6 +432,12 @@ async function loadWhatsNew() {
     wnBtnTextInput.value = data.whatsNewBtnText || WN_DEFAULTS.btnText;
     wnBtnUrlInput.value = data.whatsNewBtnUrl || WN_DEFAULTS.btnUrl;
     updateWnPreview(wnImageUrlInput.value);
+    previousWnState = {
+      text: wnTextInput.value,
+      image: wnImageUrlInput.value,
+      btnText: wnBtnTextInput.value,
+      btnUrl: wnBtnUrlInput.value,
+    };
   } catch (err) {
     wnStatus.textContent = "Could not load current content: " + (err.code || err.message);
     wnStatus.className = "msg error";
@@ -426,6 +459,7 @@ wnSaveBtn.addEventListener("click", async () => {
     return;
   }
 
+  const previousState = previousWnState;
   wnSaveBtn.disabled = true;
   wnStatus.textContent = "Saving...";
   wnStatus.className = "msg";
@@ -440,13 +474,242 @@ wnSaveBtn.addEventListener("click", async () => {
       },
       { merge: true }
     );
+    previousWnState = { text, image, btnText, btnUrl };
     wnStatus.textContent = "What's New section updated.";
     wnStatus.className = "msg success";
+    showUndoToast("What's New updated.", async () => {
+      await setDoc(
+        SITE_DOC,
+        {
+          whatsNewText: previousState.text,
+          whatsNewImage: previousState.image,
+          whatsNewBtnText: previousState.btnText,
+          whatsNewBtnUrl: previousState.btnUrl,
+        },
+        { merge: true }
+      );
+      wnTextInput.value = previousState.text;
+      wnImageUrlInput.value = previousState.image;
+      wnBtnTextInput.value = previousState.btnText;
+      wnBtnUrlInput.value = previousState.btnUrl;
+      updateWnPreview(previousState.image);
+      previousWnState = previousState;
+    });
   } catch (err) {
     wnStatus.textContent = "Save failed: " + (err.code || err.message);
     wnStatus.className = "msg error";
     console.error(err);
   } finally {
     wnSaveBtn.disabled = false;
+  }
+});
+
+// ---------- Gallery images (8 URLs) ----------
+const GALLERY_DEFAULTS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => "/images/image" + n + ".jpg");
+
+async function loadGallery() {
+  try {
+    const snap = await getDoc(SITE_DOC);
+    const stored = snap.exists() && Array.isArray(snap.data().galleryImages) ? snap.data().galleryImages : [];
+    galleryInputs.forEach((input, i) => {
+      input.value = stored[i] || GALLERY_DEFAULTS[i];
+    });
+    previousGalleryUrls = galleryInputs.map((input) => input.value);
+  } catch (err) {
+    galleryStatus.textContent = "Could not load gallery: " + (err.code || err.message);
+    galleryStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+gallerySaveBtn.addEventListener("click", async () => {
+  const values = galleryInputs.map((input) => input.value.trim());
+  if (values.some((v) => !v)) {
+    galleryStatus.textContent = "All 8 photo URLs need a value.";
+    galleryStatus.className = "msg error";
+    return;
+  }
+  const previousValues = previousGalleryUrls;
+  gallerySaveBtn.disabled = true;
+  galleryStatus.textContent = "Saving...";
+  galleryStatus.className = "msg";
+  try {
+    await setDoc(SITE_DOC, { galleryImages: values }, { merge: true });
+    previousGalleryUrls = values;
+    galleryStatus.textContent = "Gallery updated.";
+    galleryStatus.className = "msg success";
+    showUndoToast("Gallery updated.", async () => {
+      await setDoc(SITE_DOC, { galleryImages: previousValues }, { merge: true });
+      galleryInputs.forEach((input, i) => (input.value = previousValues[i]));
+      previousGalleryUrls = previousValues;
+    });
+  } catch (err) {
+    galleryStatus.textContent = "Save failed: " + (err.code || err.message);
+    galleryStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    gallerySaveBtn.disabled = false;
+  }
+});
+
+// ---------- Function Videos (add / edit / delete) ----------
+const VIDEOS_COL = collection(db, "videos");
+
+function updateVideoDeleteSelectedVisibility() {
+  const anyChecked = videoAdminList.querySelector('input[type="checkbox"]:checked');
+  videoDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+}
+
+videoSelectModeBtn.addEventListener("click", () => {
+  const enabling = !videoAdminList.classList.contains("bulk-mode");
+  videoAdminList.classList.toggle("bulk-mode", enabling);
+  videoSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
+  if (!enabling) {
+    videoAdminList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+    videoDeleteSelectedBtn.style.display = "none";
+  }
+});
+
+async function renderVideos() {
+  videoAdminList.innerHTML = "";
+  videoDeleteSelectedBtn.style.display = "none";
+  try {
+    const q = query(VIDEOS_COL, orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      const li = document.createElement("li");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.dataset.id = docSnap.id;
+      checkbox._videoData = data;
+      checkbox.addEventListener("change", updateVideoDeleteSelectedVisibility);
+      li.appendChild(checkbox);
+
+      const span = document.createElement("span");
+      span.textContent = data.title || "";
+      li.appendChild(span);
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", async () => {
+        const previousTitle = data.title || "";
+        const previousUrl = data.url || "";
+        const updatedTitle = prompt("Edit title:", previousTitle);
+        if (updatedTitle === null) return;
+        const updatedUrl = prompt("Edit URL:", previousUrl);
+        if (updatedUrl === null) return;
+        const title = updatedTitle.trim();
+        const url = updatedUrl.trim();
+        if (!title || !url) return;
+        try {
+          await updateDoc(doc(db, "videos", docSnap.id), { title, url });
+          await renderVideos();
+          showUndoToast("Video updated.", async () => {
+            await updateDoc(doc(db, "videos", docSnap.id), { title: previousTitle, url: previousUrl });
+            await renderVideos();
+          });
+        } catch (err) {
+          videoStatus.textContent = "Edit failed: " + (err.code || err.message);
+          videoStatus.className = "msg error";
+          console.error(err);
+        }
+      });
+      li.appendChild(editBtn);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", async () => {
+        if (!confirm("Delete this video?")) return;
+        const deletedId = docSnap.id;
+        try {
+          await deleteDoc(doc(db, "videos", deletedId));
+          await renderVideos();
+          showUndoToast("Video deleted.", async () => {
+            await setDoc(doc(db, "videos", deletedId), data);
+            await renderVideos();
+          });
+        } catch (err) {
+          videoStatus.textContent = "Delete failed: " + (err.code || err.message);
+          videoStatus.className = "msg error";
+          console.error(err);
+        }
+      });
+      li.appendChild(deleteBtn);
+
+      videoAdminList.appendChild(li);
+    });
+  } catch (err) {
+    videoStatus.textContent = "Could not load videos: " + (err.code || err.message);
+    videoStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+videoDeleteSelectedBtn.addEventListener("click", async () => {
+  const checked = videoAdminList.querySelectorAll('input[type="checkbox"]:checked');
+  if (checked.length === 0) return;
+  if (!confirm("Delete " + checked.length + " selected video(s)?")) return;
+
+  videoDeleteSelectedBtn.disabled = true;
+  videoStatus.textContent = "Deleting...";
+  videoStatus.className = "msg";
+  try {
+    const deleted = [];
+    for (const cb of checked) {
+      deleted.push({ id: cb.dataset.id, data: cb._videoData });
+      await deleteDoc(doc(db, "videos", cb.dataset.id));
+    }
+    videoStatus.textContent = "Selected videos deleted.";
+    videoStatus.className = "msg success";
+    await renderVideos();
+    showUndoToast(deleted.length + " video(s) deleted.", async () => {
+      for (const item of deleted) {
+        await setDoc(doc(db, "videos", item.id), item.data);
+      }
+      await renderVideos();
+    });
+  } catch (err) {
+    videoStatus.textContent = "Delete failed: " + (err.code || err.message);
+    videoStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    videoDeleteSelectedBtn.disabled = false;
+  }
+});
+
+videoAddBtn.addEventListener("click", async () => {
+  const title = videoTitleInput.value.trim();
+  const url = videoUrlInput.value.trim();
+  if (!title || !url) {
+    videoStatus.textContent = "Both title and URL are needed.";
+    videoStatus.className = "msg error";
+    return;
+  }
+  videoAddBtn.disabled = true;
+  videoStatus.textContent = "Adding...";
+  videoStatus.className = "msg";
+  try {
+    const newDoc = await addDoc(VIDEOS_COL, { title, url, createdAt: serverTimestamp() });
+    videoTitleInput.value = "";
+    videoUrlInput.value = "";
+    videoStatus.textContent = "Video added.";
+    videoStatus.className = "msg success";
+    await renderVideos();
+    showUndoToast("Video added.", async () => {
+      await deleteDoc(doc(db, "videos", newDoc.id));
+      await renderVideos();
+    });
+  } catch (err) {
+    videoStatus.textContent = "Could not add video: " + (err.code || err.message);
+    videoStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    videoAddBtn.disabled = false;
   }
 });
