@@ -61,7 +61,7 @@
         cursor: pointer;
       }
       button:disabled { opacity: 0.6; cursor: default; }
-      #logoutBtn {
+      #logoutBtn, #backToHubBtn {
         background: #800000;
         color: #fff;
         font-weight: 500;
@@ -102,6 +102,23 @@
       }
       #noticeList .edit-btn { background: #007bff; }
       #noticeList .delete-btn { background: #c0392b; }
+      .hub-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 20px;
+      }
+      .hub-btn {
+        width: 100%;
+        margin: 0;
+        padding: 24px 10px;
+        font-size: 15px;
+      }
+      .hub-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
     </style>
   </head>
   <body>
@@ -118,8 +135,19 @@
       </form>
     </div>
 
-    <div id="adminView" class="card" style="display:none; max-width:480px; position:relative;">
+    <div id="adminHub" class="card" style="display:none; position:relative;">
       <button id="logoutBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px;">Logout</button>
+      <h1>Admin Panel</h1>
+      <div class="hub-grid">
+        <button id="hubHomeBtn" type="button" class="hub-btn">Homepage</button>
+        <button type="button" class="hub-btn" disabled title="Coming soon">Blog</button>
+        <button type="button" class="hub-btn" disabled title="Coming soon">Results</button>
+        <button type="button" class="hub-btn" disabled title="Coming soon">Attendance</button>
+      </div>
+    </div>
+
+    <div id="adminView" class="card" style="display:none; max-width:480px; position:relative;">
+      <button id="backToHubBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px;">← Back</button>
 
       <h1>Admin Panel</h1>
 
