@@ -178,7 +178,7 @@
       </form>
     </div>
 
-    <div id="adminHub" class="card" style="display:none; max-width:460px;">
+    <div id="adminHub" class="card" style="display:none; width:clamp(280px, 92vw, 520px); max-width:none;">
       <h1>Admin Panel</h1>
       <div class="hub-grid">
         <button id="hubHomeBtn" type="button" class="hub-btn">Homepage</button>
@@ -234,22 +234,24 @@
       <hr class="section-divider">
 
       <p style="font-weight:600; margin:0 0 4px;">Gallery Images (8 photos)</p>
-      <label for="galleryInput1">Photo 1 URL</label>
-      <input type="text" id="galleryInput1" placeholder="https://... or /images/...">
-      <label for="galleryInput2">Photo 2 URL</label>
-      <input type="text" id="galleryInput2" placeholder="https://... or /images/...">
-      <label for="galleryInput3">Photo 3 URL</label>
-      <input type="text" id="galleryInput3" placeholder="https://... or /images/...">
-      <label for="galleryInput4">Photo 4 URL</label>
-      <input type="text" id="galleryInput4" placeholder="https://... or /images/...">
-      <label for="galleryInput5">Photo 5 URL</label>
-      <input type="text" id="galleryInput5" placeholder="https://... or /images/...">
-      <label for="galleryInput6">Photo 6 URL</label>
-      <input type="text" id="galleryInput6" placeholder="https://... or /images/...">
-      <label for="galleryInput7">Photo 7 URL</label>
-      <input type="text" id="galleryInput7" placeholder="https://... or /images/...">
-      <label for="galleryInput8">Photo 8 URL</label>
-      <input type="text" id="galleryInput8" placeholder="https://... or /images/...">
+      <div style="max-height:240px; overflow-y:auto; border:1px solid #eee; border-radius:8px; padding:10px 12px; margin-bottom:10px;">
+        <label for="galleryInput1">Photo 1 URL</label>
+        <input type="text" id="galleryInput1" placeholder="https://... or /images/...">
+        <label for="galleryInput2">Photo 2 URL</label>
+        <input type="text" id="galleryInput2" placeholder="https://... or /images/...">
+        <label for="galleryInput3">Photo 3 URL</label>
+        <input type="text" id="galleryInput3" placeholder="https://... or /images/...">
+        <label for="galleryInput4">Photo 4 URL</label>
+        <input type="text" id="galleryInput4" placeholder="https://... or /images/...">
+        <label for="galleryInput5">Photo 5 URL</label>
+        <input type="text" id="galleryInput5" placeholder="https://... or /images/...">
+        <label for="galleryInput6">Photo 6 URL</label>
+        <input type="text" id="galleryInput6" placeholder="https://... or /images/...">
+        <label for="galleryInput7">Photo 7 URL</label>
+        <input type="text" id="galleryInput7" placeholder="https://... or /images/...">
+        <label for="galleryInput8">Photo 8 URL</label>
+        <input type="text" id="galleryInput8" placeholder="https://... or /images/...">
+      </div>
       <button id="gallerySaveBtn" type="button">Save Gallery</button>
       <p id="galleryStatus" class="msg"></p>
 
@@ -263,7 +265,7 @@
       <button id="videoAddBtn" type="button">Add Video</button>
       <p id="videoStatus" class="msg"></p>
       <button id="videoSelectModeBtn" type="button" style="width:auto; margin:8px 0; padding:6px 14px; font-size:12px; background:#555;">Select</button>
-      <ul id="videoAdminList" style="list-style:none; padding:0; margin:6px 0 0; max-height:280px; overflow-y:auto;"></ul>
+      <ul id="videoAdminList" style="list-style:none; padding:6px 12px; margin:6px 0 0; max-height:280px; overflow-y:auto; border:1px solid #eee; border-radius:8px;"></ul>
       <button id="videoDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
 
       <hr class="section-divider">
