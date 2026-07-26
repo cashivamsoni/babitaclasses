@@ -62,11 +62,10 @@
       }
       button:disabled { opacity: 0.6; cursor: default; }
       #logoutBtn {
-        background: none;
-        color: #800000;
+        background: #800000;
+        color: #fff;
         font-weight: 500;
-        text-decoration: underline;
-        margin-top: 6px;
+        border-radius: 6px;
       }
       .msg {
         font-size: 13px;
@@ -111,22 +110,24 @@
       </form>
     </div>
 
-    <div id="adminView" class="card" style="display:none; max-width:480px;">
-      <h1>Admin Panel</h1>
-      <p style="text-align:center; color:#555; font-size:14px;">
-        Logged in — today's date has been set as the site's "Last Updated" date automatically.
-      </p>
-      <p style="text-align:center; font-size:15px; margin:14px 0;">
-        Last Updated: <strong id="lastUpdatedDisplay">—</strong>
-      </p>
-      <p id="saveStatus" class="msg"></p>
+    <div id="adminView" class="card" style="display:none; max-width:480px; position:relative;">
+      <button id="logoutBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px;">Logout</button>
 
-      <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+      <h1>Admin Panel</h1>
 
       <label for="marqueeInput">Top Marquee Text</label>
       <textarea id="marqueeInput" rows="3" style="width:100%; padding:10px 12px; font-size:14px; border:1px solid #ccc; border-radius:8px; font-family:inherit; resize:vertical;"></textarea>
       <button id="marqueeSaveBtn" type="button">Save Marquee</button>
       <p id="marqueeStatus" class="msg"></p>
+
+      <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+
+      <label for="noticeInput">Add a Notice</label>
+      <input type="text" id="noticeInput" placeholder="e.g. Diwali holidays from ...">
+      <button id="noticeAddBtn" type="button">Add Notice</button>
+      <p id="noticeStatus" class="msg"></p>
+      <p style="font-size:12px; color:#777; margin:10px 0 4px;">Newest 3 notices show the "New" badge automatically.</p>
+      <ul id="noticeList" style="list-style:none; padding:0; margin:6px 0 0;"></ul>
 
       <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
 
@@ -150,14 +151,13 @@
 
       <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
 
-      <label for="noticeInput">Add a Notice</label>
-      <input type="text" id="noticeInput" placeholder="e.g. Diwali holidays from ...">
-      <button id="noticeAddBtn" type="button">Add Notice</button>
-      <p id="noticeStatus" class="msg"></p>
-      <p style="font-size:12px; color:#777; margin:10px 0 4px;">Newest 3 notices show the "New" badge automatically.</p>
-      <ul id="noticeList" style="list-style:none; padding:0; margin:6px 0 0;"></ul>
-
-      <button id="logoutBtn" type="button" style="margin-top:20px;">Logout</button>
+      <p style="text-align:center; color:#555; font-size:14px;">
+        Logged in — today's date has been set as the site's "Last Updated" date automatically.
+      </p>
+      <p style="text-align:center; font-size:15px; margin:14px 0;">
+        Last Updated: <strong id="lastUpdatedDisplay">—</strong>
+      </p>
+      <p id="saveStatus" class="msg"></p>
     </div>
 
     <script type="module" src="admin.05a481.js"></script>
