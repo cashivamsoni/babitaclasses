@@ -61,7 +61,7 @@
         cursor: pointer;
       }
       button:disabled { opacity: 0.6; cursor: default; }
-      #logoutBtn, #backToHubBtn {
+      #hubLogoutBtn, #editorLogoutBtn, #backToHubBtn {
         background: #800000;
         color: #fff;
         font-weight: 500;
@@ -103,21 +103,33 @@
       #noticeList .edit-btn { background: #007bff; }
       #noticeList .delete-btn { background: #c0392b; }
       .hub-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
         margin-top: 20px;
       }
       .hub-btn {
         width: 100%;
         margin: 0;
-        padding: 24px 10px;
+        padding: 16px 10px;
         font-size: 15px;
       }
       .hub-btn:disabled {
         background: #ccc;
         cursor: not-allowed;
         opacity: 0.7;
+      }
+      #hubLogoutBtn {
+        width: auto;
+        display: block;
+        margin: 24px auto 0;
+        padding: 6px 14px;
+        font-size: 12px;
+      }
+      .section-divider {
+        margin: 20px 0;
+        border: none;
+        border-top: 2px solid #bbb;
       }
     </style>
   </head>
@@ -135,8 +147,7 @@
       </form>
     </div>
 
-    <div id="adminHub" class="card" style="display:none; position:relative;">
-      <button id="logoutBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px;">Logout</button>
+    <div id="adminHub" class="card" style="display:none;">
       <h1>Admin Panel</h1>
       <div class="hub-grid">
         <button id="hubHomeBtn" type="button" class="hub-btn">Homepage</button>
@@ -144,10 +155,12 @@
         <button type="button" class="hub-btn" disabled title="Coming soon">Results</button>
         <button type="button" class="hub-btn" disabled title="Coming soon">Attendance</button>
       </div>
+      <button id="hubLogoutBtn" type="button">Logout</button>
     </div>
 
     <div id="adminView" class="card" style="display:none; max-width:480px; position:relative;">
-      <button id="backToHubBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px;">← Back</button>
+      <button id="backToHubBtn" type="button" style="position:absolute; top:16px; left:16px; width:auto; margin:0; padding:6px 14px; font-size:12px;">← Back</button>
+      <button id="editorLogoutBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px;">Logout</button>
 
       <h1>Admin Panel</h1>
 
@@ -156,7 +169,7 @@
       <button id="marqueeSaveBtn" type="button">Save Marquee</button>
       <p id="marqueeStatus" class="msg"></p>
 
-      <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+      <hr class="section-divider">
 
       <label for="noticeInput">Add a Notice</label>
       <input type="text" id="noticeInput" placeholder="e.g. Diwali holidays from ...">
@@ -167,7 +180,7 @@
       <ul id="noticeList" style="list-style:none; padding:0; margin:6px 0 0;"></ul>
       <button id="noticeDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
 
-      <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+      <hr class="section-divider">
 
       <p style="font-weight:600; margin:0 0 4px;">What's New Section</p>
 
@@ -187,7 +200,7 @@
       <button id="wnSaveBtn" type="button">Save What's New</button>
       <p id="wnStatus" class="msg"></p>
 
-      <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+      <hr class="section-divider">
 
       <p style="text-align:center; color:#555; font-size:14px;">
         Logged in — today's date has been set as the site's "Last Updated" date automatically.
