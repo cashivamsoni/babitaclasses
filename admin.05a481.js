@@ -226,11 +226,11 @@ function showUndoToast(message, undoFn) {
   }
 
   undoToastMsg.textContent = message;
-  undoToast.style.display = "flex";
+  undoToast.classList.add("show");
 
   currentUndoHandler = async () => {
     clearTimeout(undoTimer);
-    undoToast.style.display = "none";
+    undoToast.classList.remove("show");
     undoToastBtn.removeEventListener("click", currentUndoHandler);
     currentUndoHandler = null;
     await undoFn();
@@ -238,7 +238,7 @@ function showUndoToast(message, undoFn) {
   undoToastBtn.addEventListener("click", currentUndoHandler);
 
   undoTimer = setTimeout(() => {
-    undoToast.style.display = "none";
+    undoToast.classList.remove("show");
     if (currentUndoHandler) {
       undoToastBtn.removeEventListener("click", currentUndoHandler);
       currentUndoHandler = null;
