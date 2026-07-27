@@ -143,12 +143,12 @@
       }
 
       /* Notices + Videos rows */
-      #noticeList, #videoAdminList {
+      #noticeList, #videoAdminList, #syllabusRowList {
         list-style: none;
         padding: 0;
         margin: 8px 0 0;
       }
-      #noticeList li, #videoAdminList li {
+      #noticeList li, #videoAdminList li, #syllabusRowList li {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -159,7 +159,7 @@
         margin-bottom: 6px;
         font-size: 12.5px;
       }
-      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"] {
+      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"] {
         width: auto;
         flex: none;
         display: none;
@@ -168,8 +168,8 @@
       #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"] {
         display: inline-block;
       }
-      #noticeList li span, #videoAdminList li span { flex: 1; }
-      #noticeList button, #videoAdminList button {
+      #noticeList li span, #videoAdminList li span, #syllabusRowList li span { flex: 1; }
+      #noticeList button, #videoAdminList button, #syllabusRowList button {
         width: auto;
         margin: 0;
         padding: 5px 11px;
@@ -177,8 +177,8 @@
         font-weight: 600;
         box-shadow: none;
       }
-      #noticeList .edit-btn, #videoAdminList .edit-btn { background: #1f6fd0; }
-      #noticeList .delete-btn, #videoAdminList .delete-btn { background: #c0392b; }
+      #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn { background: #1f6fd0; }
+      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn { background: #c0392b; }
 
       .scroll-box {
         max-height: 240px;
@@ -371,6 +371,23 @@
         <button id="videoSelectModeBtn" type="button" class="small-btn">Select</button>
         <ul id="videoAdminList" class="scroll-box"></ul>
         <button id="videoDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
+      </div>
+
+      <div class="section-block">
+        <p class="eyebrow">Syllabus Sessions</p>
+        <p class="hint" style="margin-top:0;">Only sessions you manage here are editable. Older sessions (2020-21 to 2023-24) stay untouched on the page.</p>
+
+        <label for="syllabusSessionSelect">Session</label>
+        <select id="syllabusSessionSelect" style="width:100%; padding:10px 12px; font-size:14.5px; border:1.5px solid #e6ddcf; border-radius:10px; background:#fffdfa;"></select>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button id="syllabusNewSessionBtn" type="button" style="margin:0;">New Session</button>
+          <button id="syllabusDeleteSessionBtn" type="button" style="margin:0; background:#c0392b;">Delete Session</button>
+        </div>
+        <p id="syllabusStatus" class="msg"></p>
+
+        <label style="margin-top:18px;">Rows</label>
+        <button id="syllabusAddRowBtn" type="button" class="small-btn">Add Row</button>
+        <ul id="syllabusRowList" class="scroll-box"></ul>
       </div>
 
       <div class="section-block" style="text-align:center;">
