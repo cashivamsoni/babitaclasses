@@ -719,7 +719,8 @@ if (slideshow) {
   const noticeListEl = document.getElementById("noticeMarqueeList");
   const videoListEl = document.getElementById("videoList");
   const hasGalleryImgs = document.getElementById("galleryImg1");
-  if (!dateEl && !marqueeEl && !noticeListEl && !videoListEl && !hasGalleryImgs) return;
+  const syllabusEl = document.getElementById("syllabusDynamicSessions");
+  if (!dateEl && !marqueeEl && !noticeListEl && !videoListEl && !hasGalleryImgs && !syllabusEl) return;
 
   (async function () {
     try {
@@ -806,6 +807,49 @@ if (slideshow) {
               '<li><a href="' + d.url + '" target="_blank">' + (d.title || "") + "</a></li>";
           });
           videoListEl.innerHTML = vHtml;
+        }
+      }
+
+      // Syllabus sessions (2025-26 onward; older sessions stay static in the HTML)
+      if (syllabusEl) {
+        const sq = query(collection(db, "syllabusSessions"), orderBy("order", "desc"));
+        const sessionsSnap = await getDocs(sq);
+        if (!sessionsSnap.empty) {
+          const cell = (val) => {
+            const v = (val || "").trim();
+            if (/^https?:\/\//i.test(v)) {
+              return (
+                '<div class="flex"><a class="btn-inline1" href="' +
+                v +
+                '" target="_blank" rel="noopener">Open</a></div>'
+              );
+            }
+            return v || "NA";
+          };
+
+          let sHtml = "";
+          sessionsSnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            const rows = Array.isArray(data.rows) ? data.rows : [];
+            sHtml += '<h3 style="margin-top:12px">Session ' + docSnap.id + "</h3>";
+            sHtml += '<div style="overflow:auto"><table aria-label="Syllabus ' + docSnap.id + '">';
+            sHtml +=
+              "<thead><tr><th>Test/Exam</th><th>Syllabus</th><th>Datesheet</th><th>Result</th></tr></thead><tbody>";
+            rows.forEach((row) => {
+              sHtml +=
+                "<tr><td>" +
+                (row.exam || "") +
+                "</td><td>" +
+                cell(row.syllabus) +
+                "</td><td>" +
+                cell(row.datesheet) +
+                "</td><td>" +
+                cell(row.result) +
+                "</td></tr>";
+            });
+            sHtml += "</tbody></table></div>";
+          });
+          syllabusEl.innerHTML = sHtml;
         }
       }
     } catch (err) {
