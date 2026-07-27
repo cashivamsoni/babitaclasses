@@ -67,6 +67,13 @@ const noticeList = document.getElementById("noticeList");
 const noticeDeleteSelectedBtn = document.getElementById("noticeDeleteSelectedBtn");
 const noticeSelectModeBtn = document.getElementById("noticeSelectModeBtn");
 
+noticeInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    noticeAddBtn.click();
+  }
+});
+
 const undoToast = document.getElementById("undoToast");
 const undoToastMsg = document.getElementById("undoToastMsg");
 const undoToastBtn = document.getElementById("undoToastBtn");
@@ -87,6 +94,15 @@ const galleryStatus = document.getElementById("galleryStatus");
 const videoTitleInput = document.getElementById("videoTitleInput");
 const videoUrlInput = document.getElementById("videoUrlInput");
 const videoAddBtn = document.getElementById("videoAddBtn");
+
+[videoTitleInput, videoUrlInput].forEach((input) => {
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      videoAddBtn.click();
+    }
+  });
+});
 const videoStatus = document.getElementById("videoStatus");
 const videoAdminList = document.getElementById("videoAdminList");
 const videoSelectModeBtn = document.getElementById("videoSelectModeBtn");
