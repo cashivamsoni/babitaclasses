@@ -108,6 +108,13 @@ const videoAdminList = document.getElementById("videoAdminList");
 const videoSelectModeBtn = document.getElementById("videoSelectModeBtn");
 const videoDeleteSelectedBtn = document.getElementById("videoDeleteSelectedBtn");
 
+const syllabusSessionSelect = document.getElementById("syllabusSessionSelect");
+const syllabusNewSessionBtn = document.getElementById("syllabusNewSessionBtn");
+const syllabusDeleteSessionBtn = document.getElementById("syllabusDeleteSessionBtn");
+const syllabusStatus = document.getElementById("syllabusStatus");
+const syllabusAddRowBtn = document.getElementById("syllabusAddRowBtn");
+const syllabusRowList = document.getElementById("syllabusRowList");
+
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -120,6 +127,7 @@ onAuthStateChanged(auth, async (user) => {
     await loadGallery();
     await renderNotices();
     await renderVideos();
+    await loadSyllabusSessions();
   } else {
     adminHub.style.display = "none";
     adminView.style.display = "none";
@@ -714,5 +722,296 @@ videoAddBtn.addEventListener("click", async () => {
     console.error(err);
   } finally {
     videoAddBtn.disabled = false;
+  }
+});
+
+// ---------- Syllabus Sessions ----------
+// Only sessions saved here are admin-managed. Older static sessions
+// (2020-21 through 2023-24) stay untouched in the page's own HTML.
+const SYLLABUS_COL = collection(db, "syllabusSessions");
+
+const DEFAULT_SYLLABUS_SESSION = {
+  id: "2025-26",
+  order: 2025,
+  rows: [
+    {
+      exam: "Test - 1",
+      syllabus: "https://drive.google.com/file/d/1x4jFCTrxftFXBarUP9tbFCjtMXPR-Qn2/view?usp=drivesdk",
+      datesheet: "Part A - 3 May 2025 (Saturday), Part B - 13 May 2025 (Tuesday)",
+      result: "https://drive.google.com/uc?export=download&id=1uxiqSSvlqzyRat2JHAMJBsNFsWbHshX0",
+    },
+    { exam: "Test - 2", syllabus: "NA", datesheet: "NA", result: "NA" },
+    {
+      exam: "Term - 1",
+      syllabus: "https://drive.google.com/uc?export=download&id=1UDdI_iiWPK-rjmnpoQ5TRZpnzqJJlPpB",
+      datesheet: "27 July 2025 (Sunday)",
+      result: "https://drive.google.com/uc?export=download&id=1VMijTLYNzxrlDvZZfcyS5RsRwyBuCLZm",
+    },
+    { exam: "Term - 2", syllabus: "NA", datesheet: "NA", result: "NA" },
+  ],
+};
+
+let syllabusSessionsCache = [];
+let selectedSyllabusId = null;
+
+function populateSyllabusSelect() {
+  syllabusSessionSelect.innerHTML = "";
+  syllabusSessionsCache.forEach((s) => {
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.textContent = s.id;
+    syllabusSessionSelect.appendChild(opt);
+  });
+}
+
+function getSelectedSession() {
+  return syllabusSessionsCache.find((s) => s.id === selectedSyllabusId);
+}
+
+async function saveSyllabusSession(session) {
+  await setDoc(doc(db, "syllabusSessions", session.id), { order: session.order, rows: session.rows });
+}
+
+function renderSyllabusRows() {
+  syllabusRowList.innerHTML = "";
+  const session = getSelectedSession();
+  if (!session) return;
+
+  session.rows.forEach((row, index) => {
+    const li = document.createElement("li");
+
+    const span = document.createElement("span");
+    span.textContent =
+      row.exam + " — " + [row.syllabus, row.datesheet, row.result].filter(Boolean).join(" | ");
+    li.appendChild(span);
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "edit-btn";
+    editBtn.textContent = "Edit";
+    editBtn.addEventListener("click", () => editSyllabusRow(index));
+    li.appendChild(editBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "delete-btn";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.addEventListener("click", () => deleteSyllabusRow(index));
+    li.appendChild(deleteBtn);
+
+    syllabusRowList.appendChild(li);
+  });
+}
+
+async function loadSyllabusSessions() {
+  try {
+    const q = query(SYLLABUS_COL, orderBy("order", "desc"));
+    const snap = await getDocs(q);
+    syllabusSessionsCache = [];
+    snap.forEach((d) => {
+      const data = d.data();
+      syllabusSessionsCache.push({
+        id: d.id,
+        order: data.order,
+        rows: Array.isArray(data.rows) ? data.rows : [],
+      });
+    });
+    if (syllabusSessionsCache.length === 0) {
+      syllabusSessionsCache.push({
+        ...DEFAULT_SYLLABUS_SESSION,
+        rows: DEFAULT_SYLLABUS_SESSION.rows.slice(),
+      });
+    }
+    populateSyllabusSelect();
+    selectedSyllabusId = syllabusSessionsCache[0].id;
+    syllabusSessionSelect.value = selectedSyllabusId;
+    renderSyllabusRows();
+  } catch (err) {
+    syllabusStatus.textContent = "Could not load sessions: " + (err.code || err.message);
+    syllabusStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+async function editSyllabusRow(index) {
+  const session = getSelectedSession();
+  const row = session.rows[index];
+  const previousRow = { ...row };
+
+  const exam = prompt("Exam name:", row.exam);
+  if (exam === null) return;
+  const syllabus = prompt("Syllabus (paste a link, or type text/NA):", row.syllabus);
+  if (syllabus === null) return;
+  const datesheet = prompt("Datesheet (paste a link, or type text/date):", row.datesheet);
+  if (datesheet === null) return;
+  const result = prompt("Result (paste a link, or type text/NA):", row.result);
+  if (result === null) return;
+
+  session.rows[index] = {
+    exam: exam.trim(),
+    syllabus: syllabus.trim(),
+    datesheet: datesheet.trim(),
+    result: result.trim(),
+  };
+  syllabusStatus.textContent = "Saving...";
+  syllabusStatus.className = "msg";
+  try {
+    await saveSyllabusSession(session);
+    renderSyllabusRows();
+    syllabusStatus.textContent = "Row updated.";
+    syllabusStatus.className = "msg success";
+    showUndoToast("Row updated.", async () => {
+      session.rows[index] = previousRow;
+      await saveSyllabusSession(session);
+      renderSyllabusRows();
+    });
+  } catch (err) {
+    session.rows[index] = previousRow;
+    syllabusStatus.textContent = "Save failed: " + (err.code || err.message);
+    syllabusStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+async function deleteSyllabusRow(index) {
+  if (!confirm("Delete this row?")) return;
+  const session = getSelectedSession();
+  const removedRow = session.rows[index];
+  session.rows.splice(index, 1);
+  syllabusStatus.textContent = "Deleting...";
+  syllabusStatus.className = "msg";
+  try {
+    await saveSyllabusSession(session);
+    renderSyllabusRows();
+    syllabusStatus.textContent = "Row deleted.";
+    syllabusStatus.className = "msg success";
+    showUndoToast("Row deleted.", async () => {
+      session.rows.splice(index, 0, removedRow);
+      await saveSyllabusSession(session);
+      renderSyllabusRows();
+    });
+  } catch (err) {
+    session.rows.splice(index, 0, removedRow);
+    syllabusStatus.textContent = "Delete failed: " + (err.code || err.message);
+    syllabusStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+syllabusAddRowBtn.addEventListener("click", async () => {
+  const session = getSelectedSession();
+  if (!session) return;
+  const exam = prompt("Exam name:", "");
+  if (exam === null || !exam.trim()) return;
+  const syllabus = prompt("Syllabus (paste a link, or type text/NA):", "NA") || "NA";
+  const datesheet = prompt("Datesheet (paste a link, or type text/date):", "NA") || "NA";
+  const result = prompt("Result (paste a link, or type text/NA):", "NA") || "NA";
+
+  session.rows.push({
+    exam: exam.trim(),
+    syllabus: syllabus.trim(),
+    datesheet: datesheet.trim(),
+    result: result.trim(),
+  });
+  syllabusStatus.textContent = "Saving...";
+  syllabusStatus.className = "msg";
+  try {
+    await saveSyllabusSession(session);
+    renderSyllabusRows();
+    syllabusStatus.textContent = "Row added.";
+    syllabusStatus.className = "msg success";
+    showUndoToast("Row added.", async () => {
+      session.rows.pop();
+      await saveSyllabusSession(session);
+      renderSyllabusRows();
+    });
+  } catch (err) {
+    session.rows.pop();
+    syllabusStatus.textContent = "Could not add row: " + (err.code || err.message);
+    syllabusStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+syllabusSessionSelect.addEventListener("change", () => {
+  selectedSyllabusId = syllabusSessionSelect.value;
+  renderSyllabusRows();
+});
+
+syllabusNewSessionBtn.addEventListener("click", async () => {
+  const label = prompt("New session label (e.g. 2026-27):", "");
+  if (!label || !label.trim()) return;
+  const trimmed = label.trim();
+  if (syllabusSessionsCache.some((s) => s.id === trimmed)) {
+    syllabusStatus.textContent = "That session already exists.";
+    syllabusStatus.className = "msg error";
+    return;
+  }
+  const orderMatch = trimmed.match(/\d{4}/);
+  const order = orderMatch ? parseInt(orderMatch[0], 10) : Date.now();
+  const newSession = { id: trimmed, order, rows: [] };
+  syllabusStatus.textContent = "Creating...";
+  syllabusStatus.className = "msg";
+  try {
+    await saveSyllabusSession(newSession);
+    syllabusSessionsCache.push(newSession);
+    syllabusSessionsCache.sort((a, b) => b.order - a.order);
+    populateSyllabusSelect();
+    selectedSyllabusId = trimmed;
+    syllabusSessionSelect.value = trimmed;
+    renderSyllabusRows();
+    syllabusStatus.textContent = "Session created.";
+    syllabusStatus.className = "msg success";
+    showUndoToast('Session "' + trimmed + '" created.', async () => {
+      await deleteDoc(doc(db, "syllabusSessions", trimmed));
+      syllabusSessionsCache = syllabusSessionsCache.filter((s) => s.id !== trimmed);
+      if (syllabusSessionsCache.length === 0) {
+        syllabusSessionsCache.push({
+          ...DEFAULT_SYLLABUS_SESSION,
+          rows: DEFAULT_SYLLABUS_SESSION.rows.slice(),
+        });
+      }
+      populateSyllabusSelect();
+      selectedSyllabusId = syllabusSessionsCache[0].id;
+      syllabusSessionSelect.value = selectedSyllabusId;
+      renderSyllabusRows();
+    });
+  } catch (err) {
+    syllabusStatus.textContent = "Could not create session: " + (err.code || err.message);
+    syllabusStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+syllabusDeleteSessionBtn.addEventListener("click", async () => {
+  const session = getSelectedSession();
+  if (!session) return;
+  if (!confirm('Delete session "' + session.id + '"? This removes it from the live site.')) return;
+  const deletedSession = { id: session.id, order: session.order, rows: session.rows.slice() };
+  syllabusStatus.textContent = "Deleting...";
+  syllabusStatus.className = "msg";
+  try {
+    await deleteDoc(doc(db, "syllabusSessions", session.id));
+    syllabusSessionsCache = syllabusSessionsCache.filter((s) => s.id !== session.id);
+    if (syllabusSessionsCache.length === 0) {
+      syllabusSessionsCache.push({
+        ...DEFAULT_SYLLABUS_SESSION,
+        rows: DEFAULT_SYLLABUS_SESSION.rows.slice(),
+      });
+    }
+    populateSyllabusSelect();
+    selectedSyllabusId = syllabusSessionsCache[0].id;
+    syllabusSessionSelect.value = selectedSyllabusId;
+    renderSyllabusRows();
+    syllabusStatus.textContent = "Session deleted.";
+    syllabusStatus.className = "msg success";
+    showUndoToast('Session "' + deletedSession.id + '" deleted.', async () => {
+      await saveSyllabusSession(deletedSession);
+      await loadSyllabusSessions();
+    });
+  } catch (err) {
+    syllabusStatus.textContent = "Delete failed: " + (err.code || err.message);
+    syllabusStatus.className = "msg error";
+    console.error(err);
   }
 });
