@@ -1166,6 +1166,19 @@ async function renderStudents() {
     studentStatus.className = "msg error";
     console.error(err);
   }
+  await refreshAttendanceStudentsIfOpen();
+}
+
+async function refreshAttendanceStudentsIfOpen() {
+  if (!currentAttendanceDate) return;
+  try {
+    const studentsSnap = await getDocs(query(STUDENTS_COL, orderBy("name", "asc")));
+    studentsCache = [];
+    studentsSnap.forEach((d) => studentsCache.push({ id: d.id, ...d.data() }));
+    if (!currentAttendanceDoc.holiday) renderAttendanceStudentList();
+  } catch (err) {
+    // Silent — the Mark Attendance list just stays as it was.
+  }
 }
 
 async function loadStudents() {
