@@ -19,6 +19,9 @@ import {
   orderBy,
   getDocs,
   serverTimestamp,
+  documentId,
+  where,
+  deleteField,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -46,6 +49,10 @@ const adminHub = document.getElementById("adminHub");
 const adminView = document.getElementById("adminView");
 const hubHomeBtn = document.getElementById("hubHomeBtn");
 const backToHubBtn = document.getElementById("backToHubBtn");
+const hubAttendanceBtn = document.getElementById("hubAttendanceBtn");
+const adminAttendanceView = document.getElementById("adminAttendanceView");
+const attendanceBackBtn = document.getElementById("attendanceBackBtn");
+const attendanceLogoutBtn = document.getElementById("attendanceLogoutBtn");
 const loginForm = document.getElementById("loginForm");
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
@@ -115,6 +122,31 @@ const syllabusStatus = document.getElementById("syllabusStatus");
 const syllabusAddRowBtn = document.getElementById("syllabusAddRowBtn");
 const syllabusRowList = document.getElementById("syllabusRowList");
 
+const studentNameInput = document.getElementById("studentNameInput");
+const studentRollInput = document.getElementById("studentRollInput");
+const studentAddBtn = document.getElementById("studentAddBtn");
+const studentStatus = document.getElementById("studentStatus");
+const studentList = document.getElementById("studentList");
+const studentSelectModeBtn = document.getElementById("studentSelectModeBtn");
+const studentDeleteSelectedBtn = document.getElementById("studentDeleteSelectedBtn");
+
+const attendanceDateInput = document.getElementById("attendanceDateInput");
+const attendanceHolidayView = document.getElementById("attendanceHolidayView");
+const attendanceHolidayName = document.getElementById("attendanceHolidayName");
+const attendanceRemoveHolidayBtn = document.getElementById("attendanceRemoveHolidayBtn");
+const attendanceMarkView = document.getElementById("attendanceMarkView");
+const attendanceMarkHolidayBtn = document.getElementById("attendanceMarkHolidayBtn");
+const attendanceStudentList = document.getElementById("attendanceStudentList");
+const attendanceStatus = document.getElementById("attendanceStatus");
+
+const attendanceFromInput = document.getElementById("attendanceFromInput");
+const attendanceToInput = document.getElementById("attendanceToInput");
+const attendanceLoadRangeBtn = document.getElementById("attendanceLoadRangeBtn");
+const attendanceRangeStatus = document.getElementById("attendanceRangeStatus");
+const attendanceSelectModeBtn = document.getElementById("attendanceSelectModeBtn");
+const attendanceRangeList = document.getElementById("attendanceRangeList");
+const attendanceDeleteSelectedBtn = document.getElementById("attendanceDeleteSelectedBtn");
+
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -145,6 +177,24 @@ backToHubBtn.addEventListener("click", () => {
   adminView.style.display = "none";
   adminHub.style.display = "block";
 });
+
+hubAttendanceBtn.addEventListener("click", async () => {
+  adminHub.style.display = "none";
+  adminAttendanceView.style.display = "block";
+  const todayStr = todayISO();
+  attendanceDateInput.value = todayStr;
+  attendanceFromInput.value = todayStr;
+  attendanceToInput.value = todayStr;
+  await loadStudents();
+  await loadAttendanceForDate(todayStr);
+});
+
+attendanceBackBtn.addEventListener("click", () => {
+  adminAttendanceView.style.display = "none";
+  adminHub.style.display = "block";
+});
+
+attendanceLogoutBtn.addEventListener("click", () => signOut(auth));
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -1013,5 +1063,483 @@ syllabusDeleteSessionBtn.addEventListener("click", async () => {
     syllabusStatus.textContent = "Delete failed: " + (err.code || err.message);
     syllabusStatus.className = "msg error";
     console.error(err);
+  }
+});
+
+// ---------- Students (add / edit / delete) ----------
+const STUDENTS_COL = collection(db, "students");
+
+function updateStudentDeleteSelectedVisibility() {
+  const anyChecked = studentList.querySelector('input[type="checkbox"]:checked');
+  studentDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+}
+
+studentSelectModeBtn.addEventListener("click", () => {
+  const enabling = !studentList.classList.contains("bulk-mode");
+  studentList.classList.toggle("bulk-mode", enabling);
+  studentSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
+  if (!enabling) {
+    studentList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+    studentDeleteSelectedBtn.style.display = "none";
+  }
+});
+
+async function renderStudents() {
+  studentList.innerHTML = "";
+  studentDeleteSelectedBtn.style.display = "none";
+  try {
+    const q = query(STUDENTS_COL, orderBy("name", "asc"));
+    const snap = await getDocs(q);
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      const li = document.createElement("li");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.dataset.id = docSnap.id;
+      checkbox._studentData = data;
+      checkbox.addEventListener("change", updateStudentDeleteSelectedVisibility);
+      li.appendChild(checkbox);
+
+      const span = document.createElement("span");
+      span.textContent = data.name + (data.rollNumber ? " (Roll " + data.rollNumber + ")" : "");
+      li.appendChild(span);
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", async () => {
+        const previousName = data.name || "";
+        const previousRoll = data.rollNumber || "";
+        const updatedName = prompt("Student name:", previousName);
+        if (updatedName === null) return;
+        const updatedRoll = prompt("Roll number (optional):", previousRoll);
+        if (updatedRoll === null) return;
+        const name = updatedName.trim();
+        if (!name) return;
+        const rollNumber = updatedRoll.trim();
+        try {
+          await updateDoc(doc(db, "students", docSnap.id), { name, rollNumber });
+          await renderStudents();
+          showUndoToast("Student updated.", async () => {
+            await updateDoc(doc(db, "students", docSnap.id), {
+              name: previousName,
+              rollNumber: previousRoll,
+            });
+            await renderStudents();
+          });
+        } catch (err) {
+          studentStatus.textContent = "Edit failed: " + (err.code || err.message);
+          studentStatus.className = "msg error";
+          console.error(err);
+        }
+      });
+      li.appendChild(editBtn);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", async () => {
+        if (!confirm("Delete this student?")) return;
+        const deletedId = docSnap.id;
+        try {
+          await deleteDoc(doc(db, "students", deletedId));
+          await renderStudents();
+          showUndoToast("Student deleted.", async () => {
+            await setDoc(doc(db, "students", deletedId), data);
+            await renderStudents();
+          });
+        } catch (err) {
+          studentStatus.textContent = "Delete failed: " + (err.code || err.message);
+          studentStatus.className = "msg error";
+          console.error(err);
+        }
+      });
+      li.appendChild(deleteBtn);
+
+      studentList.appendChild(li);
+    });
+  } catch (err) {
+    studentStatus.textContent = "Could not load students: " + (err.code || err.message);
+    studentStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+async function loadStudents() {
+  await renderStudents();
+}
+
+studentDeleteSelectedBtn.addEventListener("click", async () => {
+  const checked = studentList.querySelectorAll('input[type="checkbox"]:checked');
+  if (checked.length === 0) return;
+  if (!confirm("Delete " + checked.length + " selected student(s)?")) return;
+
+  studentDeleteSelectedBtn.disabled = true;
+  studentStatus.textContent = "Deleting...";
+  studentStatus.className = "msg";
+  try {
+    const deleted = [];
+    for (const cb of checked) {
+      deleted.push({ id: cb.dataset.id, data: cb._studentData });
+      await deleteDoc(doc(db, "students", cb.dataset.id));
+    }
+    studentStatus.textContent = "Selected students deleted.";
+    studentStatus.className = "msg success";
+    await renderStudents();
+    showUndoToast(deleted.length + " student(s) deleted.", async () => {
+      for (const item of deleted) {
+        await setDoc(doc(db, "students", item.id), item.data);
+      }
+      await renderStudents();
+    });
+  } catch (err) {
+    studentStatus.textContent = "Delete failed: " + (err.code || err.message);
+    studentStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    studentDeleteSelectedBtn.disabled = false;
+  }
+});
+
+studentAddBtn.addEventListener("click", async () => {
+  const name = studentNameInput.value.trim();
+  const rollNumber = studentRollInput.value.trim();
+  if (!name) {
+    studentStatus.textContent = "Student name is required.";
+    studentStatus.className = "msg error";
+    return;
+  }
+  studentAddBtn.disabled = true;
+  studentStatus.textContent = "Adding...";
+  studentStatus.className = "msg";
+  try {
+    const newDoc = await addDoc(STUDENTS_COL, { name, rollNumber, createdAt: serverTimestamp() });
+    studentNameInput.value = "";
+    studentRollInput.value = "";
+    studentStatus.textContent = "Student added.";
+    studentStatus.className = "msg success";
+    await renderStudents();
+    showUndoToast("Student added.", async () => {
+      await deleteDoc(doc(db, "students", newDoc.id));
+      await renderStudents();
+    });
+  } catch (err) {
+    studentStatus.textContent = "Could not add student: " + (err.code || err.message);
+    studentStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    studentAddBtn.disabled = false;
+  }
+});
+
+[studentNameInput, studentRollInput].forEach((input) => {
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      studentAddBtn.click();
+    }
+  });
+});
+
+// ---------- Mark Attendance ----------
+const ATTENDANCE_COL = collection(db, "attendance");
+let currentAttendanceDate = null;
+let currentAttendanceDoc = { holiday: null, records: {} };
+let studentsCache = [];
+
+async function loadAttendanceForDate(dateStr) {
+  currentAttendanceDate = dateStr;
+  attendanceStatus.textContent = "Loading...";
+  attendanceStatus.className = "msg";
+  try {
+    const snap = await getDoc(doc(db, "attendance", dateStr));
+    currentAttendanceDoc = snap.exists()
+      ? { holiday: snap.data().holiday || null, records: snap.data().records || {} }
+      : { holiday: null, records: {} };
+
+    const studentsSnap = await getDocs(query(STUDENTS_COL, orderBy("name", "asc")));
+    studentsCache = [];
+    studentsSnap.forEach((d) => studentsCache.push({ id: d.id, ...d.data() }));
+
+    renderAttendanceView();
+    attendanceStatus.textContent = "";
+  } catch (err) {
+    attendanceStatus.textContent = "Could not load attendance: " + (err.code || err.message);
+    attendanceStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+function renderAttendanceView() {
+  if (currentAttendanceDoc.holiday) {
+    attendanceHolidayView.style.display = "block";
+    attendanceMarkView.style.display = "none";
+    attendanceHolidayName.textContent = currentAttendanceDoc.holiday;
+  } else {
+    attendanceHolidayView.style.display = "none";
+    attendanceMarkView.style.display = "block";
+    renderAttendanceStudentList();
+  }
+}
+
+function renderAttendanceStudentList() {
+  attendanceStudentList.innerHTML = "";
+  studentsCache.forEach((student) => {
+    const li = document.createElement("li");
+
+    const span = document.createElement("span");
+    span.textContent = student.name + (student.rollNumber ? " (Roll " + student.rollNumber + ")" : "");
+    li.appendChild(span);
+
+    const status = currentAttendanceDoc.records[student.id];
+
+    const presentBtn = document.createElement("button");
+    presentBtn.type = "button";
+    presentBtn.textContent = "Present";
+    presentBtn.style.background = status === "present" ? "#1e8f2e" : "#ccc";
+    presentBtn.style.color = status === "present" ? "#fff" : "#555";
+    presentBtn.addEventListener("click", () => setAttendanceStatus(student.id, "present"));
+    li.appendChild(presentBtn);
+
+    const absentBtn = document.createElement("button");
+    absentBtn.type = "button";
+    absentBtn.textContent = "Absent";
+    absentBtn.style.background = status === "absent" ? "#c0392b" : "#ccc";
+    absentBtn.style.color = status === "absent" ? "#fff" : "#555";
+    absentBtn.addEventListener("click", () => setAttendanceStatus(student.id, "absent"));
+    li.appendChild(absentBtn);
+
+    attendanceStudentList.appendChild(li);
+  });
+}
+
+async function setAttendanceStatus(studentId, status) {
+  const previousStatus = currentAttendanceDoc.records[studentId]; // undefined if unset
+  currentAttendanceDoc.records[studentId] = status;
+  renderAttendanceStudentList();
+  try {
+    await setDoc(
+      doc(db, "attendance", currentAttendanceDate),
+      { records: { [studentId]: status } },
+      { merge: true }
+    );
+    showUndoToast("Attendance updated.", async () => {
+      if (previousStatus === undefined) {
+        delete currentAttendanceDoc.records[studentId];
+        await setDoc(
+          doc(db, "attendance", currentAttendanceDate),
+          { records: { [studentId]: deleteField() } },
+          { merge: true }
+        );
+      } else {
+        currentAttendanceDoc.records[studentId] = previousStatus;
+        await setDoc(
+          doc(db, "attendance", currentAttendanceDate),
+          { records: { [studentId]: previousStatus } },
+          { merge: true }
+        );
+      }
+      renderAttendanceStudentList();
+    });
+  } catch (err) {
+    currentAttendanceDoc.records[studentId] = previousStatus;
+    renderAttendanceStudentList();
+    attendanceStatus.textContent = "Could not save: " + (err.code || err.message);
+    attendanceStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+attendanceDateInput.addEventListener("change", () => {
+  if (attendanceDateInput.value) loadAttendanceForDate(attendanceDateInput.value);
+});
+
+attendanceMarkHolidayBtn.addEventListener("click", async () => {
+  const name = prompt("Holiday name:", "");
+  if (!name || !name.trim()) return;
+  const trimmed = name.trim();
+  try {
+    await setDoc(doc(db, "attendance", currentAttendanceDate), { holiday: trimmed }, { merge: true });
+    currentAttendanceDoc.holiday = trimmed;
+    renderAttendanceView();
+    showUndoToast('Marked as holiday: "' + trimmed + '".', async () => {
+      await setDoc(
+        doc(db, "attendance", currentAttendanceDate),
+        { holiday: deleteField() },
+        { merge: true }
+      );
+      currentAttendanceDoc.holiday = null;
+      renderAttendanceView();
+    });
+  } catch (err) {
+    attendanceStatus.textContent = "Could not mark holiday: " + (err.code || err.message);
+    attendanceStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+attendanceRemoveHolidayBtn.addEventListener("click", async () => {
+  const previousName = currentAttendanceDoc.holiday;
+  try {
+    await setDoc(doc(db, "attendance", currentAttendanceDate), { holiday: deleteField() }, { merge: true });
+    currentAttendanceDoc.holiday = null;
+    renderAttendanceView();
+    showUndoToast("Holiday removed.", async () => {
+      await setDoc(
+        doc(db, "attendance", currentAttendanceDate),
+        { holiday: previousName },
+        { merge: true }
+      );
+      currentAttendanceDoc.holiday = previousName;
+      renderAttendanceView();
+    });
+  } catch (err) {
+    attendanceStatus.textContent = "Could not remove holiday: " + (err.code || err.message);
+    attendanceStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+// ---------- Clear Attendance Records (date range, bulk delete) ----------
+function updateAttendanceDeleteSelectedVisibility() {
+  const anyChecked = attendanceRangeList.querySelector('input[type="checkbox"]:checked');
+  attendanceDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+}
+
+attendanceSelectModeBtn.addEventListener("click", () => {
+  const enabling = !attendanceRangeList.classList.contains("bulk-mode");
+  attendanceRangeList.classList.toggle("bulk-mode", enabling);
+  attendanceSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
+  if (!enabling) {
+    attendanceRangeList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+    attendanceDeleteSelectedBtn.style.display = "none";
+  }
+});
+
+function summarizeAttendanceDoc(data) {
+  if (data.holiday) return "Holiday: " + data.holiday;
+  const records = data.records || {};
+  const values = Object.values(records);
+  if (values.length === 0) return "No records";
+  const present = values.filter((v) => v === "present").length;
+  const absent = values.filter((v) => v === "absent").length;
+  return present + " present, " + absent + " absent";
+}
+
+async function renderAttendanceRange(fromDate, toDate) {
+  attendanceRangeList.innerHTML = "";
+  attendanceDeleteSelectedBtn.style.display = "none";
+  try {
+    const q = query(
+      ATTENDANCE_COL,
+      where(documentId(), ">=", fromDate),
+      where(documentId(), "<=", toDate)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      attendanceRangeStatus.textContent = "No attendance records found in that range.";
+      attendanceRangeStatus.className = "msg";
+      return;
+    }
+    attendanceRangeStatus.textContent = "";
+
+    const docs = [];
+    snap.forEach((d) => docs.push({ id: d.id, data: d.data() }));
+    docs.sort((a, b) => a.id.localeCompare(b.id));
+
+    docs.forEach(({ id, data }) => {
+      const li = document.createElement("li");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.dataset.id = id;
+      checkbox._attendanceData = data;
+      checkbox.addEventListener("change", updateAttendanceDeleteSelectedVisibility);
+      li.appendChild(checkbox);
+
+      const span = document.createElement("span");
+      span.textContent = id + " — " + summarizeAttendanceDoc(data);
+      li.appendChild(span);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", async () => {
+        if (!confirm("Delete attendance for " + id + "?")) return;
+        try {
+          await deleteDoc(doc(db, "attendance", id));
+          await renderAttendanceRange(fromDate, toDate);
+          showUndoToast("Attendance for " + id + " deleted.", async () => {
+            await setDoc(doc(db, "attendance", id), data);
+            await renderAttendanceRange(fromDate, toDate);
+          });
+        } catch (err) {
+          attendanceRangeStatus.textContent = "Delete failed: " + (err.code || err.message);
+          attendanceRangeStatus.className = "msg error";
+          console.error(err);
+        }
+      });
+      li.appendChild(deleteBtn);
+
+      attendanceRangeList.appendChild(li);
+    });
+  } catch (err) {
+    attendanceRangeStatus.textContent = "Could not load records: " + (err.code || err.message);
+    attendanceRangeStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+attendanceLoadRangeBtn.addEventListener("click", () => {
+  const from = attendanceFromInput.value;
+  const to = attendanceToInput.value;
+  if (!from || !to) {
+    attendanceRangeStatus.textContent = "Pick both a From and To date.";
+    attendanceRangeStatus.className = "msg error";
+    return;
+  }
+  if (from > to) {
+    attendanceRangeStatus.textContent = "From date must be before To date.";
+    attendanceRangeStatus.className = "msg error";
+    return;
+  }
+  renderAttendanceRange(from, to);
+});
+
+attendanceDeleteSelectedBtn.addEventListener("click", async () => {
+  const checked = attendanceRangeList.querySelectorAll('input[type="checkbox"]:checked');
+  if (checked.length === 0) return;
+  if (!confirm("Delete " + checked.length + " selected date(s) of attendance?")) return;
+
+  const from = attendanceFromInput.value;
+  const to = attendanceToInput.value;
+  attendanceDeleteSelectedBtn.disabled = true;
+  attendanceRangeStatus.textContent = "Deleting...";
+  attendanceRangeStatus.className = "msg";
+  try {
+    const deleted = [];
+    for (const cb of checked) {
+      deleted.push({ id: cb.dataset.id, data: cb._attendanceData });
+      await deleteDoc(doc(db, "attendance", cb.dataset.id));
+    }
+    attendanceRangeStatus.textContent = "Selected records deleted.";
+    attendanceRangeStatus.className = "msg success";
+    await renderAttendanceRange(from, to);
+    showUndoToast(deleted.length + " date(s) of attendance deleted.", async () => {
+      for (const item of deleted) {
+        await setDoc(doc(db, "attendance", item.id), item.data);
+      }
+      await renderAttendanceRange(from, to);
+    });
+  } catch (err) {
+    attendanceRangeStatus.textContent = "Delete failed: " + (err.code || err.message);
+    attendanceRangeStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    attendanceDeleteSelectedBtn.disabled = false;
   }
 });
