@@ -143,12 +143,12 @@
       }
 
       /* Notices + Videos rows */
-      #noticeList, #videoAdminList, #syllabusRowList {
+      #noticeList, #videoAdminList, #syllabusRowList, #studentList, #attendanceStudentList, #attendanceRangeList {
         list-style: none;
         padding: 0;
         margin: 8px 0 0;
       }
-      #noticeList li, #videoAdminList li, #syllabusRowList li {
+      #noticeList li, #videoAdminList li, #syllabusRowList li, #studentList li, #attendanceStudentList li, #attendanceRangeList li {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -159,17 +159,17 @@
         margin-bottom: 6px;
         font-size: 12.5px;
       }
-      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"] {
+      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"], #studentList li input[type="checkbox"], #attendanceStudentList li input[type="checkbox"], #attendanceRangeList li input[type="checkbox"] {
         width: auto;
         flex: none;
         display: none;
         accent-color: #990000;
       }
-      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"] {
+      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"], #studentList.bulk-mode li input[type="checkbox"], #attendanceRangeList.bulk-mode li input[type="checkbox"] {
         display: inline-block;
       }
-      #noticeList li span, #videoAdminList li span, #syllabusRowList li span { flex: 1; }
-      #noticeList button, #videoAdminList button, #syllabusRowList button {
+      #noticeList li span, #videoAdminList li span, #syllabusRowList li span, #studentList li span, #attendanceStudentList li span, #attendanceRangeList li span { flex: 1; }
+      #noticeList button, #videoAdminList button, #syllabusRowList button, #studentList button, #attendanceStudentList button, #attendanceRangeList button {
         width: auto;
         margin: 0;
         padding: 5px 11px;
@@ -177,8 +177,8 @@
         font-weight: 600;
         box-shadow: none;
       }
-      #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn { background: #1f6fd0; }
-      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn { background: #c0392b; }
+      #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn, #studentList .edit-btn { background: #1f6fd0; }
+      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn, #studentList .delete-btn, #attendanceRangeList .delete-btn { background: #c0392b; }
 
       .scroll-box {
         max-height: 240px;
@@ -288,7 +288,7 @@
         <button id="hubHomeBtn" type="button" class="hub-btn">Homepage</button>
         <button type="button" class="hub-btn" disabled title="Coming soon">Blog</button>
         <button type="button" class="hub-btn" disabled title="Coming soon">Results</button>
-        <button type="button" class="hub-btn" disabled title="Coming soon">Attendance</button>
+        <button id="hubAttendanceBtn" type="button" class="hub-btn">Attendance</button>
       </div>
       <button id="hubLogoutBtn" type="button">Logout</button>
     </div>
@@ -399,6 +399,57 @@
           Last Updated: <strong id="lastUpdatedDisplay">—</strong>
         </p>
         <p id="saveStatus" class="msg"></p>
+      </div>
+    </div>
+
+    <div id="adminAttendanceView" class="card" style="display:none; max-width:480px; position:relative;">
+      <button id="attendanceBackBtn" type="button" style="position:absolute; top:16px; left:16px; width:auto; margin:0; padding:6px 14px; font-size:12px; box-shadow:none;">← Back</button>
+      <button id="attendanceLogoutBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px; box-shadow:none;">Logout</button>
+
+      <h1>Attendance</h1>
+
+      <div class="section-block">
+        <p class="eyebrow">Students</p>
+        <label for="studentNameInput">Name</label>
+        <input type="text" id="studentNameInput" placeholder="e.g. Vasu Kumar">
+        <label for="studentRollInput">Roll Number (optional)</label>
+        <input type="text" id="studentRollInput" placeholder="e.g. 07">
+        <button id="studentAddBtn" type="button">Add Student</button>
+        <p id="studentStatus" class="msg"></p>
+        <button id="studentSelectModeBtn" type="button" class="small-btn">Select</button>
+        <ul id="studentList" class="scroll-box"></ul>
+        <button id="studentDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
+      </div>
+
+      <div class="section-block">
+        <p class="eyebrow">Mark Attendance</p>
+        <label for="attendanceDateInput">Date</label>
+        <input type="date" id="attendanceDateInput">
+
+        <div id="attendanceHolidayView" style="display:none; margin-top:12px;">
+          <p style="font-size:14px; margin:0 0 10px;">Holiday: <strong id="attendanceHolidayName"></strong></p>
+          <button id="attendanceRemoveHolidayBtn" type="button" style="background:#c0392b;">Remove Holiday</button>
+        </div>
+
+        <div id="attendanceMarkView">
+          <button id="attendanceMarkHolidayBtn" type="button" class="small-btn" style="margin-top:12px;">Mark as Holiday</button>
+          <ul id="attendanceStudentList" class="scroll-box"></ul>
+        </div>
+        <p id="attendanceStatus" class="msg"></p>
+      </div>
+
+      <div class="section-block">
+        <p class="eyebrow">Clear Attendance Records</p>
+        <p class="hint" style="margin-top:0;">Once records are copied to the physical register, clear them here to keep the database light.</p>
+        <label for="attendanceFromInput">From</label>
+        <input type="date" id="attendanceFromInput">
+        <label for="attendanceToInput">To</label>
+        <input type="date" id="attendanceToInput">
+        <button id="attendanceLoadRangeBtn" type="button">Load Records</button>
+        <p id="attendanceRangeStatus" class="msg"></p>
+        <button id="attendanceSelectModeBtn" type="button" class="small-btn">Select</button>
+        <ul id="attendanceRangeList" class="scroll-box"></ul>
+        <button id="attendanceDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
       </div>
     </div>
 
