@@ -19,6 +19,7 @@
         font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
         color: #2b2320;
         background: linear-gradient(160deg, #fff3cf 0%, #ffe9a8 45%, #fbd977 100%);
+        background-attachment: fixed;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -34,6 +35,13 @@
         padding: 34px 26px 28px;
         box-shadow: 0 12px 32px rgba(90, 40, 10, 0.14), 0 2px 8px rgba(90, 40, 10, 0.08);
         overflow: hidden;
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #ffcb3d, #990000 45%, #800000 100%);
       }
 
       .card h1 {
