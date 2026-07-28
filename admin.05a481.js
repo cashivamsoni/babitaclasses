@@ -153,7 +153,7 @@ onAuthStateChanged(auth, async (user) => {
     loginView.style.display = "none";
     adminView.style.display = "none";
     adminHub.style.display = "block";
-    await markUpdatedToday();
+    await loadLastUpdatedDisplay();
     await loadMarquee();
     await loadWhatsNew();
     await loadGallery();
@@ -214,7 +214,9 @@ loginForm.addEventListener("submit", async (e) => {
 hubLogoutBtn.addEventListener("click", () => signOut(auth));
 editorLogoutBtn.addEventListener("click", () => signOut(auth));
 
-// ---------- Last updated date: auto-set to today on every login ----------
+const markUpdatedTodayBtn = document.getElementById("markUpdatedTodayBtn");
+
+// ---------- Last updated date: shown on the hub, only updates on button click ----------
 function todayISO() {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -228,7 +230,29 @@ function formatReadable(isoDate) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
-async function markUpdatedToday() {
+async function loadLastUpdatedDisplay() {
+  try {
+    const snap = await getDoc(SITE_DOC);
+    if (snap.exists() && snap.data().lastUpdated) {
+      lastUpdatedDisplay.textContent = formatReadable(snap.data().lastUpdated);
+    }
+  } catch (err) {
+    saveStatus.textContent = "Could not load current date: " + (err.code || err.message);
+    saveStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+markUpdatedTodayBtn.addEventListener("click", async () => {
+  const previousDisplay = lastUpdatedDisplay.textContent;
+  let previousStored = null;
+  try {
+    const snap = await getDoc(SITE_DOC);
+    previousStored = snap.exists() ? snap.data().lastUpdated : null;
+  } catch (err) {
+    // If this read fails, undo just won't be offered below — the main action still proceeds.
+  }
+
   saveStatus.textContent = "Updating...";
   saveStatus.className = "msg";
   const today = todayISO();
@@ -237,12 +261,18 @@ async function markUpdatedToday() {
     lastUpdatedDisplay.textContent = formatReadable(today);
     saveStatus.textContent = "Site marked as updated today.";
     saveStatus.className = "msg success";
+    showUndoToast("Marked as updated today.", async () => {
+      if (previousStored) {
+        await setDoc(SITE_DOC, { lastUpdated: previousStored }, { merge: true });
+      }
+      lastUpdatedDisplay.textContent = previousDisplay;
+    });
   } catch (err) {
     saveStatus.textContent = "Could not update: " + (err.code || err.message);
     saveStatus.className = "msg error";
     console.error(err);
   }
-}
+});
 
 // ---------- Top marquee text ----------
 async function loadMarquee() {
