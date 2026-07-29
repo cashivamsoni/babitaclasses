@@ -1631,12 +1631,12 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
     const pdf = new jsPDF({ orientation: landscape ? "landscape" : "portrait", unit: "pt", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 40;
-    const pageMargin = 24; // thin frame margin, like the marksheet PDFs
+    const margin = 26;
+    const pageMargin = 12; // thin frame margin, like the marksheet PDFs
 
     function drawPageFrame() {
       pdf.setLineWidth(0.5);
-      pdf.setDrawColor(120, 120, 120);
+      pdf.setDrawColor(0, 0, 0);
       pdf.rect(pageMargin, pageMargin, pageWidth - pageMargin * 2, pageHeight - pageMargin * 2);
     }
 
@@ -1746,7 +1746,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           pdf.setFontSize(9);
           const textW = pdf.getTextWidth(data.holiday);
           const textX = x + dateColW / 2 + 3;
-          const textY = bodyTop + (cellH + textW) / 2;
+          const textY = bodyTop + (cellH - textW) / 2;
           pdf.text(data.holiday, textX, textY, { angle: -90 });
         }
         x += dateColW;
