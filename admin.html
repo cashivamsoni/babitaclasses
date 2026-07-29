@@ -6,6 +6,7 @@
     <title>Babita Classes - Admin</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
       * { box-sizing: border-box; }
 
@@ -440,7 +441,10 @@
         <p id="attendanceRangeStatus" class="msg"></p>
         <button id="attendanceSelectModeBtn" type="button" class="small-btn">Select</button>
         <ul id="attendanceRangeList" class="scroll-box"></ul>
-        <button id="attendanceDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
+        <div style="display:flex; gap:8px; margin-top:18px;">
+          <button id="attendanceDeleteSelectedBtn" type="button" style="display:none; background:#c0392b; margin:0;">Delete Selected</button>
+          <button id="attendanceExportPdfBtn" type="button" style="margin:0;">Export PDF</button>
+        </div>
       </div>
 
       <div class="section-block">
