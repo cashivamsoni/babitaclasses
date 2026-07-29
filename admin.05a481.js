@@ -73,6 +73,7 @@ const noticeStatus = document.getElementById("noticeStatus");
 const noticeList = document.getElementById("noticeList");
 const noticeDeleteSelectedBtn = document.getElementById("noticeDeleteSelectedBtn");
 const noticeSelectModeBtn = document.getElementById("noticeSelectModeBtn");
+const noticeSelectAllBtn = document.getElementById("noticeSelectAllBtn");
 
 noticeInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
@@ -113,6 +114,7 @@ const videoAddBtn = document.getElementById("videoAddBtn");
 const videoStatus = document.getElementById("videoStatus");
 const videoAdminList = document.getElementById("videoAdminList");
 const videoSelectModeBtn = document.getElementById("videoSelectModeBtn");
+const videoSelectAllBtn = document.getElementById("videoSelectAllBtn");
 const videoDeleteSelectedBtn = document.getElementById("videoDeleteSelectedBtn");
 
 const syllabusSessionSelect = document.getElementById("syllabusSessionSelect");
@@ -128,6 +130,7 @@ const studentAddBtn = document.getElementById("studentAddBtn");
 const studentStatus = document.getElementById("studentStatus");
 const studentList = document.getElementById("studentList");
 const studentSelectModeBtn = document.getElementById("studentSelectModeBtn");
+const studentSelectAllBtn = document.getElementById("studentSelectAllBtn");
 const studentDeleteSelectedBtn = document.getElementById("studentDeleteSelectedBtn");
 
 const attendanceDateInput = document.getElementById("attendanceDateInput");
@@ -144,6 +147,7 @@ const attendanceToInput = document.getElementById("attendanceToInput");
 const attendanceLoadRangeBtn = document.getElementById("attendanceLoadRangeBtn");
 const attendanceRangeStatus = document.getElementById("attendanceRangeStatus");
 const attendanceSelectModeBtn = document.getElementById("attendanceSelectModeBtn");
+const attendanceSelectAllBtn = document.getElementById("attendanceSelectAllBtn");
 const attendanceRangeList = document.getElementById("attendanceRangeList");
 const attendanceDeleteSelectedBtn = document.getElementById("attendanceDeleteSelectedBtn");
 const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn");
@@ -431,6 +435,26 @@ async function renderNotices() {
   }
 }
 
+// ---------- Shared "Select All / Deselect All" helper for every bulk-select list ----------
+function setupSelectAll(listEl, selectAllBtn, selectModeBtn) {
+  selectAllBtn.addEventListener("click", () => {
+    const checkboxes = listEl.querySelectorAll('input[type="checkbox"]');
+    const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every((cb) => cb.checked);
+    checkboxes.forEach((cb) => {
+      cb.checked = !allChecked;
+      cb.dispatchEvent(new Event("change"));
+    });
+    selectAllBtn.textContent = allChecked ? "Select All" : "Deselect All";
+  });
+
+  // Show/hide Select All alongside bulk-mode, and reset its label each time
+  selectModeBtn.addEventListener("click", () => {
+    const enabling = listEl.classList.contains("bulk-mode");
+    selectAllBtn.style.display = enabling ? "inline-block" : "none";
+    selectAllBtn.textContent = "Select All";
+  });
+}
+
 function updateDeleteSelectedVisibility() {
   const anyChecked = noticeList.querySelector('input[type="checkbox"]:checked');
   noticeDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
@@ -445,6 +469,8 @@ noticeSelectModeBtn.addEventListener("click", () => {
     noticeDeleteSelectedBtn.style.display = "none";
   }
 });
+setupSelectAll(noticeList, noticeSelectAllBtn, noticeSelectModeBtn);
+
 
 noticeDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = noticeList.querySelectorAll('input[type="checkbox"]:checked');
@@ -661,6 +687,8 @@ videoSelectModeBtn.addEventListener("click", () => {
     videoDeleteSelectedBtn.style.display = "none";
   }
 });
+setupSelectAll(videoAdminList, videoSelectAllBtn, videoSelectModeBtn);
+
 
 async function renderVideos() {
   videoAdminList.innerHTML = "";
@@ -1114,6 +1142,8 @@ studentSelectModeBtn.addEventListener("click", () => {
     studentDeleteSelectedBtn.style.display = "none";
   }
 });
+setupSelectAll(studentList, studentSelectAllBtn, studentSelectModeBtn);
+
 
 async function renderStudents() {
   studentList.innerHTML = "";
@@ -1462,6 +1492,8 @@ attendanceSelectModeBtn.addEventListener("click", () => {
     attendanceDeleteSelectedBtn.style.display = "none";
   }
 });
+setupSelectAll(attendanceRangeList, attendanceSelectAllBtn, attendanceSelectModeBtn);
+
 
 function summarizeAttendanceDoc(data) {
   if (data.holiday) return "Holiday: " + data.holiday;
@@ -1746,8 +1778,8 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           pdf.setFontSize(9);
           const textW = pdf.getTextWidth(data.holiday);
           const textX = x + dateColW / 2 + 3;
-          const textY = bodyTop + (cellH - textW) / 2;
-          pdf.text(data.holiday, textX, textY, { angle: -90 });
+          const textY = bodyTop + (cellH + textW) / 2;
+          pdf.text(data.holiday, textX, textY, { angle: 90 });
         }
         x += dateColW;
       });
