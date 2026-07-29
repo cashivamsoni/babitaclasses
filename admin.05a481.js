@@ -146,6 +146,7 @@ const attendanceRangeStatus = document.getElementById("attendanceRangeStatus");
 const attendanceSelectModeBtn = document.getElementById("attendanceSelectModeBtn");
 const attendanceRangeList = document.getElementById("attendanceRangeList");
 const attendanceDeleteSelectedBtn = document.getElementById("attendanceDeleteSelectedBtn");
+const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn");
 
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
@@ -1584,5 +1585,148 @@ attendanceDeleteSelectedBtn.addEventListener("click", async () => {
     console.error(err);
   } finally {
     attendanceDeleteSelectedBtn.disabled = false;
+  }
+});
+
+// ---------- Export Attendance PDF (selected dates from Clear Attendance Records) ----------
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+function formatDMY(isoDate) {
+  const [y, m, d] = isoDate.split("-");
+  return `${d}-${m}-${y}`;
+}
+
+attendanceExportPdfBtn.addEventListener("click", async () => {
+  const checked = attendanceRangeList.querySelectorAll('input[type="checkbox"]:checked');
+  if (checked.length === 0) {
+    attendanceRangeStatus.textContent = "Select at least one date first (tap Select, then check dates).";
+    attendanceRangeStatus.className = "msg error";
+    return;
+  }
+
+  attendanceRangeStatus.textContent = "Generating PDF...";
+  attendanceRangeStatus.className = "msg";
+
+  try {
+    const dates = Array.from(checked)
+      .map((cb) => ({ id: cb.dataset.id, data: cb._attendanceData }))
+      .sort((a, b) => a.id.localeCompare(b.id));
+
+    const studentsSnap = await getDocs(query(STUDENTS_COL, orderBy("name", "asc")));
+    const students = [];
+    studentsSnap.forEach((d) => students.push({ id: d.id, ...d.data() }));
+    students.sort((a, b) => {
+      const rollA = parseInt(a.rollNumber, 10);
+      const rollB = parseInt(b.rollNumber, 10);
+      if (!isNaN(rollA) && !isNaN(rollB)) return rollA - rollB;
+      if (!isNaN(rollA)) return -1;
+      if (!isNaN(rollB)) return 1;
+      return (a.name || "").localeCompare(b.name || "");
+    });
+
+    const { jsPDF } = window.jspdf;
+    const landscape = dates.length > 5;
+    const pdf = new jsPDF({ orientation: landscape ? "landscape" : "portrait", unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 40;
+
+    pdf.setFont("times", "bold");
+    pdf.setFontSize(16);
+    pdf.text("Babita Classes", pageWidth / 2, margin, { align: "center" });
+
+    pdf.setFont("times", "normal");
+    pdf.setFontSize(11);
+    const rangeLabel =
+      "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
+    pdf.text(rangeLabel, pageWidth / 2, margin + 18, { align: "center" });
+
+    const now = new Date();
+    const extractedLine =
+      "Extracted from https://babitaclasses.vercel.app/admin on " +
+      pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
+      " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
+    pdf.setFontSize(9);
+    pdf.text(extractedLine, pageWidth / 2, margin + 34, { align: "center" });
+
+    // Table geometry
+    const rollColW = 45;
+    const nameColW = 110;
+    const tableWidth = pageWidth - margin * 2;
+    const dateColW = Math.max(48, (tableWidth - rollColW - nameColW) / dates.length);
+    const rowH = 22;
+    let tableTop = margin + 54;
+
+    function drawHeaderRow(y) {
+      pdf.setFont("times", "bold");
+      pdf.setFontSize(9);
+      let x = margin;
+      pdf.rect(x, y, rollColW, rowH);
+      pdf.text("Roll No.", x + rollColW / 2, y + rowH / 2 + 3, { align: "center" });
+      x += rollColW;
+      pdf.rect(x, y, nameColW, rowH);
+      pdf.text("Name", x + nameColW / 2, y + rowH / 2 + 3, { align: "center" });
+      x += nameColW;
+      dates.forEach(({ id, data }) => {
+        pdf.rect(x, y, dateColW, rowH);
+        const label = data.holiday ? formatDMY(id) + " (Holiday)" : formatDMY(id);
+        const lines = pdf.splitTextToSize(label, dateColW - 4);
+        pdf.text(lines, x + dateColW / 2, y + rowH / 2 + 3 - (lines.length > 1 ? 4 : 0), { align: "center" });
+        x += dateColW;
+      });
+    }
+
+    drawHeaderRow(tableTop);
+    let y = tableTop + rowH;
+
+    pdf.setFont("times", "normal");
+    pdf.setFontSize(9);
+    students.forEach((student) => {
+      if (y + rowH > pageHeight - margin) {
+        pdf.addPage();
+        tableTop = margin;
+        drawHeaderRow(tableTop);
+        y = tableTop + rowH;
+        pdf.setFont("times", "normal");
+        pdf.setFontSize(9);
+      }
+      let x = margin;
+      pdf.rect(x, y, rollColW, rowH);
+      pdf.text(student.rollNumber || "-", x + rollColW / 2, y + rowH / 2 + 3, { align: "center" });
+      x += rollColW;
+      pdf.rect(x, y, nameColW, rowH);
+      const nameLines = pdf.splitTextToSize(student.name || "", nameColW - 6);
+      pdf.text(nameLines[0] || "", x + 4, y + rowH / 2 + 3);
+      x += nameColW;
+      dates.forEach(({ data }) => {
+        pdf.rect(x, y, dateColW, rowH);
+        let cellText = "-";
+        if (data.holiday) {
+          cellText = "Holiday";
+        } else {
+          const status = (data.records || {})[student.id];
+          if (status === "present") cellText = "Present";
+          else if (status === "absent") cellText = "Absent";
+        }
+        pdf.text(cellText, x + dateColW / 2, y + rowH / 2 + 3, { align: "center" });
+        x += dateColW;
+      });
+      y += rowH;
+    });
+
+    const today = new Date();
+    const filename =
+      "Babita_Classes_Attendance_" +
+      pad2(today.getDate()) + pad2(today.getMonth() + 1) + today.getFullYear() +
+      ".pdf";
+    pdf.save(filename);
+
+    attendanceRangeStatus.textContent = "PDF downloaded.";
+    attendanceRangeStatus.className = "msg success";
+  } catch (err) {
+    attendanceRangeStatus.textContent = "Could not generate PDF: " + (err.message || err);
+    attendanceRangeStatus.className = "msg error";
+    console.error(err);
   }
 });
