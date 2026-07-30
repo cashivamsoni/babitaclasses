@@ -1790,8 +1790,10 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
 
     const today = new Date();
     const filename =
-      "Babita_Classes_Attendance_" +
-      pad2(today.getDate()) + pad2(today.getMonth() + 1) + today.getFullYear() +
+      "Babita Classes Attendance Record " +
+      pad2(today.getDate()) + "-" + pad2(today.getMonth() + 1) + "-" + today.getFullYear() +
+      " " +
+      pad2(today.getHours()) + "-" + pad2(today.getMinutes()) + "-" + pad2(today.getSeconds()) +
       ".pdf";
     pdf.save(filename);
 
