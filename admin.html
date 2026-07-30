@@ -149,12 +149,12 @@
       }
 
       /* Notices + Videos rows */
-      #noticeList, #videoAdminList, #syllabusRowList, #studentList, #attendanceStudentList, #attendanceRangeList {
+      #noticeList, #videoAdminList, #syllabusRowList, #studentList, #attendanceStudentList, #attendanceRangeList, #blogPostList {
         list-style: none;
         padding: 0;
         margin: 8px 0 0;
       }
-      #noticeList li, #videoAdminList li, #syllabusRowList li, #studentList li, #attendanceStudentList li, #attendanceRangeList li {
+      #noticeList li, #videoAdminList li, #syllabusRowList li, #studentList li, #attendanceStudentList li, #attendanceRangeList li, #blogPostList li {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -165,17 +165,17 @@
         margin-bottom: 6px;
         font-size: 12.5px;
       }
-      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"], #studentList li input[type="checkbox"], #attendanceStudentList li input[type="checkbox"], #attendanceRangeList li input[type="checkbox"] {
+      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"], #studentList li input[type="checkbox"], #attendanceStudentList li input[type="checkbox"], #attendanceRangeList li input[type="checkbox"], #blogPostList li input[type="checkbox"] {
         width: auto;
         flex: none;
         display: none;
         accent-color: #990000;
       }
-      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"], #studentList.bulk-mode li input[type="checkbox"], #attendanceRangeList.bulk-mode li input[type="checkbox"] {
+      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"], #studentList.bulk-mode li input[type="checkbox"], #attendanceRangeList.bulk-mode li input[type="checkbox"], #blogPostList.bulk-mode li input[type="checkbox"] {
         display: inline-block;
       }
-      #noticeList li span, #videoAdminList li span, #syllabusRowList li span, #studentList li span, #attendanceStudentList li span, #attendanceRangeList li span { flex: 1; }
-      #noticeList button, #videoAdminList button, #syllabusRowList button, #studentList button, #attendanceStudentList button, #attendanceRangeList button {
+      #noticeList li span, #videoAdminList li span, #syllabusRowList li span, #studentList li span, #attendanceStudentList li span, #attendanceRangeList li span, #blogPostList li span { flex: 1; }
+      #noticeList button, #videoAdminList button, #syllabusRowList button, #studentList button, #attendanceStudentList button, #attendanceRangeList button, #blogPostList button {
         width: auto;
         margin: 0;
         padding: 5px 11px;
@@ -183,8 +183,8 @@
         font-weight: 600;
         box-shadow: none;
       }
-      #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn, #studentList .edit-btn { background: #1f6fd0; }
-      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn, #studentList .delete-btn, #attendanceRangeList .delete-btn { background: #c0392b; }
+      #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn, #studentList .edit-btn, #blogPostList .edit-btn { background: #1f6fd0; }
+      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn, #studentList .delete-btn, #attendanceRangeList .delete-btn, #blogPostList .delete-btn { background: #c0392b; }
 
       .scroll-box {
         max-height: 240px;
@@ -292,7 +292,7 @@
       <h1>Admin Panel</h1>
       <div class="hub-grid">
         <button id="hubHomeBtn" type="button" class="hub-btn">Homepage</button>
-        <button type="button" class="hub-btn" disabled title="Coming soon">Blog</button>
+        <button id="hubBlogBtn" type="button" class="hub-btn">Blog</button>
         <button type="button" class="hub-btn" disabled title="Coming soon">Results</button>
         <button id="hubAttendanceBtn" type="button" class="hub-btn">Attendance</button>
       </div>
@@ -462,6 +462,50 @@
         <button id="studentSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
         <ul id="studentList" class="scroll-box"></ul>
         <button id="studentDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
+      </div>
+    </div>
+
+    <div id="adminBlogView" class="card" style="display:none; max-width:480px; position:relative;">
+      <button id="blogBackBtn" type="button" style="position:absolute; top:16px; left:16px; width:auto; margin:0; padding:6px 14px; font-size:12px; box-shadow:none;">← Back</button>
+      <button id="blogLogoutBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px; box-shadow:none;">Logout</button>
+
+      <h1>Blog</h1>
+
+      <div class="section-block">
+        <p class="eyebrow">Add a New Post</p>
+        <p class="hint" style="margin-top:0;">The 25 original posts stay untouched — new posts you add here show above them.</p>
+
+        <label for="blogTitleInput">Title</label>
+        <input type="text" id="blogTitleInput" placeholder="e.g. Diwali Celebration 2026">
+
+        <label for="blogDateInput">Date</label>
+        <input type="text" id="blogDateInput" placeholder="e.g. 28 July 2026">
+
+        <label for="blogPreviewInput">Preview Text (shown on the card)</label>
+        <textarea id="blogPreviewInput" rows="2" placeholder="A short one or two line teaser..."></textarea>
+
+        <label for="blogFullTextInput">Full Text (shown when opened)</label>
+        <textarea id="blogFullTextInput" rows="5" placeholder="The complete post..."></textarea>
+
+        <label for="blogImageUrlInput">Image URL (optional)</label>
+        <input type="text" id="blogImageUrlInput" placeholder="https://...">
+
+        <label for="blogButtonTextInput">Button Text (optional)</label>
+        <input type="text" id="blogButtonTextInput" placeholder="e.g. Watch the Video">
+
+        <label for="blogButtonUrlInput">Button URL (optional)</label>
+        <input type="text" id="blogButtonUrlInput" placeholder="https://...">
+
+        <button id="blogAddBtn" type="button">Add Post</button>
+        <p id="blogStatus" class="msg"></p>
+      </div>
+
+      <div class="section-block">
+        <p class="eyebrow">Manage New Posts</p>
+        <button id="blogSelectModeBtn" type="button" class="small-btn">Select</button>
+        <button id="blogSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+        <ul id="blogPostList" class="scroll-box"></ul>
+        <button id="blogDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
       </div>
     </div>
 
