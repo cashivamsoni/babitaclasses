@@ -1786,7 +1786,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           const textW = pdf.getTextWidth(data.holiday);
           const textX = x + dateColW / 2 + 3;
           const textY = bodyTop + (cellH + textW) / 2;
-          pdf.setTextColor(153, 0, 0);
+          pdf.setTextColor(192, 57, 43);
           pdf.text(data.holiday, textX, textY, { angle: 90 });
           pdf.setTextColor(0, 0, 0);
         }
