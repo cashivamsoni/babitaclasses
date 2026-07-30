@@ -157,6 +157,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginView.style.display = "none";
     adminView.style.display = "none";
+    adminAttendanceView.style.display = "none";
     adminHub.style.display = "block";
     await loadLastUpdatedDisplay();
     await loadMarquee();
@@ -168,6 +169,7 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     adminHub.style.display = "none";
     adminView.style.display = "none";
+    adminAttendanceView.style.display = "none";
     loginView.style.display = "block";
     loginForm.reset();
   }
@@ -1697,7 +1699,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
     }
 
     // ---- Pass 1: figure out how students split across pages ----
-    const firstPageTop = margin + 54;
+    const firstPageTop = margin + 64;
     const chunks = [];
     let chunkStart = 0;
     let y = firstPageTop + rowH;
@@ -1717,15 +1719,16 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
       drawPageFrame();
 
       if (chunkIndex === 0) {
+        const titleTop = margin + 10;
         pdf.setFont("times", "bold");
         pdf.setFontSize(16);
-        pdf.text("Babita Classes", pageWidth / 2, margin, { align: "center" });
+        pdf.text("Babita Classes", pageWidth / 2, titleTop, { align: "center" });
 
         pdf.setFont("times", "normal");
         pdf.setFontSize(11);
         const rangeLabel =
           "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
-        pdf.text(rangeLabel, pageWidth / 2, margin + 18, { align: "center" });
+        pdf.text(rangeLabel, pageWidth / 2, titleTop + 18, { align: "center" });
 
         const now = new Date();
         const extractedLine =
@@ -1733,7 +1736,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
           " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
         pdf.setFontSize(9);
-        pdf.text(extractedLine, pageWidth / 2, margin + 34, { align: "center" });
+        pdf.text(extractedLine, pageWidth / 2, titleTop + 34, { align: "center" });
       }
 
       const tableTop = chunk.tableTop;
