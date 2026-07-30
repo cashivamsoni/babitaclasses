@@ -1764,7 +1764,11 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
             pdf.rect(x, rowY, dateColW, rowH);
             const status = (data.records || {})[student.id];
             const cellText = status === "present" ? "Present" : status === "absent" ? "Absent" : "-";
+            if (status === "present") pdf.setTextColor(30, 140, 40);
+            else if (status === "absent") pdf.setTextColor(192, 57, 43);
+            else pdf.setTextColor(0, 0, 0);
             pdf.text(cellText, x + dateColW / 2, rowY + rowH / 2 + 3, { align: "center" });
+            pdf.setTextColor(0, 0, 0);
           }
           x += dateColW;
         });
@@ -1782,7 +1786,9 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           const textW = pdf.getTextWidth(data.holiday);
           const textX = x + dateColW / 2 + 3;
           const textY = bodyTop + (cellH + textW) / 2;
+          pdf.setTextColor(153, 0, 0);
           pdf.text(data.holiday, textX, textY, { angle: 90 });
+          pdf.setTextColor(0, 0, 0);
         }
         x += dateColW;
       });
