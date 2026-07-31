@@ -160,9 +160,10 @@ const blogTitleInput = document.getElementById("blogTitleInput");
 const blogDateInput = document.getElementById("blogDateInput");
 const blogPreviewInput = document.getElementById("blogPreviewInput");
 const blogFullTextInput = document.getElementById("blogFullTextInput");
-const blogImageUrlInput = document.getElementById("blogImageUrlInput");
-const blogButtonTextInput = document.getElementById("blogButtonTextInput");
-const blogButtonUrlInput = document.getElementById("blogButtonUrlInput");
+const blogImagesContainer = document.getElementById("blogImagesContainer");
+const blogAddImageBtn = document.getElementById("blogAddImageBtn");
+const blogButtonsContainer = document.getElementById("blogButtonsContainer");
+const blogAddButtonBtn = document.getElementById("blogAddButtonBtn");
 const blogAddBtn = document.getElementById("blogAddBtn");
 const blogStatus = document.getElementById("blogStatus");
 const blogPostList = document.getElementById("blogPostList");
@@ -1403,7 +1404,7 @@ function renderAttendanceStudentList() {
     span.textContent = student.name + (student.rollNumber ? " (Roll " + student.rollNumber + ")" : "");
     li.appendChild(span);
 
-    const status = currentAttendanceDoc.records[student.id];
+    const status = currentAttendanceDoc.records[student.id] || "absent";
 
     const presentBtn = document.createElement("button");
     presentBtn.type = "button";
@@ -1864,14 +1865,76 @@ blogSelectModeBtn.addEventListener("click", () => {
 });
 setupSelectAll(blogPostList, blogSelectAllBtn, blogSelectModeBtn);
 
+function addImageRow(value) {
+  const row = document.createElement("div");
+  row.className = "blog-dynamic-row";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = "https://...";
+  input.value = value || "";
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "blog-remove-btn";
+  removeBtn.textContent = "×";
+  removeBtn.addEventListener("click", () => row.remove());
+  row.appendChild(input);
+  row.appendChild(removeBtn);
+  blogImagesContainer.appendChild(row);
+}
+
+function addButtonRow(text, url) {
+  const row = document.createElement("div");
+  row.className = "blog-dynamic-row";
+  const textInput = document.createElement("input");
+  textInput.type = "text";
+  textInput.placeholder = "Button text";
+  textInput.value = text || "";
+  const urlInput = document.createElement("input");
+  urlInput.type = "text";
+  urlInput.placeholder = "https://...";
+  urlInput.value = url || "";
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "blog-remove-btn";
+  removeBtn.textContent = "×";
+  removeBtn.addEventListener("click", () => row.remove());
+  row.appendChild(textInput);
+  row.appendChild(urlInput);
+  row.appendChild(removeBtn);
+  blogButtonsContainer.appendChild(row);
+}
+
+blogAddImageBtn.addEventListener("click", () => addImageRow());
+blogAddButtonBtn.addEventListener("click", () => addButtonRow());
+addImageRow();
+addButtonRow();
+
+function collectImageUrls() {
+  return Array.from(blogImagesContainer.querySelectorAll("input"))
+    .map((i) => i.value.trim())
+    .filter(Boolean);
+}
+
+function collectButtons() {
+  const buttons = [];
+  blogButtonsContainer.querySelectorAll(".blog-dynamic-row").forEach((row) => {
+    const inputs = row.querySelectorAll("input");
+    const text = inputs[0].value.trim();
+    const url = inputs[1].value.trim();
+    if (text && url) buttons.push({ text, url });
+  });
+  return buttons;
+}
+
 function clearBlogForm() {
   blogTitleInput.value = "";
   blogDateInput.value = "";
   blogPreviewInput.value = "";
   blogFullTextInput.value = "";
-  blogImageUrlInput.value = "";
-  blogButtonTextInput.value = "";
-  blogButtonUrlInput.value = "";
+  blogImagesContainer.innerHTML = "";
+  blogButtonsContainer.innerHTML = "";
+  addImageRow();
+  addButtonRow();
 }
 
 function fillBlogForm(data) {
@@ -1879,9 +1942,20 @@ function fillBlogForm(data) {
   blogDateInput.value = data.date || "";
   blogPreviewInput.value = data.previewText || "";
   blogFullTextInput.value = data.fullText || "";
-  blogImageUrlInput.value = data.imageUrl || "";
-  blogButtonTextInput.value = data.buttonText || "";
-  blogButtonUrlInput.value = data.buttonUrl || "";
+
+  blogImagesContainer.innerHTML = "";
+  const images = Array.isArray(data.imageUrls) && data.imageUrls.length ? data.imageUrls : data.imageUrl ? [data.imageUrl] : [];
+  if (images.length) images.forEach((url) => addImageRow(url));
+  else addImageRow();
+
+  blogButtonsContainer.innerHTML = "";
+  const buttons = Array.isArray(data.buttons) && data.buttons.length
+    ? data.buttons
+    : data.buttonText && data.buttonUrl
+    ? [{ text: data.buttonText, url: data.buttonUrl }]
+    : [];
+  if (buttons.length) buttons.forEach((b) => addButtonRow(b.text, b.url));
+  else addButtonRow();
 }
 
 async function renderBlogPosts() {
@@ -1987,22 +2061,16 @@ blogAddBtn.addEventListener("click", async () => {
   const date = blogDateInput.value.trim();
   const previewText = blogPreviewInput.value.trim();
   const fullText = blogFullTextInput.value.trim();
-  const imageUrl = blogImageUrlInput.value.trim();
-  const buttonText = blogButtonTextInput.value.trim();
-  const buttonUrl = blogButtonUrlInput.value.trim();
+  const imageUrls = collectImageUrls();
+  const buttons = collectButtons();
 
   if (!title || !date || !previewText || !fullText) {
     blogStatus.textContent = "Title, Date, Preview Text, and Full Text are required.";
     blogStatus.className = "msg error";
     return;
   }
-  if ((buttonText && !buttonUrl) || (buttonUrl && !buttonText)) {
-    blogStatus.textContent = "Button Text and Button URL must both be filled, or both left empty.";
-    blogStatus.className = "msg error";
-    return;
-  }
 
-  const postData = { title, date, previewText, fullText, imageUrl, buttonText, buttonUrl };
+  const postData = { title, date, previewText, fullText, imageUrls, buttons };
   const editingId = blogAddBtn.dataset.editingId;
 
   blogAddBtn.disabled = true;
