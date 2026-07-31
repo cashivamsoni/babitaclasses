@@ -1077,6 +1077,7 @@ footer a,
   height: auto;
   display: block;
   margin: 8px auto;
+  border-radius: 8px;
 }
 
 .modal-box h2 {
