@@ -903,6 +903,9 @@ if (slideshow) {
           });
 
           blogFeedEl.insertAdjacentHTML("afterbegin", cardsHtml);
+          // These cards were added after the page's scroll-reveal observer already ran its
+          // initial scan, so they'd otherwise stay stuck at opacity:0 forever. Reveal them directly.
+          blogFeedEl.querySelectorAll('.blog-card[id^="blogpost-"]').forEach((el) => el.classList.add("visible"));
           if (searchListEl) searchListEl.insertAdjacentHTML("afterbegin", searchHtml);
           document.body.insertAdjacentHTML("beforeend", modalsHtml);
         }
