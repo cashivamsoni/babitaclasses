@@ -720,7 +720,9 @@ if (slideshow) {
   const videoListEl = document.getElementById("videoList");
   const hasGalleryImgs = document.getElementById("galleryImg1");
   const syllabusEl = document.getElementById("syllabusDynamicSessions");
-  if (!dateEl && !marqueeEl && !noticeListEl && !videoListEl && !hasGalleryImgs && !syllabusEl) return;
+  const blogFeedEl = document.querySelector(".blog-feed");
+  const searchListEl = document.getElementById("searchList");
+  if (!dateEl && !marqueeEl && !noticeListEl && !videoListEl && !hasGalleryImgs && !syllabusEl && !blogFeedEl) return;
 
   (async function () {
     try {
@@ -850,6 +852,59 @@ if (slideshow) {
             sHtml += "</tbody></table></div>";
           });
           syllabusEl.innerHTML = sHtml;
+        }
+      }
+
+      // New blog posts (added via admin; the 25 original posts stay static in the HTML)
+      if (blogFeedEl) {
+        const bq = query(collection(db, "blogPosts"), orderBy("createdAt", "desc"));
+        const postsSnap = await getDocs(bq);
+        if (!postsSnap.empty) {
+          let cardsHtml = "";
+          let searchHtml = "";
+          let modalsHtml = "";
+
+          postsSnap.forEach((docSnap) => {
+            const p = docSnap.data();
+            const safeId = "blogpost-" + docSnap.id;
+            const modalId = "blogpost-modal-" + docSnap.id;
+            const fullTextHtml = (p.fullText || "").replace(/\n/g, "<br>");
+
+            cardsHtml +=
+              '<div class="blog-card" id="' + safeId + '">' +
+              "<h3>" + (p.title || "") + "</h3>" +
+              "<small>" + (p.date || "") + "</small>" +
+              "<p>" + (p.previewText || "") + "</p>" +
+              '<button class="read-more-btn" onclick="openModal(\'' + modalId + '\')">Read More</button>' +
+              "</div>";
+
+            searchHtml += '<li><a href="#' + safeId + '">' + (p.title || "") + "</a></li>";
+
+            modalsHtml +=
+              '<div id="' + modalId + '" class="modal-overlay">' +
+              '<div class="modal-box">' +
+              '<div class="modal-header">' +
+              '<button class="modal-close" onclick="closeModal(\'' + modalId + '\')">×</button>' +
+              "<h2>" + (p.title || "") + "</h2>" +
+              "<small>" + (p.date || "") + "</small>" +
+              "</div>" +
+              (p.imageUrl
+                ? '<img src="' + p.imageUrl + '" alt="' + (p.title || "") + '" style="max-width:100%; border-radius:8px; margin:10px 0;" loading="lazy">'
+                : "") +
+              "<p>" + fullTextHtml + "</p>" +
+              (p.buttonUrl && p.buttonText
+                ? '<div class="flex" style="margin-top:10px"><a class="btn-inline" href="' +
+                  p.buttonUrl +
+                  '" target="_blank" rel="noopener">' +
+                  p.buttonText +
+                  "</a></div>"
+                : "") +
+              "</div></div>";
+          });
+
+          blogFeedEl.insertAdjacentHTML("afterbegin", cardsHtml);
+          if (searchListEl) searchListEl.insertAdjacentHTML("afterbegin", searchHtml);
+          document.body.insertAdjacentHTML("beforeend", modalsHtml);
         }
       }
     } catch (err) {
