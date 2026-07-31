@@ -53,6 +53,10 @@ const hubAttendanceBtn = document.getElementById("hubAttendanceBtn");
 const adminAttendanceView = document.getElementById("adminAttendanceView");
 const attendanceBackBtn = document.getElementById("attendanceBackBtn");
 const attendanceLogoutBtn = document.getElementById("attendanceLogoutBtn");
+const hubBlogBtn = document.getElementById("hubBlogBtn");
+const adminBlogView = document.getElementById("adminBlogView");
+const blogBackBtn = document.getElementById("blogBackBtn");
+const blogLogoutBtn = document.getElementById("blogLogoutBtn");
 const loginForm = document.getElementById("loginForm");
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
@@ -152,12 +156,27 @@ const attendanceRangeList = document.getElementById("attendanceRangeList");
 const attendanceDeleteSelectedBtn = document.getElementById("attendanceDeleteSelectedBtn");
 const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn");
 
+const blogTitleInput = document.getElementById("blogTitleInput");
+const blogDateInput = document.getElementById("blogDateInput");
+const blogPreviewInput = document.getElementById("blogPreviewInput");
+const blogFullTextInput = document.getElementById("blogFullTextInput");
+const blogImageUrlInput = document.getElementById("blogImageUrlInput");
+const blogButtonTextInput = document.getElementById("blogButtonTextInput");
+const blogButtonUrlInput = document.getElementById("blogButtonUrlInput");
+const blogAddBtn = document.getElementById("blogAddBtn");
+const blogStatus = document.getElementById("blogStatus");
+const blogPostList = document.getElementById("blogPostList");
+const blogSelectModeBtn = document.getElementById("blogSelectModeBtn");
+const blogSelectAllBtn = document.getElementById("blogSelectAllBtn");
+const blogDeleteSelectedBtn = document.getElementById("blogDeleteSelectedBtn");
+
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginView.style.display = "none";
     adminView.style.display = "none";
     adminAttendanceView.style.display = "none";
+    adminBlogView.style.display = "none";
     adminHub.style.display = "block";
     await loadLastUpdatedDisplay();
     await loadMarquee();
@@ -170,6 +189,7 @@ onAuthStateChanged(auth, async (user) => {
     adminHub.style.display = "none";
     adminView.style.display = "none";
     adminAttendanceView.style.display = "none";
+    adminBlogView.style.display = "none";
     loginView.style.display = "block";
     loginForm.reset();
   }
@@ -202,6 +222,19 @@ attendanceBackBtn.addEventListener("click", () => {
 });
 
 attendanceLogoutBtn.addEventListener("click", () => signOut(auth));
+
+hubBlogBtn.addEventListener("click", async () => {
+  adminHub.style.display = "none";
+  adminBlogView.style.display = "block";
+  await renderBlogPosts();
+});
+
+blogBackBtn.addEventListener("click", () => {
+  adminBlogView.style.display = "none";
+  adminHub.style.display = "block";
+});
+
+blogLogoutBtn.addEventListener("click", () => signOut(auth));
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -1809,5 +1842,206 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
     attendanceRangeStatus.textContent = "Could not generate PDF: " + (err.message || err);
     attendanceRangeStatus.className = "msg error";
     console.error(err);
+  }
+});
+
+// ---------- Blog Posts (add / edit / delete) ----------
+const BLOG_POSTS_COL = collection(db, "blogPosts");
+
+function updateBlogDeleteSelectedVisibility() {
+  const anyChecked = blogPostList.querySelector('input[type="checkbox"]:checked');
+  blogDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+}
+
+blogSelectModeBtn.addEventListener("click", () => {
+  const enabling = !blogPostList.classList.contains("bulk-mode");
+  blogPostList.classList.toggle("bulk-mode", enabling);
+  blogSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
+  if (!enabling) {
+    blogPostList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+    blogDeleteSelectedBtn.style.display = "none";
+  }
+});
+setupSelectAll(blogPostList, blogSelectAllBtn, blogSelectModeBtn);
+
+function clearBlogForm() {
+  blogTitleInput.value = "";
+  blogDateInput.value = "";
+  blogPreviewInput.value = "";
+  blogFullTextInput.value = "";
+  blogImageUrlInput.value = "";
+  blogButtonTextInput.value = "";
+  blogButtonUrlInput.value = "";
+}
+
+function fillBlogForm(data) {
+  blogTitleInput.value = data.title || "";
+  blogDateInput.value = data.date || "";
+  blogPreviewInput.value = data.previewText || "";
+  blogFullTextInput.value = data.fullText || "";
+  blogImageUrlInput.value = data.imageUrl || "";
+  blogButtonTextInput.value = data.buttonText || "";
+  blogButtonUrlInput.value = data.buttonUrl || "";
+}
+
+async function renderBlogPosts() {
+  blogPostList.innerHTML = "";
+  blogDeleteSelectedBtn.style.display = "none";
+  try {
+    const q = query(BLOG_POSTS_COL, orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      const li = document.createElement("li");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.dataset.id = docSnap.id;
+      checkbox._blogData = data;
+      checkbox.addEventListener("change", updateBlogDeleteSelectedVisibility);
+      li.appendChild(checkbox);
+
+      const span = document.createElement("span");
+      span.textContent = (data.title || "") + (data.date ? " — " + data.date : "");
+      li.appendChild(span);
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", () => {
+        fillBlogForm(data);
+        blogAddBtn.textContent = "Save Changes";
+        blogAddBtn.dataset.editingId = docSnap.id;
+        blogStatus.textContent = 'Editing "' + (data.title || "") + '" — scroll up to edit and save.';
+        blogStatus.className = "msg";
+        window.scrollTo({ top: adminBlogView.offsetTop, behavior: "smooth" });
+      });
+      li.appendChild(editBtn);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", async () => {
+        if (!confirm('Delete "' + (data.title || "this post") + '"?')) return;
+        const deletedId = docSnap.id;
+        try {
+          await deleteDoc(doc(db, "blogPosts", deletedId));
+          await renderBlogPosts();
+          showUndoToast("Post deleted.", async () => {
+            await setDoc(doc(db, "blogPosts", deletedId), data);
+            await renderBlogPosts();
+          });
+        } catch (err) {
+          blogStatus.textContent = "Delete failed: " + (err.code || err.message);
+          blogStatus.className = "msg error";
+          console.error(err);
+        }
+      });
+      li.appendChild(deleteBtn);
+
+      blogPostList.appendChild(li);
+    });
+  } catch (err) {
+    blogStatus.textContent = "Could not load posts: " + (err.code || err.message);
+    blogStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+blogDeleteSelectedBtn.addEventListener("click", async () => {
+  const checked = blogPostList.querySelectorAll('input[type="checkbox"]:checked');
+  if (checked.length === 0) return;
+  if (!confirm("Delete " + checked.length + " selected post(s)?")) return;
+
+  blogDeleteSelectedBtn.disabled = true;
+  blogStatus.textContent = "Deleting...";
+  blogStatus.className = "msg";
+  try {
+    const deleted = [];
+    for (const cb of checked) {
+      deleted.push({ id: cb.dataset.id, data: cb._blogData });
+      await deleteDoc(doc(db, "blogPosts", cb.dataset.id));
+    }
+    blogStatus.textContent = "Selected posts deleted.";
+    blogStatus.className = "msg success";
+    await renderBlogPosts();
+    showUndoToast(deleted.length + " post(s) deleted.", async () => {
+      for (const item of deleted) {
+        await setDoc(doc(db, "blogPosts", item.id), item.data);
+      }
+      await renderBlogPosts();
+    });
+  } catch (err) {
+    blogStatus.textContent = "Delete failed: " + (err.code || err.message);
+    blogStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    blogDeleteSelectedBtn.disabled = false;
+  }
+});
+
+blogAddBtn.addEventListener("click", async () => {
+  const title = blogTitleInput.value.trim();
+  const date = blogDateInput.value.trim();
+  const previewText = blogPreviewInput.value.trim();
+  const fullText = blogFullTextInput.value.trim();
+  const imageUrl = blogImageUrlInput.value.trim();
+  const buttonText = blogButtonTextInput.value.trim();
+  const buttonUrl = blogButtonUrlInput.value.trim();
+
+  if (!title || !date || !previewText || !fullText) {
+    blogStatus.textContent = "Title, Date, Preview Text, and Full Text are required.";
+    blogStatus.className = "msg error";
+    return;
+  }
+  if ((buttonText && !buttonUrl) || (buttonUrl && !buttonText)) {
+    blogStatus.textContent = "Button Text and Button URL must both be filled, or both left empty.";
+    blogStatus.className = "msg error";
+    return;
+  }
+
+  const postData = { title, date, previewText, fullText, imageUrl, buttonText, buttonUrl };
+  const editingId = blogAddBtn.dataset.editingId;
+
+  blogAddBtn.disabled = true;
+  blogStatus.textContent = editingId ? "Saving..." : "Adding...";
+  blogStatus.className = "msg";
+  try {
+    if (editingId) {
+      const previousSnapData = Array.from(blogPostList.querySelectorAll('input[type="checkbox"]')).find(
+        (cb) => cb.dataset.id === editingId
+      )?._blogData;
+      await updateDoc(doc(db, "blogPosts", editingId), postData);
+      clearBlogForm();
+      blogAddBtn.textContent = "Add Post";
+      delete blogAddBtn.dataset.editingId;
+      blogStatus.textContent = "Post updated.";
+      blogStatus.className = "msg success";
+      await renderBlogPosts();
+      showUndoToast("Post updated.", async () => {
+        if (previousSnapData) {
+          await updateDoc(doc(db, "blogPosts", editingId), previousSnapData);
+          await renderBlogPosts();
+        }
+      });
+    } else {
+      const newDoc = await addDoc(BLOG_POSTS_COL, { ...postData, createdAt: serverTimestamp() });
+      clearBlogForm();
+      blogStatus.textContent = "Post added.";
+      blogStatus.className = "msg success";
+      await renderBlogPosts();
+      showUndoToast("Post added.", async () => {
+        await deleteDoc(doc(db, "blogPosts", newDoc.id));
+        await renderBlogPosts();
+      });
+    }
+  } catch (err) {
+    blogStatus.textContent = "Could not save: " + (err.code || err.message);
+    blogStatus.className = "msg error";
+    console.error(err);
+  } finally {
+    blogAddBtn.disabled = false;
   }
 });
