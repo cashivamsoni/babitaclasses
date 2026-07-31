@@ -880,6 +880,30 @@ if (slideshow) {
 
             searchHtml += '<li><a href="#' + safeId + '">' + (p.title || "") + "</a></li>";
 
+            const images = Array.isArray(p.imageUrls) && p.imageUrls.length ? p.imageUrls : p.imageUrl ? [p.imageUrl] : [];
+            const buttons = Array.isArray(p.buttons) && p.buttons.length
+              ? p.buttons
+              : p.buttonText && p.buttonUrl
+              ? [{ text: p.buttonText, url: p.buttonUrl }]
+              : [];
+
+            const imagesHtml = images
+              .map(
+                (url) =>
+                  '<img src="' + url + '" alt="' + (p.title || "") + '" style="max-width:100%; border-radius:8px; margin:10px 0;" loading="lazy">'
+              )
+              .join("");
+            const buttonsHtml = buttons.length
+              ? '<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;">' +
+                buttons
+                  .map(
+                    (b) =>
+                      '<a class="btn-inline" href="' + b.url + '" target="_blank" rel="noopener">' + b.text + "</a>"
+                  )
+                  .join("") +
+                "</div>"
+              : "";
+
             modalsHtml +=
               '<div id="' + modalId + '" class="modal-overlay">' +
               '<div class="modal-box">' +
@@ -888,17 +912,9 @@ if (slideshow) {
               "<h2>" + (p.title || "") + "</h2>" +
               "<small>" + (p.date || "") + "</small>" +
               "</div>" +
-              (p.imageUrl
-                ? '<img src="' + p.imageUrl + '" alt="' + (p.title || "") + '" style="max-width:100%; border-radius:8px; margin:10px 0;" loading="lazy">'
-                : "") +
+              imagesHtml +
               "<p>" + fullTextHtml + "</p>" +
-              (p.buttonUrl && p.buttonText
-                ? '<div class="flex" style="margin-top:10px"><a class="btn-inline" href="' +
-                  p.buttonUrl +
-                  '" target="_blank" rel="noopener">' +
-                  p.buttonText +
-                  "</a></div>"
-                : "") +
+              buttonsHtml +
               "</div></div>";
           });
 
