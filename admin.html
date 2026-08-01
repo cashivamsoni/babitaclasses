@@ -228,6 +228,42 @@
         box-shadow: none;
         flex-shrink: 0;
       }
+      .blog-block-row {
+        border: 1px solid #e6ddcf;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #fffdfa;
+      }
+      .blog-block-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+      .blog-block-type {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #b9790f;
+      }
+      .blog-block-controls {
+        display: flex;
+        gap: 4px;
+      }
+      .blog-block-controls button {
+        width: auto;
+        margin: 0;
+        padding: 4px 9px;
+        font-size: 12px;
+        box-shadow: none;
+      }
+      .blog-block-controls .move-btn { background: #555; }
+      .blog-block-row textarea,
+      .blog-block-row input {
+        margin: 0;
+      }
 
       /* Hub */
       .hub-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
@@ -507,12 +543,12 @@
         <label for="blogPreviewInput">Preview Text (shown on the card)</label>
         <textarea id="blogPreviewInput" rows="2" placeholder="A short one or two line teaser..."></textarea>
 
-        <label for="blogFullTextInput">Full Text (shown when opened)</label>
-        <textarea id="blogFullTextInput" rows="5" placeholder="The complete post..."></textarea>
-
-        <label>Photos (optional)</label>
-        <div id="blogImagesContainer"></div>
-        <button id="blogAddImageBtn" type="button" class="small-btn">+ Add Photo</button>
+        <label>Content (drag order matters — use ▲▼ to reorder)</label>
+        <div id="blogBlocksContainer"></div>
+        <div style="display:flex; gap:8px;">
+          <button id="blogAddTextBlockBtn" type="button" class="small-btn" style="margin:0;">+ Add Text</button>
+          <button id="blogAddImageBlockBtn" type="button" class="small-btn" style="margin:0;">+ Add Photo</button>
+        </div>
 
         <label style="margin-top:18px;">Buttons (optional)</label>
         <div id="blogButtonsContainer"></div>
