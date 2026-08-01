@@ -159,9 +159,9 @@ const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn")
 const blogTitleInput = document.getElementById("blogTitleInput");
 const blogDateInput = document.getElementById("blogDateInput");
 const blogPreviewInput = document.getElementById("blogPreviewInput");
-const blogFullTextInput = document.getElementById("blogFullTextInput");
-const blogImagesContainer = document.getElementById("blogImagesContainer");
-const blogAddImageBtn = document.getElementById("blogAddImageBtn");
+const blogBlocksContainer = document.getElementById("blogBlocksContainer");
+const blogAddTextBlockBtn = document.getElementById("blogAddTextBlockBtn");
+const blogAddImageBlockBtn = document.getElementById("blogAddImageBlockBtn");
 const blogButtonsContainer = document.getElementById("blogButtonsContainer");
 const blogAddButtonBtn = document.getElementById("blogAddButtonBtn");
 const blogAddBtn = document.getElementById("blogAddBtn");
@@ -1329,6 +1329,21 @@ studentAddBtn.addEventListener("click", async () => {
     const newDoc = await addDoc(STUDENTS_COL, { name, rollNumber, createdAt: serverTimestamp() });
     studentNameInput.value = "";
     studentRollInput.value = "";
+
+    // Backfill "Absent" into every existing attendance date, so this student's
+    // history shows Absent rather than a blank for days before they joined.
+    const attendanceSnap = await getDocs(collection(db, "attendance"));
+    const backfillPromises = [];
+    attendanceSnap.forEach((d) => {
+      const data = d.data();
+      if (!data.holiday) {
+        backfillPromises.push(
+          setDoc(doc(db, "attendance", d.id), { records: { [newDoc.id]: "absent" } }, { merge: true })
+        );
+      }
+    });
+    await Promise.all(backfillPromises);
+
     studentStatus.textContent = "Student added.";
     studentStatus.className = "msg success";
     await renderStudents();
@@ -1893,21 +1908,102 @@ blogSelectModeBtn.addEventListener("click", () => {
 });
 setupSelectAll(blogPostList, blogSelectAllBtn, blogSelectModeBtn);
 
-function addImageRow(value) {
-  const row = document.createElement("div");
-  row.className = "blog-dynamic-row";
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = "https://...";
-  input.value = value || "";
+function moveBlockRow(row, direction) {
+  const sibling = direction === "up" ? row.previousElementSibling : row.nextElementSibling;
+  if (!sibling) return;
+  if (direction === "up") {
+    blogBlocksContainer.insertBefore(row, sibling);
+  } else {
+    blogBlocksContainer.insertBefore(sibling, row);
+  }
+}
+
+function createBlockControls(row) {
+  const controls = document.createElement("div");
+  controls.className = "blog-block-controls";
+
+  const upBtn = document.createElement("button");
+  upBtn.type = "button";
+  upBtn.className = "move-btn";
+  upBtn.textContent = "▲";
+  upBtn.addEventListener("click", () => moveBlockRow(row, "up"));
+
+  const downBtn = document.createElement("button");
+  downBtn.type = "button";
+  downBtn.className = "move-btn";
+  downBtn.textContent = "▼";
+  downBtn.addEventListener("click", () => moveBlockRow(row, "down"));
+
   const removeBtn = document.createElement("button");
   removeBtn.type = "button";
   removeBtn.className = "blog-remove-btn";
   removeBtn.textContent = "×";
   removeBtn.addEventListener("click", () => row.remove());
+
+  controls.appendChild(upBtn);
+  controls.appendChild(downBtn);
+  controls.appendChild(removeBtn);
+  return controls;
+}
+
+function addTextBlockRow(value) {
+  const row = document.createElement("div");
+  row.className = "blog-block-row";
+  row.dataset.blockType = "text";
+
+  const header = document.createElement("div");
+  header.className = "blog-block-header";
+  const label = document.createElement("span");
+  label.className = "blog-block-type";
+  label.textContent = "Text";
+  header.appendChild(label);
+  header.appendChild(createBlockControls(row));
+  row.appendChild(header);
+
+  const textarea = document.createElement("textarea");
+  textarea.rows = 4;
+  textarea.placeholder = "Paragraph text...";
+  textarea.value = value || "";
+  row.appendChild(textarea);
+
+  blogBlocksContainer.appendChild(row);
+}
+
+function addImageBlockRow(value) {
+  const row = document.createElement("div");
+  row.className = "blog-block-row";
+  row.dataset.blockType = "image";
+
+  const header = document.createElement("div");
+  header.className = "blog-block-header";
+  const label = document.createElement("span");
+  label.className = "blog-block-type";
+  label.textContent = "Photo";
+  header.appendChild(label);
+  header.appendChild(createBlockControls(row));
+  row.appendChild(header);
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = "https://...";
+  input.value = value || "";
   row.appendChild(input);
-  row.appendChild(removeBtn);
-  blogImagesContainer.appendChild(row);
+
+  blogBlocksContainer.appendChild(row);
+}
+
+blogAddTextBlockBtn.addEventListener("click", () => addTextBlockRow());
+blogAddImageBlockBtn.addEventListener("click", () => addImageBlockRow());
+
+function collectContentBlocks() {
+  const blocks = [];
+  blogBlocksContainer.querySelectorAll(".blog-block-row").forEach((row) => {
+    const type = row.dataset.blockType;
+    const field = row.querySelector("textarea, input");
+    const value = field.value.trim();
+    if (value) blocks.push({ type, value });
+  });
+  return blocks;
 }
 
 function addButtonRow(text, url) {
@@ -1932,16 +2028,9 @@ function addButtonRow(text, url) {
   blogButtonsContainer.appendChild(row);
 }
 
-blogAddImageBtn.addEventListener("click", () => addImageRow());
 blogAddButtonBtn.addEventListener("click", () => addButtonRow());
-addImageRow();
+addTextBlockRow();
 addButtonRow();
-
-function collectImageUrls() {
-  return Array.from(blogImagesContainer.querySelectorAll("input"))
-    .map((i) => i.value.trim())
-    .filter(Boolean);
-}
 
 function collectButtons() {
   const buttons = [];
@@ -1958,10 +2047,9 @@ function clearBlogForm() {
   blogTitleInput.value = "";
   blogDateInput.value = "";
   blogPreviewInput.value = "";
-  blogFullTextInput.value = "";
-  blogImagesContainer.innerHTML = "";
+  blogBlocksContainer.innerHTML = "";
   blogButtonsContainer.innerHTML = "";
-  addImageRow();
+  addTextBlockRow();
   addButtonRow();
 }
 
@@ -1969,12 +2057,21 @@ function fillBlogForm(data) {
   blogTitleInput.value = data.title || "";
   blogDateInput.value = data.date || "";
   blogPreviewInput.value = data.previewText || "";
-  blogFullTextInput.value = data.fullText || "";
 
-  blogImagesContainer.innerHTML = "";
-  const images = Array.isArray(data.imageUrls) && data.imageUrls.length ? data.imageUrls : data.imageUrl ? [data.imageUrl] : [];
-  if (images.length) images.forEach((url) => addImageRow(url));
-  else addImageRow();
+  blogBlocksContainer.innerHTML = "";
+  if (Array.isArray(data.contentBlocks) && data.contentBlocks.length) {
+    data.contentBlocks.forEach((b) => {
+      if (b.type === "image") addImageBlockRow(b.value);
+      else addTextBlockRow(b.value);
+    });
+  } else {
+    // Legacy posts saved before content-blocks existed: one text block from
+    // fullText, then one image block per legacy imageUrls entry.
+    if (data.fullText) addTextBlockRow(data.fullText);
+    const legacyImages = Array.isArray(data.imageUrls) && data.imageUrls.length ? data.imageUrls : data.imageUrl ? [data.imageUrl] : [];
+    legacyImages.forEach((url) => addImageBlockRow(url));
+    if (!data.fullText && legacyImages.length === 0) addTextBlockRow();
+  }
 
   blogButtonsContainer.innerHTML = "";
   const buttons = Array.isArray(data.buttons) && data.buttons.length
@@ -2088,17 +2185,16 @@ blogAddBtn.addEventListener("click", async () => {
   const title = blogTitleInput.value.trim();
   const date = blogDateInput.value.trim();
   const previewText = blogPreviewInput.value.trim();
-  const fullText = blogFullTextInput.value.trim();
-  const imageUrls = collectImageUrls();
+  const contentBlocks = collectContentBlocks();
   const buttons = collectButtons();
 
-  if (!title || !date || !previewText || !fullText) {
-    blogStatus.textContent = "Title, Date, Preview Text, and Full Text are required.";
+  if (!title || !date || !previewText || contentBlocks.length === 0) {
+    blogStatus.textContent = "Title, Date, Preview Text, and at least one content block are required.";
     blogStatus.className = "msg error";
     return;
   }
 
-  const postData = { title, date, previewText, fullText, imageUrls, buttons };
+  const postData = { title, date, previewText, contentBlocks, buttons };
   const editingId = blogAddBtn.dataset.editingId;
 
   blogAddBtn.disabled = true;
