@@ -158,7 +158,6 @@ const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn")
 
 const blogTitleInput = document.getElementById("blogTitleInput");
 const blogDateInput = document.getElementById("blogDateInput");
-const blogPreviewInput = document.getElementById("blogPreviewInput");
 const blogBlocksContainer = document.getElementById("blogBlocksContainer");
 const blogAddTextBlockBtn = document.getElementById("blogAddTextBlockBtn");
 const blogAddImageBlockBtn = document.getElementById("blogAddImageBlockBtn");
@@ -1953,10 +1952,16 @@ function addTextBlockRow(value) {
 
   const header = document.createElement("div");
   header.className = "blog-block-header";
+  const labelGroup = document.createElement("span");
+  const handle = document.createElement("span");
+  handle.className = "blog-block-drag-handle";
+  handle.textContent = "⠿";
+  labelGroup.appendChild(handle);
   const label = document.createElement("span");
   label.className = "blog-block-type";
   label.textContent = "Text";
-  header.appendChild(label);
+  labelGroup.appendChild(label);
+  header.appendChild(labelGroup);
   header.appendChild(createBlockControls(row));
   row.appendChild(header);
 
@@ -1966,6 +1971,7 @@ function addTextBlockRow(value) {
   textarea.value = value || "";
   row.appendChild(textarea);
 
+  makeBlockRowDraggable(row);
   blogBlocksContainer.appendChild(row);
 }
 
@@ -1976,10 +1982,16 @@ function addImageBlockRow(value) {
 
   const header = document.createElement("div");
   header.className = "blog-block-header";
+  const labelGroup = document.createElement("span");
+  const handle = document.createElement("span");
+  handle.className = "blog-block-drag-handle";
+  handle.textContent = "⠿";
+  labelGroup.appendChild(handle);
   const label = document.createElement("span");
   label.className = "blog-block-type";
   label.textContent = "Photo";
-  header.appendChild(label);
+  labelGroup.appendChild(label);
+  header.appendChild(labelGroup);
   header.appendChild(createBlockControls(row));
   row.appendChild(header);
 
@@ -1989,11 +2001,60 @@ function addImageBlockRow(value) {
   input.value = value || "";
   row.appendChild(input);
 
+  makeBlockRowDraggable(row);
   blogBlocksContainer.appendChild(row);
 }
 
+// ---------- Drag-and-drop reordering for content blocks ----------
+function makeBlockRowDraggable(row) {
+  row.draggable = true;
+  row.addEventListener("dragstart", () => {
+    setTimeout(() => row.classList.add("dragging"), 0);
+  });
+  row.addEventListener("dragend", () => {
+    row.classList.remove("dragging");
+  });
+}
+
+function getBlockRowAfterDrag(container, y) {
+  const rows = [...container.querySelectorAll(".blog-block-row:not(.dragging)")];
+  return rows.reduce(
+    (closest, row) => {
+      const box = row.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: row };
+      }
+      return closest;
+    },
+    { offset: Number.NEGATIVE_INFINITY, element: null }
+  ).element;
+}
+
+blogBlocksContainer.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  const dragging = blogBlocksContainer.querySelector(".blog-block-row.dragging");
+  if (!dragging) return;
+  const afterElement = getBlockRowAfterDrag(blogBlocksContainer, e.clientY);
+  if (afterElement == null) {
+    blogBlocksContainer.appendChild(dragging);
+  } else {
+    blogBlocksContainer.insertBefore(dragging, afterElement);
+  }
+});
+
 blogAddTextBlockBtn.addEventListener("click", () => addTextBlockRow());
 blogAddImageBlockBtn.addEventListener("click", () => addImageBlockRow());
+
+function derivePreviewText(text) {
+  const clean = (text || "").trim().replace(/\s+/g, " ");
+  if (!clean) return "";
+  const maxLen = 160;
+  if (clean.length <= maxLen) return clean;
+  const cut = clean.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut) + "...";
+}
 
 function collectContentBlocks() {
   const blocks = [];
@@ -2046,7 +2107,6 @@ function collectButtons() {
 function clearBlogForm() {
   blogTitleInput.value = "";
   blogDateInput.value = "";
-  blogPreviewInput.value = "";
   blogBlocksContainer.innerHTML = "";
   blogButtonsContainer.innerHTML = "";
   addTextBlockRow();
@@ -2056,7 +2116,6 @@ function clearBlogForm() {
 function fillBlogForm(data) {
   blogTitleInput.value = data.title || "";
   blogDateInput.value = data.date || "";
-  blogPreviewInput.value = data.previewText || "";
 
   blogBlocksContainer.innerHTML = "";
   if (Array.isArray(data.contentBlocks) && data.contentBlocks.length) {
@@ -2184,12 +2243,19 @@ blogDeleteSelectedBtn.addEventListener("click", async () => {
 blogAddBtn.addEventListener("click", async () => {
   const title = blogTitleInput.value.trim();
   const date = blogDateInput.value.trim();
-  const previewText = blogPreviewInput.value.trim();
   const contentBlocks = collectContentBlocks();
   const buttons = collectButtons();
 
-  if (!title || !date || !previewText || contentBlocks.length === 0) {
-    blogStatus.textContent = "Title, Date, Preview Text, and at least one content block are required.";
+  if (!title || !date || contentBlocks.length === 0) {
+    blogStatus.textContent = "Title, Date, and at least one content block are required.";
+    blogStatus.className = "msg error";
+    return;
+  }
+
+  const firstTextBlock = contentBlocks.find((b) => b.type === "text");
+  const previewText = derivePreviewText(firstTextBlock ? firstTextBlock.value : "");
+  if (!previewText) {
+    blogStatus.textContent = "Add at least one text block so a preview can be generated.";
     blogStatus.className = "msg error";
     return;
   }
