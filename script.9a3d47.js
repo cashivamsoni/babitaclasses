@@ -874,7 +874,7 @@ if (slideshow) {
               '<div class="blog-card" id="' + safeId + '">' +
               "<h3>" + (p.title || "") + "</h3>" +
               "<small>" + (p.date || "") + "</small>" +
-              "<p>" + (p.previewText || "") + "</p>" +
+              '<p style="text-align:justify;">' + (p.previewText || "") + "</p>" +
               '<button class="read-more-btn" onclick="openModal(\'' + modalId + '\')">Read More</button>' +
               "</div>";
 
@@ -890,7 +890,7 @@ if (slideshow) {
             const imagesHtml = images
               .map(
                 (url) =>
-                  '<img src="' + url + '" alt="' + (p.title || "") + '" style="max-width:100%; border-radius:8px; margin:10px 0;" loading="lazy">'
+                  '<img src="' + url + '" alt="' + (p.title || "") + '" style="max-width:100%; border-radius:8px; display:block; margin:10px auto;" loading="lazy">'
               )
               .join("");
             const buttonsHtml = buttons.length
@@ -913,7 +913,7 @@ if (slideshow) {
               "<small>" + (p.date || "") + "</small>" +
               "</div>" +
               imagesHtml +
-              "<p>" + fullTextHtml + "</p>" +
+              '<p style="text-align:justify;">' + fullTextHtml + "</p>" +
               buttonsHtml +
               "</div></div>";
           });
