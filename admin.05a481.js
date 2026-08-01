@@ -1695,8 +1695,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
     });
 
     const { jsPDF } = window.jspdf;
-    const landscape = dates.length > 5;
-    const pdf = new jsPDF({ orientation: landscape ? "landscape" : "portrait", unit: "pt", format: "a4" });
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 26;
@@ -1708,14 +1707,20 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
       pdf.rect(pageMargin, pageMargin, pageWidth - pageMargin * 2, pageHeight - pageMargin * 2);
     }
 
-    // Table geometry
+    // Table geometry — split dates into groups so each group's columns stay readable,
+    // instead of shrinking everything to fit on one wide page
     const rollColW = 45;
     const nameColW = 110;
     const tableWidth = pageWidth - margin * 2;
-    const dateColW = Math.max(48, (tableWidth - rollColW - nameColW) / dates.length);
+    const minDateColW = 55;
+    const maxDatesPerGroup = Math.max(1, Math.floor((tableWidth - rollColW - nameColW) / minDateColW));
+    const dateGroups = [];
+    for (let i = 0; i < dates.length; i += maxDatesPerGroup) {
+      dateGroups.push(dates.slice(i, i + maxDatesPerGroup));
+    }
     const rowH = 22;
 
-    function drawHeaderRow(y) {
+    function drawHeaderRow(y, groupDates, dateColW) {
       pdf.setFont("times", "bold");
       pdf.setFontSize(9);
       let x = margin;
@@ -1725,106 +1730,129 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
       pdf.rect(x, y, nameColW, rowH);
       pdf.text("Name", x + nameColW / 2, y + rowH / 2 + 3, { align: "center" });
       x += nameColW;
-      dates.forEach(({ id }) => {
+      groupDates.forEach(({ id }) => {
         pdf.rect(x, y, dateColW, rowH);
         pdf.text(formatDMY(id), x + dateColW / 2, y + rowH / 2 + 3, { align: "center" });
         x += dateColW;
       });
     }
 
-    // ---- Pass 1: figure out how students split across pages ----
-    const firstPageTop = margin + 64;
-    const chunks = [];
-    let chunkStart = 0;
-    let y = firstPageTop + rowH;
-    for (let i = 0; i < students.length; i++) {
-      if (y + rowH > pageHeight - pageMargin - 10) {
-        chunks.push({ start: chunkStart, end: i, tableTop: chunks.length === 0 ? firstPageTop : margin });
-        chunkStart = i;
-        y = margin + rowH;
+    let isFirstPageOfDoc = true;
+
+    dateGroups.forEach((groupDates, groupIndex) => {
+      const dateColW = Math.max(minDateColW, (tableWidth - rollColW - nameColW) / groupDates.length);
+
+      // ---- Pass 1: figure out how students split across pages for this date group ----
+      const firstPageTop = margin + 64;
+      const chunks = [];
+      let chunkStart = 0;
+      let y = (groupIndex === 0 ? firstPageTop : margin) + rowH;
+      for (let i = 0; i < students.length; i++) {
+        if (y + rowH > pageHeight - pageMargin - 10) {
+          chunks.push({
+            start: chunkStart,
+            end: i,
+            tableTop: groupIndex === 0 && chunks.length === 0 ? firstPageTop : margin,
+          });
+          chunkStart = i;
+          y = margin + rowH;
+        }
+        y += rowH;
       }
-      y += rowH;
-    }
-    chunks.push({ start: chunkStart, end: students.length, tableTop: chunks.length === 0 ? firstPageTop : margin });
+      chunks.push({
+        start: chunkStart,
+        end: students.length,
+        tableTop: groupIndex === 0 && chunks.length === 0 ? firstPageTop : margin,
+      });
 
-    // ---- Pass 2: draw ----
-    chunks.forEach((chunk, chunkIndex) => {
-      if (chunkIndex > 0) pdf.addPage();
-      drawPageFrame();
+      // ---- Pass 2: draw ----
+      chunks.forEach((chunk, chunkIndex) => {
+        if (!isFirstPageOfDoc) pdf.addPage();
+        isFirstPageOfDoc = false;
+        drawPageFrame();
 
-      if (chunkIndex === 0) {
-        const titleTop = margin + 10;
-        pdf.setFont("times", "bold");
-        pdf.setFontSize(16);
-        pdf.text("Babita Classes", pageWidth / 2, titleTop, { align: "center" });
+        if (groupIndex === 0 && chunkIndex === 0) {
+          const titleTop = margin + 10;
+          pdf.setFont("times", "bold");
+          pdf.setFontSize(16);
+          pdf.text("Babita Classes", pageWidth / 2, titleTop, { align: "center" });
 
+          pdf.setFont("times", "normal");
+          pdf.setFontSize(11);
+          const rangeLabel =
+            "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
+          pdf.text(rangeLabel, pageWidth / 2, titleTop + 18, { align: "center" });
+
+          const now = new Date();
+          const extractedLine =
+            "Extracted from https://babitaclasses.vercel.app/admin on " +
+            pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
+            " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
+          pdf.setFontSize(9);
+          pdf.text(extractedLine, pageWidth / 2, titleTop + 34, { align: "center" });
+        }
+
+        const tableTop = chunk.tableTop;
+        drawHeaderRow(tableTop, groupDates, dateColW);
+        const bodyTop = tableTop + rowH;
+        const bodyBottom = bodyTop + (chunk.end - chunk.start) * rowH;
+
+        // Roll No. + Name + non-holiday cells, per row
         pdf.setFont("times", "normal");
-        pdf.setFontSize(11);
-        const rangeLabel =
-          "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
-        pdf.text(rangeLabel, pageWidth / 2, titleTop + 18, { align: "center" });
-
-        const now = new Date();
-        const extractedLine =
-          "Extracted from https://babitaclasses.vercel.app/admin on " +
-          pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
-          " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
         pdf.setFontSize(9);
-        pdf.text(extractedLine, pageWidth / 2, titleTop + 34, { align: "center" });
-      }
+        for (let i = chunk.start; i < chunk.end; i++) {
+          const student = students[i];
+          const rowY = bodyTop + (i - chunk.start) * rowH;
+          let x = margin;
+          pdf.rect(x, rowY, rollColW, rowH);
+          pdf.text(student.rollNumber || "-", x + rollColW / 2, rowY + rowH / 2 + 3, { align: "center" });
+          x += rollColW;
+          pdf.rect(x, rowY, nameColW, rowH);
+          const nameLines = pdf.splitTextToSize(student.name || "", nameColW - 6);
+          pdf.text(nameLines[0] || "", x + 4, rowY + rowH / 2 + 3);
+          x += nameColW;
 
-      const tableTop = chunk.tableTop;
-      drawHeaderRow(tableTop);
-      const bodyTop = tableTop + rowH;
-      const bodyBottom = bodyTop + (chunk.end - chunk.start) * rowH;
+          groupDates.forEach(({ data }) => {
+            if (!data.holiday) {
+              pdf.rect(x, rowY, dateColW, rowH);
+              const status = (data.records || {})[student.id];
+              const cellText = status === "present" ? "Present" : status === "absent" ? "Absent" : "-";
+              if (status === "present") pdf.setTextColor(30, 140, 40);
+              else if (status === "absent") pdf.setTextColor(192, 57, 43);
+              else pdf.setTextColor(0, 0, 0);
+              pdf.text(cellText, x + dateColW / 2, rowY + rowH / 2 + 3, { align: "center" });
+              pdf.setTextColor(0, 0, 0);
+            }
+            x += dateColW;
+          });
+        }
 
-      // Roll No. + Name + non-holiday cells, per row
-      pdf.setFont("times", "normal");
-      pdf.setFontSize(9);
-      for (let i = chunk.start; i < chunk.end; i++) {
-        const student = students[i];
-        const rowY = bodyTop + (i - chunk.start) * rowH;
-        let x = margin;
-        pdf.rect(x, rowY, rollColW, rowH);
-        pdf.text(student.rollNumber || "-", x + rollColW / 2, rowY + rowH / 2 + 3, { align: "center" });
-        x += rollColW;
-        pdf.rect(x, rowY, nameColW, rowH);
-        const nameLines = pdf.splitTextToSize(student.name || "", nameColW - 6);
-        pdf.text(nameLines[0] || "", x + 4, rowY + rowH / 2 + 3);
-        x += nameColW;
+        // Merged holiday columns — one tall cell per holiday date, spanning this page's rows,
+        // with the holiday name rotated to read top-to-bottom. Long names wrap onto extra
+        // lines (stacked side-by-side within the column) instead of overflowing the cell.
+        let hx = margin + rollColW + nameColW;
+        groupDates.forEach(({ data }) => {
+          if (data.holiday) {
+            const cellH = bodyBottom - bodyTop;
+            pdf.rect(hx, bodyTop, dateColW, cellH);
+            pdf.setFont("times", "bold");
+            pdf.setFontSize(9);
+            pdf.setTextColor(192, 57, 43);
 
-        dates.forEach(({ data }) => {
-          if (!data.holiday) {
-            pdf.rect(x, rowY, dateColW, rowH);
-            const status = (data.records || {})[student.id];
-            const cellText = status === "present" ? "Present" : status === "absent" ? "Absent" : "-";
-            if (status === "present") pdf.setTextColor(30, 140, 40);
-            else if (status === "absent") pdf.setTextColor(192, 57, 43);
-            else pdf.setTextColor(0, 0, 0);
-            pdf.text(cellText, x + dateColW / 2, rowY + rowH / 2 + 3, { align: "center" });
+            const lines = pdf.splitTextToSize(data.holiday, Math.max(cellH - 8, 20));
+            const lineSpacing = 12;
+            const totalW = lines.length * lineSpacing;
+            let lineX = hx + dateColW / 2 - totalW / 2 + lineSpacing / 2;
+            lines.forEach((line) => {
+              const lineW = pdf.getTextWidth(line);
+              const lineY = bodyTop + (cellH + lineW) / 2;
+              pdf.text(line, lineX, lineY, { angle: 90 });
+              lineX += lineSpacing;
+            });
             pdf.setTextColor(0, 0, 0);
           }
-          x += dateColW;
+          hx += dateColW;
         });
-      }
-
-      // Merged holiday columns — one tall cell per holiday date, spanning this page's rows,
-      // with the holiday name rotated to read top-to-bottom
-      let x = margin + rollColW + nameColW;
-      dates.forEach(({ data }) => {
-        if (data.holiday) {
-          const cellH = bodyBottom - bodyTop;
-          pdf.rect(x, bodyTop, dateColW, cellH);
-          pdf.setFont("times", "bold");
-          pdf.setFontSize(9);
-          const textW = pdf.getTextWidth(data.holiday);
-          const textX = x + dateColW / 2 + 3;
-          const textY = bodyTop + (cellH + textW) / 2;
-          pdf.setTextColor(192, 57, 43);
-          pdf.text(data.holiday, textX, textY, { angle: 90 });
-          pdf.setTextColor(0, 0, 0);
-        }
-        x += dateColW;
       });
     });
 
