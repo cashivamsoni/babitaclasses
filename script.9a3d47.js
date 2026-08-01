@@ -868,7 +868,6 @@ if (slideshow) {
             const p = docSnap.data();
             const safeId = "blogpost-" + docSnap.id;
             const modalId = "blogpost-modal-" + docSnap.id;
-            const fullTextHtml = (p.fullText || "").replace(/\n/g, "<br>");
 
             cardsHtml +=
               '<div class="blog-card" id="' + safeId + '">' +
@@ -880,19 +879,33 @@ if (slideshow) {
 
             searchHtml += '<li><a href="#' + safeId + '">' + (p.title || "") + "</a></li>";
 
-            const images = Array.isArray(p.imageUrls) && p.imageUrls.length ? p.imageUrls : p.imageUrl ? [p.imageUrl] : [];
             const buttons = Array.isArray(p.buttons) && p.buttons.length
               ? p.buttons
               : p.buttonText && p.buttonUrl
               ? [{ text: p.buttonText, url: p.buttonUrl }]
               : [];
 
-            const imagesHtml = images
-              .map(
-                (url) =>
-                  '<img src="' + url + '" alt="' + (p.title || "") + '" style="max-width:100%; border-radius:8px; display:block; margin:10px auto;" loading="lazy">'
-              )
+            // Ordered content: new posts use contentBlocks; posts saved before this
+            // feature existed fall back to fullText (as one block) + imageUrls after it.
+            let blocks = Array.isArray(p.contentBlocks) && p.contentBlocks.length ? p.contentBlocks : null;
+            if (!blocks) {
+              blocks = [];
+              if (p.fullText) blocks.push({ type: "text", value: p.fullText });
+              const legacyImages = Array.isArray(p.imageUrls) && p.imageUrls.length ? p.imageUrls : p.imageUrl ? [p.imageUrl] : [];
+              legacyImages.forEach((url) => blocks.push({ type: "image", value: url }));
+            }
+
+            const blocksHtml = blocks
+              .map((b) => {
+                if (b.type === "image") {
+                  return (
+                    '<img src="' + b.value + '" alt="' + (p.title || "") + '" style="max-width:100%; border-radius:8px; display:block; margin:10px auto;" loading="lazy">'
+                  );
+                }
+                return '<p style="text-align:justify;">' + (b.value || "").replace(/\n/g, "<br>") + "</p>";
+              })
               .join("");
+
             const buttonsHtml = buttons.length
               ? '<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;">' +
                 buttons
@@ -912,8 +925,7 @@ if (slideshow) {
               "<h2>" + (p.title || "") + "</h2>" +
               "<small>" + (p.date || "") + "</small>" +
               "</div>" +
-              imagesHtml +
-              '<p style="text-align:justify;">' + fullTextHtml + "</p>" +
+              blocksHtml +
               buttonsHtml +
               "</div></div>";
           });
