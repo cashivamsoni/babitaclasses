@@ -234,6 +234,16 @@
         padding: 10px;
         margin-bottom: 10px;
         background: #fffdfa;
+        cursor: grab;
+      }
+      .blog-block-row.dragging {
+        opacity: 0.4;
+      }
+      .blog-block-drag-handle {
+        cursor: grab;
+        color: #b0a48f;
+        font-size: 15px;
+        margin-right: 6px;
       }
       .blog-block-header {
         display: flex;
@@ -364,6 +374,8 @@
         <button id="markUpdatedTodayBtn" type="button">Mark as Updated Today</button>
         <p id="saveStatus" class="msg"></p>
       </div>
+
+      <a href="https://babitaclasses.vercel.app/" target="_blank" rel="noopener" style="display:block; text-align:center; width:100%; margin-top:18px; padding:12px; font-size:14.5px; font-weight:700; letter-spacing:0.01em; color:#fff; background:linear-gradient(135deg, #a30000, #7a0000); border-radius:10px; box-shadow:0 3px 10px rgba(122,0,0,0.28); text-decoration:none;">Check Website</a>
 
       <button id="hubLogoutBtn" type="button">Logout</button>
     </div>
@@ -540,8 +552,7 @@
         <label for="blogDateInput">Date</label>
         <input type="text" id="blogDateInput" placeholder="e.g. 28 July 2026">
 
-        <label for="blogPreviewInput">Preview Text (shown on the card)</label>
-        <textarea id="blogPreviewInput" rows="2" placeholder="A short one or two line teaser..."></textarea>
+        <p class="hint">Preview text on the card is automatically taken from your first text block.</p>
 
         <label>Content (drag order matters — use ▲▼ to reorder)</label>
         <div id="blogBlocksContainer"></div>
