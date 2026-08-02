@@ -50,6 +50,92 @@
     });
   });
 
+  /* ---------- Firebase: load the published (admin-managed) result + archive ----------
+     If nothing has been published yet, the hardcoded RESULT_DATA above stays in effect
+     as a safe fallback — nothing here can break the existing checker. */
+  (async function () {
+    try {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js");
+      const { getFirestore, collection, query, orderBy, getDocs } = await import(
+        "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js"
+      );
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCeIXfg73jN9d6rvzkeenfUja3lyCVPWMA",
+        authDomain: "babitaclasses-eb3e4.firebaseapp.com",
+        projectId: "babitaclasses-eb3e4",
+        storageBucket: "babitaclasses-eb3e4.firebasestorage.app",
+        messagingSenderId: "191824554368",
+        appId: "1:191824554368:web:bb9f7af3c4634f7616f965",
+      };
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const q = query(collection(db, "resultTerms"), orderBy("order", "desc"));
+      const snap = await getDocs(q);
+      if (snap.empty) return;
+
+      const archivedTerms = [];
+      let activeTerm = null;
+      snap.forEach(function (docSnap) {
+        const data = docSnap.data();
+        const termObj = {
+          term: data.term,
+          session: data.session,
+          setCode: data.setCode,
+          date: data.date,
+          maxMarks: data.maxMarks,
+          students: Array.isArray(data.students) ? data.students.map(function (s) { return Object.assign({}, s); }) : [],
+        };
+        if (data.status === "active" && !activeTerm) {
+          activeTerm = termObj;
+        } else {
+          archivedTerms.push(termObj);
+        }
+      });
+
+      // "Check Your Result" (roll+name) only ever searches the one active term
+      RESULT_DATA.length = 0;
+      if (activeTerm) RESULT_DATA.push(activeTerm);
+
+      // Result ID verification covers active + archived, so old marksheets keep working
+      Object.keys(RESULT_INDEX).forEach(function (k) { delete RESULT_INDEX[k]; });
+      RESULT_DATA.concat(archivedTerms).forEach(function (term) {
+        term.students.forEach(function (student) {
+          student.resultId = computeResultId(term, student);
+          RESULT_INDEX[student.resultId] = { term: term, student: student };
+        });
+      });
+
+      // Render the public archive list
+      const archiveListEl = document.getElementById("resultsArchiveList");
+      if (archiveListEl) {
+        if (archivedTerms.length === 0) {
+          archiveListEl.innerHTML = '<p class="small">No archived results yet.</p>';
+          return;
+        }
+        let html = "";
+        archivedTerms.forEach(function (term) {
+          html += '<h3 style="margin-top:12px">' + escapeHtml(term.term) + " — Session " + escapeHtml(term.session) + "</h3>";
+          html += '<div class="muted" style="margin-bottom:6px">' + escapeHtml(term.setCode || "") + " · Declared " + escapeHtml(term.date || "") + "</div>";
+          html += '<div style="overflow:auto"><table aria-label="Archived result ' + escapeHtml(term.session) + '">';
+          html += "<thead><tr><th>Roll</th><th>Name</th><th>Marks</th><th>Percentage</th><th>Rank</th></tr></thead><tbody>";
+          term.students
+            .slice()
+            .sort(function (a, b) { return (a.rank || 0) - (b.rank || 0); })
+            .forEach(function (s) {
+              html += "<tr><td>" + s.roll + "</td><td>" + escapeHtml(s.name) + "</td><td>" + s.marks + "</td><td>" + s.percentage + "%</td><td>" + s.rank + "</td></tr>";
+            });
+          html += "</tbody></table></div>";
+        });
+        archiveListEl.innerHTML = html;
+      }
+    } catch (err) {
+      // Any failure here — keep the hardcoded fallback data untouched
+      console.error("Could not load published results:", err);
+    }
+  })();
+
   // Tracks whichever result is currently on screen, so Ctrl+P / Cmd+P
   // can download the same PDF instead of triggering a browser print.
   let lastShownResult = null;
