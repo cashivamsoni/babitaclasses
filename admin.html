@@ -149,12 +149,12 @@
       }
 
       /* Notices + Videos rows */
-      #noticeList, #videoAdminList, #syllabusRowList, #studentList, #attendanceStudentList, #attendanceRangeList, #blogPostList {
+      #noticeList, #videoAdminList, #syllabusRowList, #studentList, #attendanceStudentList, #attendanceRangeList, #blogPostList, #resultStudentList {
         list-style: none;
         padding: 0;
         margin: 8px 0 0;
       }
-      #noticeList li, #videoAdminList li, #syllabusRowList li, #studentList li, #attendanceStudentList li, #attendanceRangeList li, #blogPostList li {
+      #noticeList li, #videoAdminList li, #syllabusRowList li, #studentList li, #attendanceStudentList li, #attendanceRangeList li, #blogPostList li, #resultStudentList li {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -165,13 +165,13 @@
         margin-bottom: 6px;
         font-size: 12.5px;
       }
-      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"], #studentList li input[type="checkbox"], #attendanceStudentList li input[type="checkbox"], #attendanceRangeList li input[type="checkbox"], #blogPostList li input[type="checkbox"] {
+      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"], #studentList li input[type="checkbox"], #attendanceStudentList li input[type="checkbox"], #attendanceRangeList li input[type="checkbox"], #blogPostList li input[type="checkbox"], #resultStudentList li input[type="checkbox"] {
         width: auto;
         flex: none;
         display: none;
         accent-color: #990000;
       }
-      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"], #studentList.bulk-mode li input[type="checkbox"], #attendanceRangeList.bulk-mode li input[type="checkbox"], #blogPostList.bulk-mode li input[type="checkbox"] {
+      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"], #studentList.bulk-mode li input[type="checkbox"], #attendanceRangeList.bulk-mode li input[type="checkbox"], #blogPostList.bulk-mode li input[type="checkbox"], #resultStudentList.bulk-mode li input[type="checkbox"] {
         display: inline-block;
       }
       #noticeList li span, #videoAdminList li span, #syllabusRowList li span, #studentList li span, #attendanceStudentList li span, #attendanceRangeList li span, #blogPostList li span {
@@ -180,7 +180,7 @@
         word-break: break-word;
         overflow-wrap: break-word;
       }
-      #noticeList button, #videoAdminList button, #syllabusRowList button, #studentList button, #attendanceStudentList button, #attendanceRangeList button, #blogPostList button {
+      #noticeList button, #videoAdminList button, #syllabusRowList button, #studentList button, #attendanceStudentList button, #attendanceRangeList button, #blogPostList button, #resultStudentList button {
         width: auto;
         margin: 0;
         padding: 5px 11px;
@@ -188,8 +188,8 @@
         font-weight: 600;
         box-shadow: none;
       }
-      #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn, #studentList .edit-btn, #blogPostList .edit-btn { background: #1f6fd0; }
-      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn, #studentList .delete-btn, #attendanceRangeList .delete-btn, #blogPostList .delete-btn { background: #c0392b; }
+      #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn, #studentList .edit-btn, #blogPostList .edit-btn, #resultStudentList .edit-btn { background: #1f6fd0; }
+      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn, #studentList .delete-btn, #attendanceRangeList .delete-btn, #blogPostList .delete-btn, #resultStudentList .delete-btn { background: #c0392b; }
 
       .scroll-box {
         max-height: 240px;
@@ -380,7 +380,7 @@
       <div class="hub-grid">
         <button id="hubHomeBtn" type="button" class="hub-btn">Homepage</button>
         <button id="hubBlogBtn" type="button" class="hub-btn">Blog</button>
-        <button type="button" class="hub-btn" disabled title="Coming soon">Results</button>
+        <button id="hubResultsBtn" type="button" class="hub-btn">Results</button>
         <button id="hubAttendanceBtn" type="button" class="hub-btn">Attendance</button>
       </div>
 
@@ -593,6 +593,65 @@
         <button id="blogSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
         <ul id="blogPostList" class="scroll-box"></ul>
         <button id="blogDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
+      </div>
+    </div>
+
+    <div id="adminResultsView" class="card" style="display:none; max-width:480px; position:relative;">
+      <button id="resultsBackBtn" type="button" style="position:absolute; top:16px; left:16px; width:auto; margin:0; padding:6px 14px; font-size:12px; box-shadow:none;">← Back</button>
+      <button id="resultsLogoutBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px; box-shadow:none;">Logout</button>
+
+      <h1>Results</h1>
+
+      <div class="section-block">
+        <p class="eyebrow">Term</p>
+        <p class="hint" style="margin-top:0;">Only one term can be the "latest" (shown on the Check Result search) at a time. Others are archived automatically.</p>
+
+        <label for="resultTermSelect">Select Term</label>
+        <select id="resultTermSelect" style="width:100%; padding:10px 12px; font-size:14.5px; border:1.5px solid #e6ddcf; border-radius:10px; background:#fffdfa;"></select>
+        <p id="resultTermStatusDisplay" style="font-size:13px; color:#6b5f52; margin:8px 0 0;"></p>
+
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button id="resultNewTermBtn" type="button" style="margin:0;">New Term</button>
+          <button id="resultDeleteTermBtn" type="button" style="margin:0; background:#c0392b;">Delete Term</button>
+        </div>
+        <button id="resultPublishBtn" type="button">Publish as Latest</button>
+        <p id="resultStatus" class="msg"></p>
+      </div>
+
+      <div class="section-block">
+        <p class="eyebrow">Term Details</p>
+        <label for="resultTermNameInput">Term Name</label>
+        <input type="text" id="resultTermNameInput" placeholder="e.g. Term - 2">
+        <label for="resultSessionInput">Session</label>
+        <input type="text" id="resultSessionInput" placeholder="e.g. 2025-26">
+        <label for="resultSetCodeInput">Set Code</label>
+        <input type="text" id="resultSetCodeInput" placeholder="e.g. Set-A 3/22">
+        <label for="resultDateInput">Declared Date</label>
+        <input type="text" id="resultDateInput" placeholder="e.g. 27 July 2025">
+        <label for="resultMaxMarksInput">Max Marks</label>
+        <input type="text" id="resultMaxMarksInput" placeholder="e.g. 100">
+        <button id="resultSaveDetailsBtn" type="button">Save Term Details</button>
+        <p id="resultDetailsStatus" class="msg"></p>
+      </div>
+
+      <div class="section-block">
+        <p class="eyebrow">Students</p>
+        <label for="resultRollInput">Roll No.</label>
+        <input type="text" id="resultRollInput" placeholder="e.g. 07">
+        <label for="resultNameInput">Name</label>
+        <input type="text" id="resultNameInput" placeholder="e.g. Riya">
+        <label for="resultMarksInput">Marks</label>
+        <input type="text" id="resultMarksInput" placeholder="e.g. 88.5">
+        <label for="resultPercentageInput">Percentage</label>
+        <input type="text" id="resultPercentageInput" placeholder="e.g. 88.5">
+        <label for="resultRankInput">Rank</label>
+        <input type="text" id="resultRankInput" placeholder="e.g. 1">
+        <button id="resultAddStudentBtn" type="button">Add Student</button>
+        <p id="resultStudentStatus" class="msg"></p>
+        <button id="resultSelectModeBtn" type="button" class="small-btn">Select</button>
+        <button id="resultSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+        <ul id="resultStudentList" class="scroll-box"></ul>
+        <button id="resultDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
       </div>
     </div>
 
