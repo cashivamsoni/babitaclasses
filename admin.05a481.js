@@ -2075,9 +2075,21 @@ function collectContentBlocks() {
   return blocks;
 }
 
+function moveButtonRow(row, direction) {
+  const sibling = direction === "up" ? row.previousElementSibling : row.nextElementSibling;
+  if (!sibling) return;
+  if (direction === "up") blogButtonsContainer.insertBefore(row, sibling);
+  else blogButtonsContainer.insertBefore(sibling, row);
+}
+
 function addButtonRow(text, url) {
   const row = document.createElement("div");
-  row.className = "blog-dynamic-row";
+  row.className = "blog-dynamic-row blog-button-row";
+
+  const handle = document.createElement("span");
+  handle.className = "blog-block-drag-handle";
+  handle.textContent = "⠿";
+
   const textInput = document.createElement("input");
   textInput.type = "text";
   textInput.placeholder = "Button text";
@@ -2086,16 +2098,56 @@ function addButtonRow(text, url) {
   urlInput.type = "text";
   urlInput.placeholder = "https://...";
   urlInput.value = url || "";
+
+  const upBtn = document.createElement("button");
+  upBtn.type = "button";
+  upBtn.className = "move-btn";
+  upBtn.textContent = "▲";
+  upBtn.addEventListener("click", () => moveButtonRow(row, "up"));
+
+  const downBtn = document.createElement("button");
+  downBtn.type = "button";
+  downBtn.className = "move-btn";
+  downBtn.textContent = "▼";
+  downBtn.addEventListener("click", () => moveButtonRow(row, "down"));
+
   const removeBtn = document.createElement("button");
   removeBtn.type = "button";
   removeBtn.className = "blog-remove-btn";
   removeBtn.textContent = "×";
   removeBtn.addEventListener("click", () => row.remove());
+
+  row.appendChild(handle);
   row.appendChild(textInput);
   row.appendChild(urlInput);
+  row.appendChild(upBtn);
+  row.appendChild(downBtn);
   row.appendChild(removeBtn);
+
+  row.draggable = true;
+  row.addEventListener("dragstart", () => setTimeout(() => row.classList.add("dragging"), 0));
+  row.addEventListener("dragend", () => row.classList.remove("dragging"));
+
   blogButtonsContainer.appendChild(row);
 }
+
+blogButtonsContainer.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  const dragging = blogButtonsContainer.querySelector(".blog-button-row.dragging");
+  if (!dragging) return;
+  const rows = [...blogButtonsContainer.querySelectorAll(".blog-button-row:not(.dragging)")];
+  const after = rows.reduce(
+    (closest, row) => {
+      const box = row.getBoundingClientRect();
+      const offset = e.clientY - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) return { offset, element: row };
+      return closest;
+    },
+    { offset: Number.NEGATIVE_INFINITY, element: null }
+  ).element;
+  if (after == null) blogButtonsContainer.appendChild(dragging);
+  else blogButtonsContainer.insertBefore(dragging, after);
+});
 
 blogAddButtonBtn.addEventListener("click", () => addButtonRow());
 addTextBlockRow();
