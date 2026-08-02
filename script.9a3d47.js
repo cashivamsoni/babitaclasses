@@ -272,7 +272,7 @@ window.addEventListener("click", function (event) {
   }
 
   document.addEventListener("click", function (e) {
-    const img = e.target.closest(".newbanner, .slideshow-container .slide img, .modal-box img");
+    const img = e.target.closest(".newbanner, .slideshow-container .slide img, .modal-box img, .faculty-photo");
     if (img) openLightbox(img.src, img.alt);
   });
 
