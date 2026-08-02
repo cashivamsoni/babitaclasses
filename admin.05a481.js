@@ -174,6 +174,35 @@ const blogSelectModeBtn = document.getElementById("blogSelectModeBtn");
 const blogSelectAllBtn = document.getElementById("blogSelectAllBtn");
 const blogDeleteSelectedBtn = document.getElementById("blogDeleteSelectedBtn");
 
+const hubResultsBtn = document.getElementById("hubResultsBtn");
+const adminResultsView = document.getElementById("adminResultsView");
+const resultsBackBtn = document.getElementById("resultsBackBtn");
+const resultsLogoutBtn = document.getElementById("resultsLogoutBtn");
+const resultTermSelect = document.getElementById("resultTermSelect");
+const resultTermStatusDisplay = document.getElementById("resultTermStatusDisplay");
+const resultNewTermBtn = document.getElementById("resultNewTermBtn");
+const resultDeleteTermBtn = document.getElementById("resultDeleteTermBtn");
+const resultPublishBtn = document.getElementById("resultPublishBtn");
+const resultStatus = document.getElementById("resultStatus");
+const resultTermNameInput = document.getElementById("resultTermNameInput");
+const resultSessionInput = document.getElementById("resultSessionInput");
+const resultSetCodeInput = document.getElementById("resultSetCodeInput");
+const resultDateInput = document.getElementById("resultDateInput");
+const resultMaxMarksInput = document.getElementById("resultMaxMarksInput");
+const resultSaveDetailsBtn = document.getElementById("resultSaveDetailsBtn");
+const resultDetailsStatus = document.getElementById("resultDetailsStatus");
+const resultRollInput = document.getElementById("resultRollInput");
+const resultNameInput = document.getElementById("resultNameInput");
+const resultMarksInput = document.getElementById("resultMarksInput");
+const resultPercentageInput = document.getElementById("resultPercentageInput");
+const resultRankInput = document.getElementById("resultRankInput");
+const resultAddStudentBtn = document.getElementById("resultAddStudentBtn");
+const resultStudentStatus = document.getElementById("resultStudentStatus");
+const resultSelectModeBtn = document.getElementById("resultSelectModeBtn");
+const resultSelectAllBtn = document.getElementById("resultSelectAllBtn");
+const resultStudentList = document.getElementById("resultStudentList");
+const resultDeleteSelectedBtn = document.getElementById("resultDeleteSelectedBtn");
+
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -181,6 +210,7 @@ onAuthStateChanged(auth, async (user) => {
     adminView.style.display = "none";
     adminAttendanceView.style.display = "none";
     adminBlogView.style.display = "none";
+    adminResultsView.style.display = "none";
     adminHub.style.display = "block";
     await loadLastUpdatedDisplay();
     await loadMarquee();
@@ -194,6 +224,7 @@ onAuthStateChanged(auth, async (user) => {
     adminView.style.display = "none";
     adminAttendanceView.style.display = "none";
     adminBlogView.style.display = "none";
+    adminResultsView.style.display = "none";
     loginView.style.display = "block";
     loginForm.reset();
   }
@@ -239,6 +270,19 @@ blogBackBtn.addEventListener("click", () => {
 });
 
 blogLogoutBtn.addEventListener("click", () => signOut(auth));
+
+hubResultsBtn.addEventListener("click", async () => {
+  adminHub.style.display = "none";
+  adminResultsView.style.display = "block";
+  await loadResultTerms();
+});
+
+resultsBackBtn.addEventListener("click", () => {
+  adminResultsView.style.display = "none";
+  adminHub.style.display = "block";
+});
+
+resultsLogoutBtn.addEventListener("click", () => signOut(auth));
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -2361,5 +2405,455 @@ blogAddBtn.addEventListener("click", async () => {
     console.error(err);
   } finally {
     blogAddBtn.disabled = false;
+  }
+});
+
+// ---------- Results (terms + students) ----------
+const RESULT_TERMS_COL = collection(db, "resultTerms");
+
+const DEFAULT_RESULT_TERM = {
+  id: "2025-26-term-1",
+  order: 2025,
+  status: "active",
+  term: "Term - 1",
+  session: "2025-26",
+  setCode: "Set-A 3/22",
+  date: "27 July 2025",
+  maxMarks: 100,
+  students: [
+    { roll: 7, name: "Riya", marks: 88.5, percentage: 88.5, rank: 1 },
+    { roll: 1, name: "Anshika", marks: 82.5, percentage: 82.5, rank: 2 },
+    { roll: 2, name: "Aryan", marks: 57, percentage: 57, rank: 3 },
+  ],
+};
+
+let resultTermsCache = [];
+let selectedResultTermId = null;
+
+function populateResultTermSelect() {
+  resultTermSelect.innerHTML = "";
+  resultTermsCache.forEach((t) => {
+    const opt = document.createElement("option");
+    opt.value = t.id;
+    opt.textContent = t.term + " — " + t.session + (t.status === "active" ? " (Latest)" : "");
+    resultTermSelect.appendChild(opt);
+  });
+}
+
+function getSelectedResultTerm() {
+  return resultTermsCache.find((t) => t.id === selectedResultTermId);
+}
+
+async function saveResultTerm(term) {
+  await setDoc(doc(db, "resultTerms", term.id), {
+    order: term.order,
+    status: term.status,
+    term: term.term,
+    session: term.session,
+    setCode: term.setCode,
+    date: term.date,
+    maxMarks: term.maxMarks,
+    students: term.students,
+  });
+}
+
+function fillResultDetailsForm(term) {
+  resultTermNameInput.value = term.term || "";
+  resultSessionInput.value = term.session || "";
+  resultSetCodeInput.value = term.setCode || "";
+  resultDateInput.value = term.date || "";
+  resultMaxMarksInput.value = term.maxMarks || "";
+  resultTermStatusDisplay.textContent =
+    term.status === "active"
+      ? "This is the LATEST term — shown on the public Check Result search."
+      : "This term is ARCHIVED — visible in the Results Archive, not searchable by roll/name.";
+}
+
+function renderResultStudents() {
+  resultStudentList.innerHTML = "";
+  resultDeleteSelectedBtn.style.display = "none";
+  const term = getSelectedResultTerm();
+  if (!term) return;
+
+  term.students.forEach((student, index) => {
+    const li = document.createElement("li");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.index = index;
+    checkbox.addEventListener("change", () => {
+      const anyChecked = resultStudentList.querySelector('input[type="checkbox"]:checked');
+      resultDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+    });
+    li.appendChild(checkbox);
+
+    const span = document.createElement("span");
+    span.textContent =
+      "Roll " + student.roll + " — " + student.name + " — " + student.marks + " marks (" + student.percentage + "%, Rank " + student.rank + ")";
+    li.appendChild(span);
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "edit-btn";
+    editBtn.textContent = "Edit";
+    editBtn.addEventListener("click", async () => {
+      const previous = { ...student };
+      const roll = prompt("Roll No.:", student.roll);
+      if (roll === null) return;
+      const name = prompt("Name:", student.name);
+      if (name === null) return;
+      const marks = prompt("Marks:", student.marks);
+      if (marks === null) return;
+      const percentage = prompt("Percentage:", student.percentage);
+      if (percentage === null) return;
+      const rank = prompt("Rank:", student.rank);
+      if (rank === null) return;
+
+      term.students[index] = {
+        roll: parseFloat(roll) || roll,
+        name: name.trim(),
+        marks: parseFloat(marks) || marks,
+        percentage: parseFloat(percentage) || percentage,
+        rank: parseInt(rank, 10) || rank,
+      };
+      try {
+        await saveResultTerm(term);
+        renderResultStudents();
+        showUndoToast("Student updated.", async () => {
+          term.students[index] = previous;
+          await saveResultTerm(term);
+          renderResultStudents();
+        });
+      } catch (err) {
+        resultStudentStatus.textContent = "Save failed: " + (err.code || err.message);
+        resultStudentStatus.className = "msg error";
+        console.error(err);
+      }
+    });
+    li.appendChild(editBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "delete-btn";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.addEventListener("click", async () => {
+      if (!confirm("Delete this student's result?")) return;
+      const removed = term.students[index];
+      term.students.splice(index, 1);
+      try {
+        await saveResultTerm(term);
+        renderResultStudents();
+        showUndoToast("Student deleted.", async () => {
+          term.students.splice(index, 0, removed);
+          await saveResultTerm(term);
+          renderResultStudents();
+        });
+      } catch (err) {
+        resultStudentStatus.textContent = "Delete failed: " + (err.code || err.message);
+        resultStudentStatus.className = "msg error";
+        console.error(err);
+      }
+    });
+    li.appendChild(deleteBtn);
+
+    resultStudentList.appendChild(li);
+  });
+}
+
+resultSelectModeBtn.addEventListener("click", () => {
+  const enabling = !resultStudentList.classList.contains("bulk-mode");
+  resultStudentList.classList.toggle("bulk-mode", enabling);
+  resultSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
+  if (!enabling) {
+    resultStudentList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+    resultDeleteSelectedBtn.style.display = "none";
+  }
+});
+setupSelectAll(resultStudentList, resultSelectAllBtn, resultSelectModeBtn);
+
+resultDeleteSelectedBtn.addEventListener("click", async () => {
+  const checked = resultStudentList.querySelectorAll('input[type="checkbox"]:checked');
+  if (checked.length === 0) return;
+  if (!confirm("Delete " + checked.length + " selected student result(s)?")) return;
+
+  const term = getSelectedResultTerm();
+  const indexes = Array.from(checked).map((cb) => parseInt(cb.dataset.index, 10)).sort((a, b) => b - a);
+  const removed = indexes.map((i) => ({ index: i, student: term.students[i] }));
+  indexes.forEach((i) => term.students.splice(i, 1));
+
+  try {
+    await saveResultTerm(term);
+    renderResultStudents();
+    showUndoToast(removed.length + " student(s) deleted.", async () => {
+      removed
+        .slice()
+        .reverse()
+        .forEach((r) => term.students.splice(r.index, 0, r.student));
+      await saveResultTerm(term);
+      renderResultStudents();
+    });
+  } catch (err) {
+    resultStudentStatus.textContent = "Delete failed: " + (err.code || err.message);
+    resultStudentStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+resultAddStudentBtn.addEventListener("click", async () => {
+  const term = getSelectedResultTerm();
+  const roll = resultRollInput.value.trim();
+  const name = resultNameInput.value.trim();
+  const marks = resultMarksInput.value.trim();
+  const percentage = resultPercentageInput.value.trim();
+  const rank = resultRankInput.value.trim();
+
+  if (!roll || !name || !marks || !percentage || !rank) {
+    resultStudentStatus.textContent = "All 5 fields are required.";
+    resultStudentStatus.className = "msg error";
+    return;
+  }
+
+  term.students.push({
+    roll: parseFloat(roll) || roll,
+    name,
+    marks: parseFloat(marks) || marks,
+    percentage: parseFloat(percentage) || percentage,
+    rank: parseInt(rank, 10) || rank,
+  });
+
+  try {
+    await saveResultTerm(term);
+    resultRollInput.value = "";
+    resultNameInput.value = "";
+    resultMarksInput.value = "";
+    resultPercentageInput.value = "";
+    resultRankInput.value = "";
+    renderResultStudents();
+    resultStudentStatus.textContent = "Student added.";
+    resultStudentStatus.className = "msg success";
+    showUndoToast("Student added.", async () => {
+      term.students.pop();
+      await saveResultTerm(term);
+      renderResultStudents();
+    });
+  } catch (err) {
+    term.students.pop();
+    resultStudentStatus.textContent = "Could not add: " + (err.code || err.message);
+    resultStudentStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+async function loadResultTerms() {
+  try {
+    const q = query(RESULT_TERMS_COL, orderBy("order", "desc"));
+    const snap = await getDocs(q);
+    resultTermsCache = [];
+    snap.forEach((d) => {
+      const data = d.data();
+      resultTermsCache.push({
+        id: d.id,
+        order: data.order,
+        status: data.status,
+        term: data.term,
+        session: data.session,
+        setCode: data.setCode,
+        date: data.date,
+        maxMarks: data.maxMarks,
+        students: Array.isArray(data.students) ? data.students : [],
+      });
+    });
+    if (resultTermsCache.length === 0) {
+      resultTermsCache.push({ ...DEFAULT_RESULT_TERM, students: DEFAULT_RESULT_TERM.students.map((s) => ({ ...s })) });
+    }
+    populateResultTermSelect();
+    selectedResultTermId = resultTermsCache[0].id;
+    resultTermSelect.value = selectedResultTermId;
+    fillResultDetailsForm(getSelectedResultTerm());
+    renderResultStudents();
+  } catch (err) {
+    resultStatus.textContent = "Could not load results: " + (err.code || err.message);
+    resultStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+resultTermSelect.addEventListener("change", () => {
+  selectedResultTermId = resultTermSelect.value;
+  const term = getSelectedResultTerm();
+  fillResultDetailsForm(term);
+  renderResultStudents();
+});
+
+resultSaveDetailsBtn.addEventListener("click", async () => {
+  const term = getSelectedResultTerm();
+  if (!term) return;
+  const previous = {
+    term: term.term,
+    session: term.session,
+    setCode: term.setCode,
+    date: term.date,
+    maxMarks: term.maxMarks,
+    order: term.order,
+  };
+
+  term.term = resultTermNameInput.value.trim();
+  term.session = resultSessionInput.value.trim();
+  term.setCode = resultSetCodeInput.value.trim();
+  term.date = resultDateInput.value.trim();
+  term.maxMarks = parseFloat(resultMaxMarksInput.value) || resultMaxMarksInput.value.trim();
+  const yearMatch = term.session.match(/\d{4}/);
+  if (yearMatch) term.order = parseInt(yearMatch[0], 10);
+
+  if (!term.term || !term.session) {
+    resultDetailsStatus.textContent = "Term Name and Session are required.";
+    resultDetailsStatus.className = "msg error";
+    Object.assign(term, previous);
+    return;
+  }
+
+  try {
+    await saveResultTerm(term);
+    populateResultTermSelect();
+    resultTermSelect.value = term.id;
+    resultDetailsStatus.textContent = "Term details saved.";
+    resultDetailsStatus.className = "msg success";
+    showUndoToast("Term details updated.", async () => {
+      Object.assign(term, previous);
+      await saveResultTerm(term);
+      populateResultTermSelect();
+      resultTermSelect.value = term.id;
+      fillResultDetailsForm(term);
+    });
+  } catch (err) {
+    Object.assign(term, previous);
+    resultDetailsStatus.textContent = "Save failed: " + (err.code || err.message);
+    resultDetailsStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+resultNewTermBtn.addEventListener("click", async () => {
+  const termName = prompt("Term name (e.g. Term - 2):", "");
+  if (!termName || !termName.trim()) return;
+  const session = prompt("Session (e.g. 2025-26):", "");
+  if (!session || !session.trim()) return;
+
+  const slug = (termName.trim() + "-" + session.trim()).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  if (resultTermsCache.some((t) => t.id === slug)) {
+    resultStatus.textContent = "A term with that name/session already exists.";
+    resultStatus.className = "msg error";
+    return;
+  }
+  const yearMatch = session.match(/\d{4}/);
+  const order = yearMatch ? parseInt(yearMatch[0], 10) : Date.now();
+
+  const newTerm = {
+    id: slug,
+    order,
+    status: "archived",
+    term: termName.trim(),
+    session: session.trim(),
+    setCode: "",
+    date: "",
+    maxMarks: 100,
+    students: [],
+  };
+
+  try {
+    await saveResultTerm(newTerm);
+    resultTermsCache.push(newTerm);
+    resultTermsCache.sort((a, b) => b.order - a.order);
+    populateResultTermSelect();
+    selectedResultTermId = slug;
+    resultTermSelect.value = slug;
+    fillResultDetailsForm(newTerm);
+    renderResultStudents();
+    resultStatus.textContent = "Term created (archived — publish it when ready).";
+    resultStatus.className = "msg success";
+    showUndoToast('Term "' + termName + '" created.', async () => {
+      await deleteDoc(doc(db, "resultTerms", slug));
+      resultTermsCache = resultTermsCache.filter((t) => t.id !== slug);
+      if (resultTermsCache.length === 0) {
+        resultTermsCache.push({ ...DEFAULT_RESULT_TERM, students: DEFAULT_RESULT_TERM.students.map((s) => ({ ...s })) });
+      }
+      populateResultTermSelect();
+      selectedResultTermId = resultTermsCache[0].id;
+      resultTermSelect.value = selectedResultTermId;
+      fillResultDetailsForm(getSelectedResultTerm());
+      renderResultStudents();
+    });
+  } catch (err) {
+    resultStatus.textContent = "Could not create term: " + (err.code || err.message);
+    resultStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+resultDeleteTermBtn.addEventListener("click", async () => {
+  const term = getSelectedResultTerm();
+  if (!term) return;
+  if (!confirm('Delete "' + term.term + " — " + term.session + '"? This removes it entirely, including from the archive.')) return;
+  const deletedTerm = { ...term, students: term.students.map((s) => ({ ...s })) };
+
+  try {
+    await deleteDoc(doc(db, "resultTerms", term.id));
+    resultTermsCache = resultTermsCache.filter((t) => t.id !== term.id);
+    if (resultTermsCache.length === 0) {
+      resultTermsCache.push({ ...DEFAULT_RESULT_TERM, students: DEFAULT_RESULT_TERM.students.map((s) => ({ ...s })) });
+    }
+    populateResultTermSelect();
+    selectedResultTermId = resultTermsCache[0].id;
+    resultTermSelect.value = selectedResultTermId;
+    fillResultDetailsForm(getSelectedResultTerm());
+    renderResultStudents();
+    resultStatus.textContent = "Term deleted.";
+    resultStatus.className = "msg success";
+    showUndoToast('Term "' + deletedTerm.term + '" deleted.', async () => {
+      await saveResultTerm(deletedTerm);
+      await loadResultTerms();
+    });
+  } catch (err) {
+    resultStatus.textContent = "Delete failed: " + (err.code || err.message);
+    resultStatus.className = "msg error";
+    console.error(err);
+  }
+});
+
+resultPublishBtn.addEventListener("click", async () => {
+  const term = getSelectedResultTerm();
+  if (!term) return;
+  if (term.status === "active") {
+    resultStatus.textContent = "This term is already the latest.";
+    resultStatus.className = "msg";
+    return;
+  }
+  const previouslyActive = resultTermsCache.find((t) => t.status === "active");
+
+  try {
+    term.status = "active";
+    await saveResultTerm(term);
+    if (previouslyActive) {
+      previouslyActive.status = "archived";
+      await saveResultTerm(previouslyActive);
+    }
+    populateResultTermSelect();
+    fillResultDetailsForm(term);
+    resultStatus.textContent = '"' + term.term + " — " + term.session + '" is now the latest published result.';
+    resultStatus.className = "msg success";
+    showUndoToast("Published as latest.", async () => {
+      term.status = "archived";
+      await saveResultTerm(term);
+      if (previouslyActive) {
+        previouslyActive.status = "active";
+        await saveResultTerm(previouslyActive);
+      }
+      populateResultTermSelect();
+      fillResultDetailsForm(getSelectedResultTerm());
+    });
+  } catch (err) {
+    resultStatus.textContent = "Publish failed: " + (err.code || err.message);
+    resultStatus.className = "msg error";
+    console.error(err);
   }
 });
