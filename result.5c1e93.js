@@ -94,41 +94,47 @@
         }
       });
 
-      // "Check Your Result" (roll+name) only ever searches the one active term
+      // Both "Check Your Result" (roll+name) and "Verify a Result" (Result ID) search
+      // every term — current and archived — so old results stay fully checkable.
       RESULT_DATA.length = 0;
       if (activeTerm) RESULT_DATA.push(activeTerm);
+      archivedTerms.forEach(function (t) { RESULT_DATA.push(t); });
 
-      // Result ID verification covers active + archived, so old marksheets keep working
       Object.keys(RESULT_INDEX).forEach(function (k) { delete RESULT_INDEX[k]; });
-      RESULT_DATA.concat(archivedTerms).forEach(function (term) {
+      RESULT_DATA.forEach(function (term) {
         term.students.forEach(function (student) {
-          student.resultId = computeResultId(term, student);
+          // Honor an admin-set Result ID if provided; otherwise auto-compute as before.
+          student.resultId = student.resultId || computeResultId(term, student);
           RESULT_INDEX[student.resultId] = { term: term, student: student };
         });
       });
 
-      // Render the public archive list
+      // Update the "Check Your Result" header to match the currently active term
+      if (activeTerm) {
+        const termSessionEl = document.getElementById("resultHeaderTermSession");
+        const detailsEl = document.getElementById("resultHeaderDetails");
+        const dateEl2 = document.getElementById("resultHeaderDate");
+        if (termSessionEl) termSessionEl.textContent = activeTerm.term + ", Session " + activeTerm.session;
+        if (detailsEl) detailsEl.textContent = activeTerm.term + " (" + (activeTerm.setCode || "") + "), Session " + activeTerm.session;
+        if (dateEl2) dateEl2.textContent = activeTerm.date || "";
+      }
+
+      // Archive: list past terms by name only — no student data is shown here.
+      // Old results remain fully checkable via the search/verify forms above.
       const archiveListEl = document.getElementById("resultsArchiveList");
       if (archiveListEl) {
         if (archivedTerms.length === 0) {
           archiveListEl.innerHTML = '<p class="small">No archived results yet.</p>';
-          return;
+        } else {
+          let html = '<ul style="padding-left:20px;">';
+          archivedTerms.forEach(function (term) {
+            html +=
+              "<li>" + escapeHtml(term.term) + " — Session " + escapeHtml(term.session) +
+              (term.date ? " (declared " + escapeHtml(term.date) + ")" : "") + "</li>";
+          });
+          html += "</ul>";
+          archiveListEl.innerHTML = html;
         }
-        let html = "";
-        archivedTerms.forEach(function (term) {
-          html += '<h3 style="margin-top:12px">' + escapeHtml(term.term) + " — Session " + escapeHtml(term.session) + "</h3>";
-          html += '<div class="muted" style="margin-bottom:6px">' + escapeHtml(term.setCode || "") + " · Declared " + escapeHtml(term.date || "") + "</div>";
-          html += '<div style="overflow:auto"><table aria-label="Archived result ' + escapeHtml(term.session) + '">';
-          html += "<thead><tr><th>Roll</th><th>Name</th><th>Marks</th><th>Percentage</th><th>Rank</th></tr></thead><tbody>";
-          term.students
-            .slice()
-            .sort(function (a, b) { return (a.rank || 0) - (b.rank || 0); })
-            .forEach(function (s) {
-              html += "<tr><td>" + s.roll + "</td><td>" + escapeHtml(s.name) + "</td><td>" + s.marks + "</td><td>" + s.percentage + "%</td><td>" + s.rank + "</td></tr>";
-            });
-          html += "</tbody></table></div>";
-        });
-        archiveListEl.innerHTML = html;
       }
     } catch (err) {
       // Any failure here — keep the hardcoded fallback data untouched
