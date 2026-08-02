@@ -174,7 +174,7 @@
       #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"], #studentList.bulk-mode li input[type="checkbox"], #attendanceRangeList.bulk-mode li input[type="checkbox"], #blogPostList.bulk-mode li input[type="checkbox"], #resultStudentList.bulk-mode li input[type="checkbox"] {
         display: inline-block;
       }
-      #noticeList li span, #videoAdminList li span, #syllabusRowList li span, #studentList li span, #attendanceStudentList li span, #attendanceRangeList li span, #blogPostList li span {
+      #noticeList li span, #videoAdminList li span, #syllabusRowList li span, #studentList li span, #attendanceStudentList li span, #attendanceRangeList li span, #blogPostList li span, #resultStudentList li span {
         flex: 1;
         min-width: 0;
         word-break: break-word;
@@ -646,6 +646,8 @@
         <input type="text" id="resultPercentageInput" placeholder="e.g. 88.5">
         <label for="resultRankInput">Rank</label>
         <input type="text" id="resultRankInput" placeholder="e.g. 1">
+        <label for="resultIdInput">Result ID (optional — auto-generated if left blank)</label>
+        <input type="text" id="resultIdInput" placeholder="e.g. 2526TM107">
         <button id="resultAddStudentBtn" type="button">Add Student</button>
         <p id="resultStudentStatus" class="msg"></p>
         <button id="resultSelectModeBtn" type="button" class="small-btn">Select</button>
