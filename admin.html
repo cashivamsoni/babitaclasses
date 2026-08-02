@@ -269,7 +269,21 @@
         font-size: 12px;
         box-shadow: none;
       }
-      .blog-block-controls .move-btn { background: #555; }
+      .move-btn {
+        width: auto;
+        margin: 0;
+        padding: 4px 9px;
+        font-size: 12px;
+        box-shadow: none;
+        background: #555;
+        flex-shrink: 0;
+      }
+      .blog-button-row {
+        cursor: grab;
+      }
+      .blog-button-row.dragging {
+        opacity: 0.4;
+      }
       .blog-block-row textarea,
       .blog-block-row input {
         margin: 0;
