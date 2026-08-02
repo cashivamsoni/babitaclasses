@@ -5,6 +5,9 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
   getFirestore,
@@ -60,6 +63,7 @@ const blogLogoutBtn = document.getElementById("blogLogoutBtn");
 const loginForm = document.getElementById("loginForm");
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
+const rememberMeInput = document.getElementById("rememberMeInput");
 const loginError = document.getElementById("loginError");
 
 const lastUpdatedDisplay = document.getElementById("lastUpdatedDisplay");
@@ -242,6 +246,10 @@ loginForm.addEventListener("submit", async (e) => {
   const submitBtn = loginForm.querySelector("button");
   submitBtn.disabled = true;
   try {
+    await setPersistence(
+      auth,
+      rememberMeInput.checked ? browserLocalPersistence : browserSessionPersistence
+    );
     await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
   } catch (err) {
     loginError.textContent = "Login failed — check your email and password.";
