@@ -196,6 +196,7 @@ const resultNameInput = document.getElementById("resultNameInput");
 const resultMarksInput = document.getElementById("resultMarksInput");
 const resultPercentageInput = document.getElementById("resultPercentageInput");
 const resultRankInput = document.getElementById("resultRankInput");
+const resultIdInput = document.getElementById("resultIdInput");
 const resultAddStudentBtn = document.getElementById("resultAddStudentBtn");
 const resultStudentStatus = document.getElementById("resultStudentStatus");
 const resultSelectModeBtn = document.getElementById("resultSelectModeBtn");
@@ -2489,7 +2490,8 @@ function renderResultStudents() {
 
     const span = document.createElement("span");
     span.textContent =
-      "Roll " + student.roll + " — " + student.name + " — " + student.marks + " marks (" + student.percentage + "%, Rank " + student.rank + ")";
+      "Roll " + student.roll + " — " + student.name + " — " + student.marks + " marks (" + student.percentage + "%, Rank " + student.rank + ")" +
+      (student.resultId ? " [ID: " + student.resultId + "]" : "");
     li.appendChild(span);
 
     const editBtn = document.createElement("button");
@@ -2508,6 +2510,8 @@ function renderResultStudents() {
       if (percentage === null) return;
       const rank = prompt("Rank:", student.rank);
       if (rank === null) return;
+      const resultId = prompt("Result ID (leave blank to auto-generate):", student.resultId || "");
+      if (resultId === null) return;
 
       term.students[index] = {
         roll: parseFloat(roll) || roll,
@@ -2516,6 +2520,7 @@ function renderResultStudents() {
         percentage: parseFloat(percentage) || percentage,
         rank: parseInt(rank, 10) || rank,
       };
+      if (resultId.trim()) term.students[index].resultId = resultId.trim();
       try {
         await saveResultTerm(term);
         renderResultStudents();
@@ -2606,6 +2611,7 @@ resultAddStudentBtn.addEventListener("click", async () => {
   const marks = resultMarksInput.value.trim();
   const percentage = resultPercentageInput.value.trim();
   const rank = resultRankInput.value.trim();
+  const resultId = resultIdInput.value.trim();
 
   if (!roll || !name || !marks || !percentage || !rank) {
     resultStudentStatus.textContent = "All 5 fields are required.";
@@ -2613,13 +2619,15 @@ resultAddStudentBtn.addEventListener("click", async () => {
     return;
   }
 
-  term.students.push({
+  const newStudent = {
     roll: parseFloat(roll) || roll,
     name,
     marks: parseFloat(marks) || marks,
     percentage: parseFloat(percentage) || percentage,
     rank: parseInt(rank, 10) || rank,
-  });
+  };
+  if (resultId) newStudent.resultId = resultId;
+  term.students.push(newStudent);
 
   try {
     await saveResultTerm(term);
@@ -2628,6 +2636,7 @@ resultAddStudentBtn.addEventListener("click", async () => {
     resultMarksInput.value = "";
     resultPercentageInput.value = "";
     resultRankInput.value = "";
+    resultIdInput.value = "";
     renderResultStudents();
     resultStudentStatus.textContent = "Student added.";
     resultStudentStatus.className = "msg success";
