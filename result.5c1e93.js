@@ -120,20 +120,57 @@
       }
 
       // Archive: list past terms by name only — no student data is shown here.
-      // Old results remain fully checkable via the search/verify forms above.
+      // Clicking a term opens a mini roll+name checker scoped to just that term.
       const archiveListEl = document.getElementById("resultsArchiveList");
       if (archiveListEl) {
         if (archivedTerms.length === 0) {
           archiveListEl.innerHTML = '<p class="small">No archived results yet.</p>';
         } else {
-          let html = '<ul style="padding-left:20px;">';
-          archivedTerms.forEach(function (term) {
+          let html = '<ul style="list-style:none; padding-left:0;">';
+          archivedTerms.forEach(function (term, i) {
             html +=
-              "<li>" + escapeHtml(term.term) + " — Session " + escapeHtml(term.session) +
-              (term.date ? " (declared " + escapeHtml(term.date) + ")" : "") + "</li>";
+              '<li style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.08); padding-bottom:10px;">' +
+              '<a href="javascript:void(0)" class="archive-term-toggle" data-term-index="' + i + '" style="font-weight:600;">' +
+              escapeHtml(term.term) + " — Session " + escapeHtml(term.session) +
+              (term.date ? " (declared " + escapeHtml(term.date) + ")" : "") +
+              "</a>" +
+              '<div class="archive-term-form" data-term-index="' + i + '" style="display:none; margin-top:10px;">' +
+              '<div class="flex" style="flex-direction:column;align-items:stretch">' +
+              '<input type="text" class="search archive-roll" placeholder="Roll Number" inputmode="numeric">' +
+              '<input type="text" class="search archive-name" placeholder="Full Name" style="margin-top:8px">' +
+              "</div>" +
+              '<button type="button" class="btn-inline archive-check-btn" style="margin-top:8px" data-term-index="' + i + '">Check</button>' +
+              '<div class="archive-output" data-term-index="' + i + '" style="margin-top:10px"></div>' +
+              "</div>" +
+              "</li>";
           });
           html += "</ul>";
           archiveListEl.innerHTML = html;
+
+          archiveListEl.querySelectorAll(".archive-term-toggle").forEach(function (link) {
+            link.addEventListener("click", function () {
+              const idx = link.dataset.termIndex;
+              const form = archiveListEl.querySelector('.archive-term-form[data-term-index="' + idx + '"]');
+              if (form) form.style.display = form.style.display === "none" ? "block" : "none";
+            });
+          });
+
+          archiveListEl.querySelectorAll(".archive-check-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              const idx = btn.dataset.termIndex;
+              const term = archivedTerms[idx];
+              const form = btn.closest(".archive-term-form");
+              const roll = form.querySelector(".archive-roll").value;
+              const name = form.querySelector(".archive-name").value;
+              const outputEl = form.querySelector(".archive-output");
+              const student = findResultInTerm(term, roll, name);
+              if (student) {
+                outputEl.innerHTML = buildResultHTML(term, student);
+              } else {
+                outputEl.innerHTML = '<p class="small" style="color:#c0392b">No matching result found for that roll number and name in this term.</p>';
+              }
+            });
+          });
         }
       }
     } catch (err) {
@@ -171,6 +208,19 @@
         if (student.roll === rollNum && normalizeName(student.name) === nameNorm) {
           return { term: term, student: student };
         }
+      }
+    }
+    return null;
+  }
+
+  function findResultInTerm(term, rollRaw, nameRaw) {
+    const rollNum = parseInt(String(rollRaw).trim(), 10);
+    const nameNorm = normalizeName(nameRaw);
+    if (isNaN(rollNum) || !nameNorm) return null;
+    for (let s = 0; s < term.students.length; s++) {
+      const student = term.students[s];
+      if (student.roll === rollNum && normalizeName(student.name) === nameNorm) {
+        return student;
       }
     }
     return null;
