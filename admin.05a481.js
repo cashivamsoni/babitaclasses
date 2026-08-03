@@ -194,7 +194,6 @@ const resultDetailsStatus = document.getElementById("resultDetailsStatus");
 const resultRollInput = document.getElementById("resultRollInput");
 const resultNameInput = document.getElementById("resultNameInput");
 const resultMarksInput = document.getElementById("resultMarksInput");
-const resultPercentageInput = document.getElementById("resultPercentageInput");
 const resultRankInput = document.getElementById("resultRankInput");
 const resultIdInput = document.getElementById("resultIdInput");
 const resultAddStudentBtn = document.getElementById("resultAddStudentBtn");
@@ -2470,6 +2469,17 @@ function fillResultDetailsForm(term) {
       : "This term is ARCHIVED — visible in the Results Archive, not searchable by roll/name.";
 }
 
+function previewResultId(term, student) {
+  const parts = String(term.session || "").split("-");
+  const sessionShort = (parts[0] || "").slice(-2) + (parts[1] || "").padStart(2, "0");
+  const isTest = /test/i.test(term.term || "");
+  const typeCode = isTest ? "TS" : "TM";
+  const termNumMatch = String(term.term || "").match(/\d+/);
+  const termNum = termNumMatch ? termNumMatch[0] : "1";
+  const rollPadded = String(student.roll).padStart(2, "0");
+  return (sessionShort + typeCode + termNum + rollPadded).toUpperCase();
+}
+
 function renderResultStudents() {
   resultStudentList.innerHTML = "";
   resultDeleteSelectedBtn.style.display = "none";
@@ -2491,7 +2501,7 @@ function renderResultStudents() {
     const span = document.createElement("span");
     span.textContent =
       "Roll " + student.roll + " — " + student.name + " — " + student.marks + " marks (" + student.percentage + "%, Rank " + student.rank + ")" +
-      (student.resultId ? " [ID: " + student.resultId + "]" : "");
+      " [ID: " + (student.resultId || previewResultId(term, student)) + "]";
     li.appendChild(span);
 
     const editBtn = document.createElement("button");
@@ -2506,18 +2516,23 @@ function renderResultStudents() {
       if (name === null) return;
       const marks = prompt("Marks:", student.marks);
       if (marks === null) return;
-      const percentage = prompt("Percentage:", student.percentage);
-      if (percentage === null) return;
       const rank = prompt("Rank:", student.rank);
       if (rank === null) return;
       const resultId = prompt("Result ID (leave blank to auto-generate):", student.resultId || "");
       if (resultId === null) return;
 
+      const marksNum = parseFloat(marks);
+      const maxMarksNum = parseFloat(term.maxMarks);
+      const percentage =
+        !isNaN(marksNum) && maxMarksNum
+          ? Math.round(((marksNum / maxMarksNum) * 100) * 100) / 100
+          : student.percentage;
+
       term.students[index] = {
         roll: parseFloat(roll) || roll,
         name: name.trim(),
         marks: parseFloat(marks) || marks,
-        percentage: parseFloat(percentage) || percentage,
+        percentage,
         rank: parseInt(rank, 10) || rank,
       };
       if (resultId.trim()) term.students[index].resultId = resultId.trim();
@@ -2609,21 +2624,27 @@ resultAddStudentBtn.addEventListener("click", async () => {
   const roll = resultRollInput.value.trim();
   const name = resultNameInput.value.trim();
   const marks = resultMarksInput.value.trim();
-  const percentage = resultPercentageInput.value.trim();
   const rank = resultRankInput.value.trim();
   const resultId = resultIdInput.value.trim();
 
-  if (!roll || !name || !marks || !percentage || !rank) {
-    resultStudentStatus.textContent = "All 5 fields are required.";
+  if (!roll || !name || !marks || !rank) {
+    resultStudentStatus.textContent = "Roll, Name, Marks, and Rank are required.";
     resultStudentStatus.className = "msg error";
     return;
   }
+
+  const marksNum = parseFloat(marks);
+  const maxMarksNum = parseFloat(term.maxMarks);
+  const percentage =
+    !isNaN(marksNum) && maxMarksNum
+      ? Math.round(((marksNum / maxMarksNum) * 100) * 100) / 100
+      : "";
 
   const newStudent = {
     roll: parseFloat(roll) || roll,
     name,
     marks: parseFloat(marks) || marks,
-    percentage: parseFloat(percentage) || percentage,
+    percentage,
     rank: parseInt(rank, 10) || rank,
   };
   if (resultId) newStudent.resultId = resultId;
@@ -2634,7 +2655,6 @@ resultAddStudentBtn.addEventListener("click", async () => {
     resultRollInput.value = "";
     resultNameInput.value = "";
     resultMarksInput.value = "";
-    resultPercentageInput.value = "";
     resultRankInput.value = "";
     resultIdInput.value = "";
     renderResultStudents();
