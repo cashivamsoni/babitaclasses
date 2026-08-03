@@ -36,10 +36,12 @@
     const parts = String(term.session).split("-");
     const sessionShort =
       (parts[0] || "").slice(-2) + (parts[1] || "").padStart(2, "0");
+    const isTest = /test/i.test(term.term);
+    const typeCode = isTest ? "TS" : "TM";
     const termNumMatch = String(term.term).match(/\d+/);
     const termNum = termNumMatch ? termNumMatch[0] : "1";
     const rollPadded = String(student.roll).padStart(2, "0");
-    return (sessionShort + "TM" + termNum + rollPadded).toUpperCase();
+    return (sessionShort + typeCode + termNum + rollPadded).toUpperCase();
   }
 
   const RESULT_INDEX = {};
@@ -135,12 +137,17 @@
               (term.date ? " (declared " + escapeHtml(term.date) + ")" : "") +
               "</a>" +
               '<div class="archive-term-form" data-term-index="' + i + '" style="display:none; margin-top:10px;">' +
+              '<form class="archive-check-form" data-term-index="' + i + '" autocomplete="off">' +
               '<div class="flex" style="flex-direction:column;align-items:stretch">' +
-              '<input type="text" class="search archive-roll" placeholder="Roll Number" inputmode="numeric">' +
+              '<input type="text" class="search archive-roll" placeholder="Roll Number" inputmode="numeric" style="max-width:160px">' +
               '<input type="text" class="search archive-name" placeholder="Full Name" style="margin-top:8px">' +
               "</div>" +
-              '<button type="button" class="btn-inline archive-check-btn" style="margin-top:8px" data-term-index="' + i + '">Check</button>' +
-              '<div class="archive-output" data-term-index="' + i + '" style="margin-top:10px"></div>' +
+              '<div class="flex" style="margin-top:8px">' +
+              '<button type="submit" class="btn-inline">Check</button>' +
+              '<button type="button" class="btn-inline1 archive-reset-btn" style="display:none">Check Another Result</button>' +
+              "</div>" +
+              "</form>" +
+              '<div class="archive-output" style="margin-top:10px"></div>' +
               "</div>" +
               "</li>";
           });
@@ -155,20 +162,31 @@
             });
           });
 
-          archiveListEl.querySelectorAll(".archive-check-btn").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-              const idx = btn.dataset.termIndex;
-              const term = archivedTerms[idx];
-              const form = btn.closest(".archive-term-form");
-              const roll = form.querySelector(".archive-roll").value;
-              const name = form.querySelector(".archive-name").value;
-              const outputEl = form.querySelector(".archive-output");
-              const student = findResultInTerm(term, roll, name);
+          archiveListEl.querySelectorAll(".archive-check-form").forEach(function (form) {
+            const idx = form.dataset.termIndex;
+            const term = archivedTerms[idx];
+            const rollInput = form.querySelector(".archive-roll");
+            const nameInput = form.querySelector(".archive-name");
+            const outputEl = form.parentElement.querySelector(".archive-output");
+            const resetBtn = form.querySelector(".archive-reset-btn");
+
+            form.addEventListener("submit", function (e) {
+              e.preventDefault();
+              const student = findResultInTerm(term, rollInput.value, nameInput.value);
               if (student) {
                 outputEl.innerHTML = buildResultHTML(term, student);
+                lastShownResult = { term: term, student: student };
               } else {
                 outputEl.innerHTML = '<p class="small" style="color:#c0392b">No matching result found for that roll number and name in this term.</p>';
               }
+              resetBtn.style.display = "inline-block";
+            });
+
+            resetBtn.addEventListener("click", function () {
+              form.reset();
+              outputEl.innerHTML = "";
+              resetBtn.style.display = "none";
+              rollInput.focus();
             });
           });
         }
