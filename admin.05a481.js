@@ -161,7 +161,6 @@ const attendanceDeleteSelectedBtn = document.getElementById("attendanceDeleteSel
 const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn");
 
 const blogTitleInput = document.getElementById("blogTitleInput");
-const blogDateInput = document.getElementById("blogDateInput");
 const blogBlocksContainer = document.getElementById("blogBlocksContainer");
 const blogAddTextBlockBtn = document.getElementById("blogAddTextBlockBtn");
 const blogAddImageBlockBtn = document.getElementById("blogAddImageBlockBtn");
@@ -187,15 +186,12 @@ const resultStatus = document.getElementById("resultStatus");
 const resultTermNameInput = document.getElementById("resultTermNameInput");
 const resultSessionInput = document.getElementById("resultSessionInput");
 const resultSetCodeInput = document.getElementById("resultSetCodeInput");
-const resultDateInput = document.getElementById("resultDateInput");
 const resultMaxMarksInput = document.getElementById("resultMaxMarksInput");
 const resultSaveDetailsBtn = document.getElementById("resultSaveDetailsBtn");
 const resultDetailsStatus = document.getElementById("resultDetailsStatus");
 const resultRollInput = document.getElementById("resultRollInput");
 const resultNameInput = document.getElementById("resultNameInput");
 const resultMarksInput = document.getElementById("resultMarksInput");
-const resultRankInput = document.getElementById("resultRankInput");
-const resultIdInput = document.getElementById("resultIdInput");
 const resultAddStudentBtn = document.getElementById("resultAddStudentBtn");
 const resultStudentStatus = document.getElementById("resultStudentStatus");
 const resultSelectModeBtn = document.getElementById("resultSelectModeBtn");
@@ -2210,7 +2206,6 @@ function collectButtons() {
 
 function clearBlogForm() {
   blogTitleInput.value = "";
-  blogDateInput.value = "";
   blogBlocksContainer.innerHTML = "";
   blogButtonsContainer.innerHTML = "";
   addTextBlockRow();
@@ -2219,7 +2214,6 @@ function clearBlogForm() {
 
 function fillBlogForm(data) {
   blogTitleInput.value = data.title || "";
-  blogDateInput.value = data.date || "";
 
   blogBlocksContainer.innerHTML = "";
   if (Array.isArray(data.contentBlocks) && data.contentBlocks.length) {
@@ -2275,6 +2269,7 @@ async function renderBlogPosts() {
         fillBlogForm(data);
         blogAddBtn.textContent = "Save Changes";
         blogAddBtn.dataset.editingId = docSnap.id;
+        blogAddBtn.dataset.editingDate = data.date || "";
         blogStatus.textContent = 'Editing "' + (data.title || "") + '" — scroll up to edit and save.';
         blogStatus.className = "msg";
         window.scrollTo({ top: adminBlogView.offsetTop, behavior: "smooth" });
@@ -2346,12 +2341,13 @@ blogDeleteSelectedBtn.addEventListener("click", async () => {
 
 blogAddBtn.addEventListener("click", async () => {
   const title = blogTitleInput.value.trim();
-  const date = blogDateInput.value.trim();
   const contentBlocks = collectContentBlocks();
   const buttons = collectButtons();
+  const editingId = blogAddBtn.dataset.editingId;
+  const date = editingId ? blogAddBtn.dataset.editingDate || formatReadable(todayISO()) : formatReadable(todayISO());
 
-  if (!title || !date || contentBlocks.length === 0) {
-    blogStatus.textContent = "Title, Date, and at least one content block are required.";
+  if (!title || contentBlocks.length === 0) {
+    blogStatus.textContent = "Title and at least one content block are required.";
     blogStatus.className = "msg error";
     return;
   }
@@ -2365,7 +2361,6 @@ blogAddBtn.addEventListener("click", async () => {
   }
 
   const postData = { title, date, previewText, contentBlocks, buttons };
-  const editingId = blogAddBtn.dataset.editingId;
 
   blogAddBtn.disabled = true;
   blogStatus.textContent = editingId ? "Saving..." : "Adding...";
@@ -2379,6 +2374,7 @@ blogAddBtn.addEventListener("click", async () => {
       clearBlogForm();
       blogAddBtn.textContent = "Add Post";
       delete blogAddBtn.dataset.editingId;
+      delete blogAddBtn.dataset.editingDate;
       blogStatus.textContent = "Post updated.";
       blogStatus.className = "msg success";
       await renderBlogPosts();
@@ -2389,13 +2385,20 @@ blogAddBtn.addEventListener("click", async () => {
         }
       });
     } else {
-      const newDoc = await addDoc(BLOG_POSTS_COL, { ...postData, createdAt: serverTimestamp() });
+      const existingSnap = await getDocs(BLOG_POSTS_COL);
+      let maxNum = 25; // continues after the 25 static legacy posts
+      existingSnap.forEach((d) => {
+        const n = parseInt(d.id, 10);
+        if (!isNaN(n) && n > maxNum) maxNum = n;
+      });
+      const newId = String(maxNum + 1);
+      await setDoc(doc(db, "blogPosts", newId), { ...postData, createdAt: serverTimestamp() });
       clearBlogForm();
       blogStatus.textContent = "Post added.";
       blogStatus.className = "msg success";
       await renderBlogPosts();
       showUndoToast("Post added.", async () => {
-        await deleteDoc(doc(db, "blogPosts", newDoc.id));
+        await deleteDoc(doc(db, "blogPosts", newId));
         await renderBlogPosts();
       });
     }
@@ -2461,7 +2464,6 @@ function fillResultDetailsForm(term) {
   resultTermNameInput.value = term.term || "";
   resultSessionInput.value = term.session || "";
   resultSetCodeInput.value = term.setCode || "";
-  resultDateInput.value = term.date || "";
   resultMaxMarksInput.value = term.maxMarks || "";
   resultTermStatusDisplay.textContent =
     term.status === "active"
@@ -2516,10 +2518,6 @@ function renderResultStudents() {
       if (name === null) return;
       const marks = prompt("Marks:", student.marks);
       if (marks === null) return;
-      const rank = prompt("Rank:", student.rank);
-      if (rank === null) return;
-      const resultId = prompt("Result ID (leave blank to auto-generate):", student.resultId || "");
-      if (resultId === null) return;
 
       const marksNum = parseFloat(marks);
       const maxMarksNum = parseFloat(term.maxMarks);
@@ -2533,14 +2531,15 @@ function renderResultStudents() {
         name: name.trim(),
         marks: parseFloat(marks) || marks,
         percentage,
-        rank: parseInt(rank, 10) || rank,
+        rank: student.rank,
       };
-      if (resultId.trim()) term.students[index].resultId = resultId.trim();
+      recalculateRanks(term);
       try {
         await saveResultTerm(term);
         renderResultStudents();
         showUndoToast("Student updated.", async () => {
           term.students[index] = previous;
+          recalculateRanks(term);
           await saveResultTerm(term);
           renderResultStudents();
         });
@@ -2560,11 +2559,13 @@ function renderResultStudents() {
       if (!confirm("Delete this student's result?")) return;
       const removed = term.students[index];
       term.students.splice(index, 1);
+      recalculateRanks(term);
       try {
         await saveResultTerm(term);
         renderResultStudents();
         showUndoToast("Student deleted.", async () => {
           term.students.splice(index, 0, removed);
+          recalculateRanks(term);
           await saveResultTerm(term);
           renderResultStudents();
         });
@@ -2600,6 +2601,7 @@ resultDeleteSelectedBtn.addEventListener("click", async () => {
   const indexes = Array.from(checked).map((cb) => parseInt(cb.dataset.index, 10)).sort((a, b) => b - a);
   const removed = indexes.map((i) => ({ index: i, student: term.students[i] }));
   indexes.forEach((i) => term.students.splice(i, 1));
+  recalculateRanks(term);
 
   try {
     await saveResultTerm(term);
@@ -2609,6 +2611,7 @@ resultDeleteSelectedBtn.addEventListener("click", async () => {
         .slice()
         .reverse()
         .forEach((r) => term.students.splice(r.index, 0, r.student));
+      recalculateRanks(term);
       await saveResultTerm(term);
       renderResultStudents();
     });
@@ -2619,16 +2622,30 @@ resultDeleteSelectedBtn.addEventListener("click", async () => {
   }
 });
 
+function recalculateRanks(term) {
+  const sorted = term.students.slice().sort((a, b) => (parseFloat(b.marks) || 0) - (parseFloat(a.marks) || 0));
+  let rank = 0;
+  let prevMarks = null;
+  let seen = 0;
+  sorted.forEach((student) => {
+    seen++;
+    const marksVal = parseFloat(student.marks) || 0;
+    if (marksVal !== prevMarks) {
+      rank = seen;
+      prevMarks = marksVal;
+    }
+    student.rank = rank;
+  });
+}
+
 resultAddStudentBtn.addEventListener("click", async () => {
   const term = getSelectedResultTerm();
   const roll = resultRollInput.value.trim();
   const name = resultNameInput.value.trim();
   const marks = resultMarksInput.value.trim();
-  const rank = resultRankInput.value.trim();
-  const resultId = resultIdInput.value.trim();
 
-  if (!roll || !name || !marks || !rank) {
-    resultStudentStatus.textContent = "Roll, Name, Marks, and Rank are required.";
+  if (!roll || !name || !marks) {
+    resultStudentStatus.textContent = "Roll, Name, and Marks are required.";
     resultStudentStatus.className = "msg error";
     return;
   }
@@ -2645,28 +2662,28 @@ resultAddStudentBtn.addEventListener("click", async () => {
     name,
     marks: parseFloat(marks) || marks,
     percentage,
-    rank: parseInt(rank, 10) || rank,
+    rank: 0,
   };
-  if (resultId) newStudent.resultId = resultId;
   term.students.push(newStudent);
+  recalculateRanks(term);
 
   try {
     await saveResultTerm(term);
     resultRollInput.value = "";
     resultNameInput.value = "";
     resultMarksInput.value = "";
-    resultRankInput.value = "";
-    resultIdInput.value = "";
     renderResultStudents();
     resultStudentStatus.textContent = "Student added.";
     resultStudentStatus.className = "msg success";
     showUndoToast("Student added.", async () => {
       term.students.pop();
+      recalculateRanks(term);
       await saveResultTerm(term);
       renderResultStudents();
     });
   } catch (err) {
     term.students.pop();
+    recalculateRanks(term);
     resultStudentStatus.textContent = "Could not add: " + (err.code || err.message);
     resultStudentStatus.className = "msg error";
     console.error(err);
@@ -2729,7 +2746,7 @@ resultSaveDetailsBtn.addEventListener("click", async () => {
   term.term = resultTermNameInput.value.trim();
   term.session = resultSessionInput.value.trim();
   term.setCode = resultSetCodeInput.value.trim();
-  term.date = resultDateInput.value.trim();
+  if (!term.date) term.date = formatReadable(todayISO());
   term.maxMarks = parseFloat(resultMaxMarksInput.value) || resultMaxMarksInput.value.trim();
   const yearMatch = term.session.match(/\d{4}/);
   if (yearMatch) term.order = parseInt(yearMatch[0], 10);
