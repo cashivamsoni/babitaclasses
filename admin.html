@@ -567,8 +567,7 @@
         <label for="blogTitleInput">Title</label>
         <input type="text" id="blogTitleInput" placeholder="e.g. Diwali Celebration 2026">
 
-        <label for="blogDateInput">Date</label>
-        <input type="text" id="blogDateInput" placeholder="e.g. 28 July 2026">
+        <p class="hint">Date is set automatically to today when you publish.</p>
 
         <p class="hint">Preview text on the card is automatically taken from your first text block.</p>
 
@@ -626,8 +625,7 @@
         <input type="text" id="resultSessionInput" placeholder="e.g. 2025-26">
         <label for="resultSetCodeInput">Set Code</label>
         <input type="text" id="resultSetCodeInput" placeholder="e.g. Set-A 3/22">
-        <label for="resultDateInput">Declared Date</label>
-        <input type="text" id="resultDateInput" placeholder="e.g. 27 July 2025">
+        <p class="hint">Declared Date is set automatically to today when you save.</p>
         <label for="resultMaxMarksInput">Max Marks</label>
         <input type="text" id="resultMaxMarksInput" placeholder="e.g. 100">
         <button id="resultSaveDetailsBtn" type="button">Save Term Details</button>
@@ -643,11 +641,8 @@
         <label for="resultMarksInput">Marks</label>
         <input type="text" id="resultMarksInput" placeholder="e.g. 88.5">
         <p class="hint" style="margin-top:0;">Percentage is calculated automatically from Marks and the term's Max Marks.</p>
-        <label for="resultRankInput">Rank</label>
-        <input type="text" id="resultRankInput" placeholder="e.g. 1">
-        <label for="resultIdInput">Result ID (optional — auto-generated if left blank)</label>
-        <input type="text" id="resultIdInput" placeholder="e.g. 2526TM107">
-        <p class="hint" style="margin-top:4px;">Auto format: session (2526) + TM/TS for Term/Test + term or test number + roll (2 digits) — e.g. Term-1, session 2025-26, roll 07 → 2526TM107.</p>
+        <p class="hint">Rank is calculated automatically from marks (highest marks = Rank 1) and updates whenever any student's marks change.</p>
+        <p class="hint" style="margin-top:4px;">Result ID is generated automatically: session (2526) + TM/TS for Term/Test + term or test number + roll (2 digits) — e.g. Term-1, session 2025-26, roll 07 → 2526TM107.</p>
         <button id="resultAddStudentBtn" type="button">Add Student</button>
         <p id="resultStudentStatus" class="msg"></p>
         <button id="resultSelectModeBtn" type="button" class="small-btn">Select</button>
