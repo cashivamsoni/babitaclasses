@@ -863,11 +863,13 @@ if (slideshow) {
           let cardsHtml = "";
           let searchHtml = "";
           let modalsHtml = "";
+          const newCardIds = [];
 
           postsSnap.forEach((docSnap) => {
             const p = docSnap.data();
-            const safeId = "blogpost-" + docSnap.id;
-            const modalId = "blogpost-modal-" + docSnap.id;
+            const safeId = "blog" + docSnap.id;
+            const modalId = "modal" + docSnap.id;
+            newCardIds.push(safeId);
 
             cardsHtml +=
               '<div class="blog-card" id="' + safeId + '">' +
@@ -933,7 +935,10 @@ if (slideshow) {
           blogFeedEl.insertAdjacentHTML("afterbegin", cardsHtml);
           // These cards were added after the page's scroll-reveal observer already ran its
           // initial scan, so they'd otherwise stay stuck at opacity:0 forever. Reveal them directly.
-          blogFeedEl.querySelectorAll('.blog-card[id^="blogpost-"]').forEach((el) => el.classList.add("visible"));
+          newCardIds.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add("visible");
+          });
           if (searchListEl) searchListEl.insertAdjacentHTML("afterbegin", searchHtml);
           document.body.insertAdjacentHTML("beforeend", modalsHtml);
         }
