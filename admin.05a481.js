@@ -161,6 +161,7 @@ const attendanceDeleteSelectedBtn = document.getElementById("attendanceDeleteSel
 const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn");
 
 const blogTitleInput = document.getElementById("blogTitleInput");
+const blogDateInput = document.getElementById("blogDateInput");
 const blogBlocksContainer = document.getElementById("blogBlocksContainer");
 const blogAddTextBlockBtn = document.getElementById("blogAddTextBlockBtn");
 const blogAddImageBlockBtn = document.getElementById("blogAddImageBlockBtn");
@@ -184,6 +185,7 @@ const resultDeleteTermBtn = document.getElementById("resultDeleteTermBtn");
 const resultPublishBtn = document.getElementById("resultPublishBtn");
 const resultStatus = document.getElementById("resultStatus");
 const resultTermNameInput = document.getElementById("resultTermNameInput");
+const resultDateInput = document.getElementById("resultDateInput");
 const resultSessionInput = document.getElementById("resultSessionInput");
 const resultSetCodeInput = document.getElementById("resultSetCodeInput");
 const resultMaxMarksInput = document.getElementById("resultMaxMarksInput");
@@ -2206,6 +2208,7 @@ function collectButtons() {
 
 function clearBlogForm() {
   blogTitleInput.value = "";
+  blogDateInput.value = "";
   blogBlocksContainer.innerHTML = "";
   blogButtonsContainer.innerHTML = "";
   addTextBlockRow();
@@ -2214,6 +2217,7 @@ function clearBlogForm() {
 
 function fillBlogForm(data) {
   blogTitleInput.value = data.title || "";
+  blogDateInput.value = data.date || "";
 
   blogBlocksContainer.innerHTML = "";
   if (Array.isArray(data.contentBlocks) && data.contentBlocks.length) {
@@ -2344,7 +2348,8 @@ blogAddBtn.addEventListener("click", async () => {
   const contentBlocks = collectContentBlocks();
   const buttons = collectButtons();
   const editingId = blogAddBtn.dataset.editingId;
-  const date = editingId ? blogAddBtn.dataset.editingDate || formatReadable(todayISO()) : formatReadable(todayISO());
+  const manualDate = blogDateInput.value.trim();
+  const date = manualDate || (editingId ? blogAddBtn.dataset.editingDate || formatReadable(todayISO()) : formatReadable(todayISO()));
 
   if (!title || contentBlocks.length === 0) {
     blogStatus.textContent = "Title and at least one content block are required.";
@@ -2464,6 +2469,7 @@ function fillResultDetailsForm(term) {
   resultTermNameInput.value = term.term || "";
   resultSessionInput.value = term.session || "";
   resultSetCodeInput.value = term.setCode || "";
+  resultDateInput.value = term.date || "";
   resultMaxMarksInput.value = term.maxMarks || "";
   resultTermStatusDisplay.textContent =
     term.status === "active"
@@ -2746,7 +2752,9 @@ resultSaveDetailsBtn.addEventListener("click", async () => {
   term.term = resultTermNameInput.value.trim();
   term.session = resultSessionInput.value.trim();
   term.setCode = resultSetCodeInput.value.trim();
-  if (!term.date) term.date = formatReadable(todayISO());
+  const manualResultDate = resultDateInput.value.trim();
+  if (manualResultDate) term.date = manualResultDate;
+  else if (!term.date) term.date = formatReadable(todayISO());
   term.maxMarks = parseFloat(resultMaxMarksInput.value) || resultMaxMarksInput.value.trim();
   const yearMatch = term.session.match(/\d{4}/);
   if (yearMatch) term.order = parseInt(yearMatch[0], 10);
