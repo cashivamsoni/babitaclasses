@@ -101,9 +101,17 @@ const wnBtnUrlInput = document.getElementById("wnBtnUrlInput");
 const wnSaveBtn = document.getElementById("wnSaveBtn");
 const wnStatus = document.getElementById("wnStatus");
 
+function galleryInputsInOrder() {
+  return [...document.querySelectorAll("#galleryRowsContainer input")];
+}
 const galleryInputs = [1, 2, 3, 4, 5, 6, 7, 8].map((n) =>
   document.getElementById("galleryInput" + n)
 );
+(function wireGalleryDrag() {
+  const container = document.getElementById("galleryRowsContainer");
+  wireDragContainer(container, ".gallery-row");
+  container.querySelectorAll(".gallery-row").forEach(makeItemDraggable);
+})();
 const gallerySaveBtn = document.getElementById("gallerySaveBtn");
 const galleryStatus = document.getElementById("galleryStatus");
 
@@ -446,11 +454,20 @@ const NOTICES_COL = collection(db, "notices");
 async function renderNotices() {
   noticeList.innerHTML = "";
   noticeDeleteSelectedBtn.style.display = "none";
+  wireDragContainer(noticeList, "li");
   try {
     const q = query(NOTICES_COL, orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
-    snap.forEach((docSnap) => {
+    const docs = [];
+    snap.forEach((docSnap) => docs.push(docSnap));
+    docs.sort((a, b) => (a.data().order ?? Infinity) - (b.data().order ?? Infinity));
+    docs.forEach((docSnap) => {
       const li = document.createElement("li");
+
+      const handle = document.createElement("span");
+      handle.className = "blog-block-drag-handle";
+      handle.textContent = "⠿";
+      li.appendChild(handle);
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
@@ -511,6 +528,11 @@ async function renderNotices() {
       });
       li.appendChild(deleteBtn);
 
+      makeItemDraggable(li);
+      li.addEventListener("dragend", async () => {
+        const ids = [...noticeList.querySelectorAll("li input[type=checkbox]")].map((cb) => cb.dataset.id);
+        await Promise.all(ids.map((id, i) => setDoc(doc(db, "notices", id), { order: i }, { merge: true })));
+      });
       noticeList.appendChild(li);
     });
   } catch (err) {
@@ -521,6 +543,35 @@ async function renderNotices() {
 }
 
 // ---------- Shared "Select All / Deselect All" helper for every bulk-select list ----------
+// ---------- Shared drag-and-drop reordering helper for any list ----------
+function makeItemDraggable(item) {
+  item.draggable = true;
+  item.addEventListener("dragstart", () => setTimeout(() => item.classList.add("dragging"), 0));
+  item.addEventListener("dragend", () => item.classList.remove("dragging"));
+}
+
+function wireDragContainer(container, itemSelector) {
+  if (container.dataset.dragWired) return;
+  container.dataset.dragWired = "1";
+  container.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const dragging = container.querySelector(itemSelector + ".dragging");
+    if (!dragging) return;
+    const items = [...container.querySelectorAll(itemSelector + ":not(.dragging)")];
+    const after = items.reduce(
+      (closest, el) => {
+        const box = el.getBoundingClientRect();
+        const offset = e.clientY - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) return { offset, element: el };
+        return closest;
+      },
+      { offset: Number.NEGATIVE_INFINITY, element: null }
+    ).element;
+    if (after == null) container.appendChild(dragging);
+    else container.insertBefore(dragging, after);
+  });
+}
+
 function setupSelectAll(listEl, selectAllBtn, selectModeBtn) {
   selectAllBtn.addEventListener("click", () => {
     const checkboxes = listEl.querySelectorAll('input[type="checkbox"]');
@@ -726,7 +777,7 @@ async function loadGallery() {
 }
 
 gallerySaveBtn.addEventListener("click", async () => {
-  const values = galleryInputs.map((input) => input.value.trim());
+  const values = galleryInputsInOrder().map((input) => input.value.trim());
   if (values.some((v) => !v)) {
     galleryStatus.textContent = "All 8 photo URLs need a value.";
     galleryStatus.className = "msg error";
@@ -778,12 +829,21 @@ setupSelectAll(videoAdminList, videoSelectAllBtn, videoSelectModeBtn);
 async function renderVideos() {
   videoAdminList.innerHTML = "";
   videoDeleteSelectedBtn.style.display = "none";
+  wireDragContainer(videoAdminList, "li");
   try {
     const q = query(VIDEOS_COL, orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
-    snap.forEach((docSnap) => {
+    const docs = [];
+    snap.forEach((docSnap) => docs.push(docSnap));
+    docs.sort((a, b) => (a.data().order ?? Infinity) - (b.data().order ?? Infinity));
+    docs.forEach((docSnap) => {
       const data = docSnap.data();
       const li = document.createElement("li");
+
+      const handle = document.createElement("span");
+      handle.className = "blog-block-drag-handle";
+      handle.textContent = "⠿";
+      li.appendChild(handle);
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
@@ -847,6 +907,11 @@ async function renderVideos() {
       });
       li.appendChild(deleteBtn);
 
+      makeItemDraggable(li);
+      li.addEventListener("dragend", async () => {
+        const ids = [...videoAdminList.querySelectorAll("li input[type=checkbox]")].map((cb) => cb.dataset.id);
+        await Promise.all(ids.map((id, i) => setDoc(doc(db, "videos", id), { order: i }, { merge: true })));
+      });
       videoAdminList.appendChild(li);
     });
   } catch (err) {
@@ -970,9 +1035,16 @@ function renderSyllabusRows() {
   syllabusRowList.innerHTML = "";
   const session = getSelectedSession();
   if (!session) return;
+  wireDragContainer(syllabusRowList, "li");
 
   session.rows.forEach((row, index) => {
     const li = document.createElement("li");
+    li.dataset.index = index;
+
+    const handle = document.createElement("span");
+    handle.className = "blog-block-drag-handle";
+    handle.textContent = "⠿";
+    li.appendChild(handle);
 
     const span = document.createElement("span");
     span.textContent =
@@ -992,6 +1064,14 @@ function renderSyllabusRows() {
     deleteBtn.textContent = "Delete";
     deleteBtn.addEventListener("click", () => deleteSyllabusRow(index));
     li.appendChild(deleteBtn);
+
+    makeItemDraggable(li);
+    li.addEventListener("dragend", async () => {
+      const orderedIndexes = [...syllabusRowList.querySelectorAll("li")].map((el) => parseInt(el.dataset.index, 10));
+      session.rows = orderedIndexes.map((i) => session.rows[i]);
+      await saveSyllabusSession(session);
+      renderSyllabusRows();
+    });
 
     syllabusRowList.appendChild(li);
   });
