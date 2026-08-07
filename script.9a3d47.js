@@ -775,14 +775,17 @@ if (slideshow) {
         }
       }
 
-      // Notice board (latest first; newest 3 get the "New" gif)
+      // Notice board (latest first, or admin-set order; newest 3 get the "New" gif)
       if (noticeListEl) {
         const q = query(collection(db, "notices"), orderBy("createdAt", "desc"));
         const noticesSnap = await getDocs(q);
         if (!noticesSnap.empty) {
+          const noticeDocs = [];
+          noticesSnap.forEach((d) => noticeDocs.push(d));
+          noticeDocs.sort((a, b) => (a.data().order ?? Infinity) - (b.data().order ?? Infinity));
           let html = "";
           let i = 0;
-          noticesSnap.forEach((docSnap) => {
+          noticeDocs.forEach((docSnap) => {
             const text = docSnap.data().text || "";
             const isNew = i < 3;
             html += "<a>" + text;
@@ -797,13 +800,16 @@ if (slideshow) {
         }
       }
 
-      // Function videos (latest first)
+      // Function videos (latest first, or admin-set order)
       if (videoListEl) {
         const vq = query(collection(db, "videos"), orderBy("createdAt", "desc"));
         const videosSnap = await getDocs(vq);
         if (!videosSnap.empty) {
+          const videoDocs = [];
+          videosSnap.forEach((d) => videoDocs.push(d));
+          videoDocs.sort((a, b) => (a.data().order ?? Infinity) - (b.data().order ?? Infinity));
           let vHtml = "";
-          videosSnap.forEach((docSnap) => {
+          videoDocs.forEach((docSnap) => {
             const d = docSnap.data();
             vHtml +=
               '<li><a href="' + d.url + '" target="_blank">' + (d.title || "") + "</a></li>";
