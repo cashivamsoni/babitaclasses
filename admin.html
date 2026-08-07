@@ -242,6 +242,16 @@
         transform: translateY(0);
         box-shadow: 0 2px 6px rgba(122, 0, 0, 0.28);
       }
+      .gallery-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        cursor: grab;
+      }
+      .gallery-row.dragging { opacity: 0.4; }
+      .gallery-row label { margin: 0; flex: 0 0 70px; font-size: 12px; }
+      .gallery-row input { flex: 1; margin: 0; }
       .blog-remove-btn {
         width: auto;
         margin: 0;
@@ -467,24 +477,17 @@
 
       <div class="section-block">
         <p class="eyebrow">Gallery Images (8 photos)</p>
-        <div class="scroll-box">
-          <label for="galleryInput1">Photo 1 URL</label>
-          <input type="text" id="galleryInput1" placeholder="https://... or /images/...">
-          <label for="galleryInput2">Photo 2 URL</label>
-          <input type="text" id="galleryInput2" placeholder="https://... or /images/...">
-          <label for="galleryInput3">Photo 3 URL</label>
-          <input type="text" id="galleryInput3" placeholder="https://... or /images/...">
-          <label for="galleryInput4">Photo 4 URL</label>
-          <input type="text" id="galleryInput4" placeholder="https://... or /images/...">
-          <label for="galleryInput5">Photo 5 URL</label>
-          <input type="text" id="galleryInput5" placeholder="https://... or /images/...">
-          <label for="galleryInput6">Photo 6 URL</label>
-          <input type="text" id="galleryInput6" placeholder="https://... or /images/...">
-          <label for="galleryInput7">Photo 7 URL</label>
-          <input type="text" id="galleryInput7" placeholder="https://... or /images/...">
-          <label for="galleryInput8">Photo 8 URL</label>
-          <input type="text" id="galleryInput8" placeholder="https://... or /images/...">
+        <div id="galleryRowsContainer" class="scroll-box">
+          <div class="gallery-row" data-input-id="galleryInput1"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput1">Photo 1 URL</label><input type="text" id="galleryInput1" placeholder="https://... or /images/..."></div>
+          <div class="gallery-row" data-input-id="galleryInput2"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput2">Photo 2 URL</label><input type="text" id="galleryInput2" placeholder="https://... or /images/..."></div>
+          <div class="gallery-row" data-input-id="galleryInput3"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput3">Photo 3 URL</label><input type="text" id="galleryInput3" placeholder="https://... or /images/..."></div>
+          <div class="gallery-row" data-input-id="galleryInput4"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput4">Photo 4 URL</label><input type="text" id="galleryInput4" placeholder="https://... or /images/..."></div>
+          <div class="gallery-row" data-input-id="galleryInput5"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput5">Photo 5 URL</label><input type="text" id="galleryInput5" placeholder="https://... or /images/..."></div>
+          <div class="gallery-row" data-input-id="galleryInput6"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput6">Photo 6 URL</label><input type="text" id="galleryInput6" placeholder="https://... or /images/..."></div>
+          <div class="gallery-row" data-input-id="galleryInput7"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput7">Photo 7 URL</label><input type="text" id="galleryInput7" placeholder="https://... or /images/..."></div>
+          <div class="gallery-row" data-input-id="galleryInput8"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput8">Photo 8 URL</label><input type="text" id="galleryInput8" placeholder="https://... or /images/..."></div>
         </div>
+        <p class="hint" style="margin-top:0;">Drag ⠿ to reorder photos — order here is the order shown on the site.</p>
         <button id="gallerySaveBtn" type="button">Save Gallery</button>
         <p id="galleryStatus" class="msg"></p>
       </div>
