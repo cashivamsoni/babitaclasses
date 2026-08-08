@@ -101,17 +101,9 @@ const wnBtnUrlInput = document.getElementById("wnBtnUrlInput");
 const wnSaveBtn = document.getElementById("wnSaveBtn");
 const wnStatus = document.getElementById("wnStatus");
 
-function galleryInputsInOrder() {
-  return [...document.querySelectorAll("#galleryRowsContainer input")];
-}
 const galleryInputs = [1, 2, 3, 4, 5, 6, 7, 8].map((n) =>
   document.getElementById("galleryInput" + n)
 );
-(function wireGalleryDrag() {
-  const container = document.getElementById("galleryRowsContainer");
-  wireDragContainer(container, ".gallery-row");
-  container.querySelectorAll(".gallery-row").forEach(makeItemDraggable);
-})();
 const gallerySaveBtn = document.getElementById("gallerySaveBtn");
 const galleryStatus = document.getElementById("galleryStatus");
 
@@ -448,53 +440,133 @@ function showUndoToast(message, undoFn) {
   }, 6000);
 }
 
+// ---------- Shared drag-handle / move-buttons row reordering (desktop drag, mobile ▲▼) ----------
+function createRowDragHandle() {
+  const handle = document.createElement("span");
+  handle.className = "row-drag-handle";
+  handle.textContent = "⠿";
+  return handle;
+}
+
+function createRowMoveButtons(getIndex, onMove) {
+  const wrap = document.createElement("span");
+  wrap.className = "row-move-btns";
+
+  const upBtn = document.createElement("button");
+  upBtn.type = "button";
+  upBtn.className = "move-btn";
+  upBtn.textContent = "▲";
+  upBtn.addEventListener("click", () => onMove(getIndex(), "up"));
+
+  const downBtn = document.createElement("button");
+  downBtn.type = "button";
+  downBtn.className = "move-btn";
+  downBtn.textContent = "▼";
+  downBtn.addEventListener("click", () => onMove(getIndex(), "down"));
+
+  wrap.appendChild(upBtn);
+  wrap.appendChild(downBtn);
+  return wrap;
+}
+
+function makeRowDraggable(li, listEl, rowSelector, onDrop) {
+  li.draggable = isDesktopViewport();
+  li.addEventListener("dragstart", () => setTimeout(() => li.classList.add("row-dragging"), 0));
+  li.addEventListener("dragend", () => {
+    li.classList.remove("row-dragging");
+    onDrop();
+  });
+  if (!listEl.dataset.rowDragBound) {
+    listEl.dataset.rowDragBound = "1";
+    listEl.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const dragging = listEl.querySelector(rowSelector + ".row-dragging");
+      if (!dragging) return;
+      const rows = [...listEl.querySelectorAll(rowSelector + ":not(.row-dragging)")];
+      const after = rows.reduce(
+        (closest, row) => {
+          const box = row.getBoundingClientRect();
+          const offset = e.clientY - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) return { offset, element: row };
+          return closest;
+        },
+        { offset: Number.NEGATIVE_INFINITY, element: null }
+      ).element;
+      if (after == null) listEl.appendChild(dragging);
+      else listEl.insertBefore(dragging, after);
+    });
+  }
+}
+
 // ---------- Notices (add / edit / delete) ----------
 const NOTICES_COL = collection(db, "notices");
 
 async function renderNotices() {
   noticeList.innerHTML = "";
   noticeDeleteSelectedBtn.style.display = "none";
-  wireDragContainer(noticeList, "li");
   try {
     const q = query(NOTICES_COL, orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
-    const docs = [];
-    snap.forEach((docSnap) => docs.push(docSnap));
-    docs.sort((a, b) => (a.data().order ?? Infinity) - (b.data().order ?? Infinity));
-    docs.forEach((docSnap) => {
-      const li = document.createElement("li");
+    const items = [];
+    snap.forEach((docSnap) => items.push({ id: docSnap.id, data: docSnap.data() }));
 
-      const handle = document.createElement("span");
-      handle.className = "blog-block-drag-handle";
-      handle.textContent = "⠿";
-      li.appendChild(handle);
+    if (items.some((it) => it.data.order === undefined)) {
+      await Promise.all(items.map((it, index) => updateDoc(doc(db, "notices", it.id), { order: index })));
+      items.forEach((it, index) => (it.data.order = index));
+    }
+    items.sort((a, b) => a.data.order - b.data.order);
+
+    async function persistNoticeOrder() {
+      const ids = [...noticeList.children].map((li) => li.dataset.id);
+      await Promise.all(ids.map((id, index) => updateDoc(doc(db, "notices", id), { order: index })));
+    }
+
+    items.forEach((item) => {
+      const { id, data } = item;
+      const li = document.createElement("li");
+      li.dataset.id = id;
+
+      li.appendChild(createRowDragHandle());
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
-      checkbox.dataset.id = docSnap.id;
-      checkbox._noticeData = docSnap.data();
+      checkbox.dataset.id = id;
+      checkbox._noticeData = data;
       checkbox.addEventListener("change", updateDeleteSelectedVisibility);
       li.appendChild(checkbox);
 
       const span = document.createElement("span");
-      span.textContent = docSnap.data().text || "";
+      span.textContent = data.text || "";
       li.appendChild(span);
+
+      li.appendChild(
+        createRowMoveButtons(
+          () => [...noticeList.children].indexOf(li),
+          async (index, direction) => {
+            const sibling = direction === "up" ? li.previousElementSibling : li.nextElementSibling;
+            if (!sibling) return;
+            if (direction === "up") noticeList.insertBefore(li, sibling);
+            else noticeList.insertBefore(sibling, li);
+            await persistNoticeOrder();
+          }
+        )
+      );
 
       const editBtn = document.createElement("button");
       editBtn.type = "button";
       editBtn.className = "edit-btn";
       editBtn.textContent = "Edit";
       editBtn.addEventListener("click", async () => {
-        const previousText = docSnap.data().text || "";
+        const previousText = data.text || "";
         const updated = prompt("Edit notice:", previousText);
         if (updated === null) return;
         const trimmed = updated.trim();
         if (!trimmed) return;
         try {
-          await updateDoc(doc(db, "notices", docSnap.id), { text: trimmed });
+          await updateDoc(doc(db, "notices", id), { text: trimmed });
           await renderNotices();
           showUndoToast("Notice updated.", async () => {
-            await updateDoc(doc(db, "notices", docSnap.id), { text: previousText });
+            await updateDoc(doc(db, "notices", id), { text: previousText });
             await renderNotices();
           });
         } catch (err) {
@@ -511,13 +583,11 @@ async function renderNotices() {
       deleteBtn.textContent = "Delete";
       deleteBtn.addEventListener("click", async () => {
         if (!confirm("Delete this notice?")) return;
-        const deletedId = docSnap.id;
-        const deletedData = docSnap.data();
         try {
-          await deleteDoc(doc(db, "notices", deletedId));
+          await deleteDoc(doc(db, "notices", id));
           await renderNotices();
           showUndoToast("Notice deleted.", async () => {
-            await setDoc(doc(db, "notices", deletedId), deletedData);
+            await setDoc(doc(db, "notices", id), data);
             await renderNotices();
           });
         } catch (err) {
@@ -528,11 +598,7 @@ async function renderNotices() {
       });
       li.appendChild(deleteBtn);
 
-      makeItemDraggable(li);
-      li.addEventListener("dragend", async () => {
-        const ids = [...noticeList.querySelectorAll("li input[type=checkbox]")].map((cb) => cb.dataset.id);
-        await Promise.all(ids.map((id, i) => setDoc(doc(db, "notices", id), { order: i }, { merge: true })));
-      });
+      makeRowDraggable(li, noticeList, "li", persistNoticeOrder);
       noticeList.appendChild(li);
     });
   } catch (err) {
@@ -543,35 +609,6 @@ async function renderNotices() {
 }
 
 // ---------- Shared "Select All / Deselect All" helper for every bulk-select list ----------
-// ---------- Shared drag-and-drop reordering helper for any list ----------
-function makeItemDraggable(item) {
-  item.draggable = true;
-  item.addEventListener("dragstart", () => setTimeout(() => item.classList.add("dragging"), 0));
-  item.addEventListener("dragend", () => item.classList.remove("dragging"));
-}
-
-function wireDragContainer(container, itemSelector) {
-  if (container.dataset.dragWired) return;
-  container.dataset.dragWired = "1";
-  container.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    const dragging = container.querySelector(itemSelector + ".dragging");
-    if (!dragging) return;
-    const items = [...container.querySelectorAll(itemSelector + ":not(.dragging)")];
-    const after = items.reduce(
-      (closest, el) => {
-        const box = el.getBoundingClientRect();
-        const offset = e.clientY - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) return { offset, element: el };
-        return closest;
-      },
-      { offset: Number.NEGATIVE_INFINITY, element: null }
-    ).element;
-    if (after == null) container.appendChild(dragging);
-    else container.insertBefore(dragging, after);
-  });
-}
-
 function setupSelectAll(listEl, selectAllBtn, selectModeBtn) {
   selectAllBtn.addEventListener("click", () => {
     const checkboxes = listEl.querySelectorAll('input[type="checkbox"]');
@@ -651,7 +688,7 @@ noticeAddBtn.addEventListener("click", async () => {
   noticeStatus.textContent = "Adding...";
   noticeStatus.className = "msg";
   try {
-    const newDoc = await addDoc(NOTICES_COL, { text: value, createdAt: serverTimestamp() });
+    const newDoc = await addDoc(NOTICES_COL, { text: value, createdAt: serverTimestamp(), order: -Date.now() });
     noticeInput.value = "";
     noticeStatus.textContent = "Notice added.";
     noticeStatus.className = "msg success";
@@ -777,7 +814,7 @@ async function loadGallery() {
 }
 
 gallerySaveBtn.addEventListener("click", async () => {
-  const values = galleryInputsInOrder().map((input) => input.value.trim());
+  const values = galleryInputs.map((input) => input.value.trim());
   if (values.some((v) => !v)) {
     galleryStatus.textContent = "All 8 photo URLs need a value.";
     galleryStatus.className = "msg error";
@@ -829,25 +866,33 @@ setupSelectAll(videoAdminList, videoSelectAllBtn, videoSelectModeBtn);
 async function renderVideos() {
   videoAdminList.innerHTML = "";
   videoDeleteSelectedBtn.style.display = "none";
-  wireDragContainer(videoAdminList, "li");
   try {
     const q = query(VIDEOS_COL, orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
-    const docs = [];
-    snap.forEach((docSnap) => docs.push(docSnap));
-    docs.sort((a, b) => (a.data().order ?? Infinity) - (b.data().order ?? Infinity));
-    docs.forEach((docSnap) => {
-      const data = docSnap.data();
-      const li = document.createElement("li");
+    const items = [];
+    snap.forEach((docSnap) => items.push({ id: docSnap.id, data: docSnap.data() }));
 
-      const handle = document.createElement("span");
-      handle.className = "blog-block-drag-handle";
-      handle.textContent = "⠿";
-      li.appendChild(handle);
+    if (items.some((it) => it.data.order === undefined)) {
+      await Promise.all(items.map((it, index) => updateDoc(doc(db, "videos", it.id), { order: index })));
+      items.forEach((it, index) => (it.data.order = index));
+    }
+    items.sort((a, b) => a.data.order - b.data.order);
+
+    async function persistVideoOrder() {
+      const ids = [...videoAdminList.children].map((li) => li.dataset.id);
+      await Promise.all(ids.map((id, index) => updateDoc(doc(db, "videos", id), { order: index })));
+    }
+
+    items.forEach((item) => {
+      const { id, data } = item;
+      const li = document.createElement("li");
+      li.dataset.id = id;
+
+      li.appendChild(createRowDragHandle());
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
-      checkbox.dataset.id = docSnap.id;
+      checkbox.dataset.id = id;
       checkbox._videoData = data;
       checkbox.addEventListener("change", updateVideoDeleteSelectedVisibility);
       li.appendChild(checkbox);
@@ -855,6 +900,19 @@ async function renderVideos() {
       const span = document.createElement("span");
       span.textContent = data.title || "";
       li.appendChild(span);
+
+      li.appendChild(
+        createRowMoveButtons(
+          () => [...videoAdminList.children].indexOf(li),
+          async (index, direction) => {
+            const sibling = direction === "up" ? li.previousElementSibling : li.nextElementSibling;
+            if (!sibling) return;
+            if (direction === "up") videoAdminList.insertBefore(li, sibling);
+            else videoAdminList.insertBefore(sibling, li);
+            await persistVideoOrder();
+          }
+        )
+      );
 
       const editBtn = document.createElement("button");
       editBtn.type = "button";
@@ -871,10 +929,10 @@ async function renderVideos() {
         const url = updatedUrl.trim();
         if (!title || !url) return;
         try {
-          await updateDoc(doc(db, "videos", docSnap.id), { title, url });
+          await updateDoc(doc(db, "videos", id), { title, url });
           await renderVideos();
           showUndoToast("Video updated.", async () => {
-            await updateDoc(doc(db, "videos", docSnap.id), { title: previousTitle, url: previousUrl });
+            await updateDoc(doc(db, "videos", id), { title: previousTitle, url: previousUrl });
             await renderVideos();
           });
         } catch (err) {
@@ -891,12 +949,11 @@ async function renderVideos() {
       deleteBtn.textContent = "Delete";
       deleteBtn.addEventListener("click", async () => {
         if (!confirm("Delete this video?")) return;
-        const deletedId = docSnap.id;
         try {
-          await deleteDoc(doc(db, "videos", deletedId));
+          await deleteDoc(doc(db, "videos", id));
           await renderVideos();
           showUndoToast("Video deleted.", async () => {
-            await setDoc(doc(db, "videos", deletedId), data);
+            await setDoc(doc(db, "videos", id), data);
             await renderVideos();
           });
         } catch (err) {
@@ -907,11 +964,7 @@ async function renderVideos() {
       });
       li.appendChild(deleteBtn);
 
-      makeItemDraggable(li);
-      li.addEventListener("dragend", async () => {
-        const ids = [...videoAdminList.querySelectorAll("li input[type=checkbox]")].map((cb) => cb.dataset.id);
-        await Promise.all(ids.map((id, i) => setDoc(doc(db, "videos", id), { order: i }, { merge: true })));
-      });
+      makeRowDraggable(li, videoAdminList, "li", persistVideoOrder);
       videoAdminList.appendChild(li);
     });
   } catch (err) {
@@ -965,7 +1018,7 @@ videoAddBtn.addEventListener("click", async () => {
   videoStatus.textContent = "Adding...";
   videoStatus.className = "msg";
   try {
-    const newDoc = await addDoc(VIDEOS_COL, { title, url, createdAt: serverTimestamp() });
+    const newDoc = await addDoc(VIDEOS_COL, { title, url, createdAt: serverTimestamp(), order: -Date.now() });
     videoTitleInput.value = "";
     videoUrlInput.value = "";
     videoStatus.textContent = "Video added.";
@@ -1035,21 +1088,24 @@ function renderSyllabusRows() {
   syllabusRowList.innerHTML = "";
   const session = getSelectedSession();
   if (!session) return;
-  wireDragContainer(syllabusRowList, "li");
 
   session.rows.forEach((row, index) => {
     const li = document.createElement("li");
-    li.dataset.index = index;
+    li._rowRef = row;
 
-    const handle = document.createElement("span");
-    handle.className = "blog-block-drag-handle";
-    handle.textContent = "⠿";
-    li.appendChild(handle);
+    li.appendChild(createRowDragHandle());
 
     const span = document.createElement("span");
     span.textContent =
       row.exam + " — " + [row.syllabus, row.datesheet, row.result].filter(Boolean).join(" | ");
     li.appendChild(span);
+
+    li.appendChild(
+      createRowMoveButtons(
+        () => [...syllabusRowList.children].indexOf(li),
+        (i, direction) => moveSyllabusRow(i, direction)
+      )
+    );
 
     const editBtn = document.createElement("button");
     editBtn.type = "button";
@@ -1065,16 +1121,39 @@ function renderSyllabusRows() {
     deleteBtn.addEventListener("click", () => deleteSyllabusRow(index));
     li.appendChild(deleteBtn);
 
-    makeItemDraggable(li);
-    li.addEventListener("dragend", async () => {
-      const orderedIndexes = [...syllabusRowList.querySelectorAll("li")].map((el) => parseInt(el.dataset.index, 10));
-      session.rows = orderedIndexes.map((i) => session.rows[i]);
-      await saveSyllabusSession(session);
-      renderSyllabusRows();
-    });
-
+    makeRowDraggable(li, syllabusRowList, "li", persistSyllabusRowOrder);
     syllabusRowList.appendChild(li);
   });
+}
+
+async function persistSyllabusRowOrder() {
+  const session = getSelectedSession();
+  session.rows = [...syllabusRowList.children].map((li) => li._rowRef);
+  try {
+    await saveSyllabusSession(session);
+    renderSyllabusRows();
+  } catch (err) {
+    syllabusStatus.textContent = "Reorder failed: " + (err.code || err.message);
+    syllabusStatus.className = "msg error";
+    console.error(err);
+  }
+}
+
+async function moveSyllabusRow(index, direction) {
+  const session = getSelectedSession();
+  const targetIndex = direction === "up" ? index - 1 : index + 1;
+  if (targetIndex < 0 || targetIndex >= session.rows.length) return;
+  const rows = session.rows;
+  [rows[index], rows[targetIndex]] = [rows[targetIndex], rows[index]];
+  try {
+    await saveSyllabusSession(session);
+    renderSyllabusRows();
+  } catch (err) {
+    [rows[index], rows[targetIndex]] = [rows[targetIndex], rows[index]];
+    syllabusStatus.textContent = "Reorder failed: " + (err.code || err.message);
+    syllabusStatus.className = "msg error";
+    console.error(err);
+  }
 }
 
 async function loadSyllabusSessions() {
@@ -2141,9 +2220,11 @@ function isDesktopViewport() {
   return window.matchMedia("(min-width: 768px)").matches;
 }
 function updateBlockDraggability() {
-  document.querySelectorAll(".blog-block-row, .blog-button-row").forEach((row) => {
-    row.draggable = isDesktopViewport();
-  });
+  document
+    .querySelectorAll(".blog-block-row, .blog-button-row, #noticeList li, #videoAdminList li, #syllabusRowList li")
+    .forEach((row) => {
+      row.draggable = isDesktopViewport();
+    });
 }
 window.addEventListener("resize", updateBlockDraggability);
 
