@@ -200,15 +200,24 @@
         opacity: 0.4;
       }
       .row-move-btns {
-        display: flex;
-        gap: 4px;
-        flex: none;
-      }
-      @media (max-width: 767px) {
-        .row-drag-handle {
-          display: none;
-        }
-      }
+  display: none;
+  gap: 4px;
+  flex: none;
+}
+@media (max-width: 767px) {
+  .row-drag-handle {
+    display: none;
+  }
+  .row-move-btns {
+    display: flex;
+  }
+  #noticeList li, #videoAdminList li, #syllabusRowList li {
+    flex-wrap: wrap;
+  }
+  #noticeList li span, #videoAdminList li span, #syllabusRowList li span {
+    flex-basis: 100%;
+  }
+}
 
       .scroll-box {
         max-height: 240px;
