@@ -310,11 +310,10 @@ details {
   border: 2px solid #FFFFFF;
   box-shadow: 0px 0px 15px #FFFFFF;
   cursor: pointer;
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: all 0.5s ease;
 }
 
 .url-btn:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
   transform: translateY(-3px) scale(1.07);
   box-shadow: 0 0 20px #FFFFFF;
 }
@@ -331,11 +330,10 @@ details {
   border: 2px solid white;
   box-shadow: 0 0 15px #FFFFFF;
   cursor: pointer;
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: all 0.5s ease;
 }
 
 .btn-inline:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
   transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
@@ -356,11 +354,10 @@ details {
   border: 2px solid white;
   box-shadow: 0 0 15px #FFFFFF;
   cursor: pointer;
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: all 0.5s ease;
 }
 
 .btn-inline1:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
   transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
@@ -393,12 +390,11 @@ details {
   border: 2px solid white;
   box-shadow: 0 0 15px #FFFFFF;
   cursor: pointer;
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: all 0.5s ease;
 }
 
 
 .btn-qr:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
   transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
@@ -695,31 +691,26 @@ tr {
 /* ---------- Scroll-to-Top Button ---------- */
 #topBtn {
   display: none;
-  align-items: center;
-  justify-content: center;
   position: fixed;
   bottom: 20px;
   left: 20px;
   z-index: 99;
-  width: 46px;
-  height: 46px;
   background: linear-gradient(90deg, #990000, #800000);
   color: #FFFFFF;
   border: 2px solid white;
   box-shadow: 0 0 15px #FFFFFF;
-  padding: 0;
-  border-radius: 50%;
+  padding: 10px 16px;
+  border-radius: 20px;
   cursor: pointer;
-  font-size: 18px;
-  line-height: 42px;
-  text-align: center;
+  font-size: 22px;
   font-weight: normal;
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: all 0.5s ease;
 }
 
 #topBtn:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
+  background: linear-gradient(90deg, #990000, #800000);
   color: #FFFFFF;
+  font-weight: bold;
   transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0 20px #FFFFFF;
 }
@@ -751,12 +742,11 @@ tr {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: all 0.5s ease;
   z-index: 2;
 }
 
 #floralMain:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
   transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0 20px #FFFFFF;
 }
@@ -788,13 +778,12 @@ tr {
   text-decoration: none;
   opacity: 0;
   transform: translate(0, 0) scale(0.3);
-  transition: transform 0.35s ease, opacity 0.3s ease, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: transform 0.35s ease, opacity 0.3s ease, box-shadow 0.3s ease;
   pointer-events: none;
   z-index: 1;
 }
 
 .petal:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
   box-shadow: 0 0 20px #FFFFFF;
 }
 
@@ -1026,11 +1015,10 @@ footer a,
   border-radius: 20px;
   box-shadow: 0 0 15px #FFFFFF;
   cursor: pointer;
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: all 0.5s ease;
 }
 
 .worksheet-button:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 0px 20px #FFFFFF;
 }
@@ -1044,11 +1032,10 @@ footer a,
   border-radius: 20px;
   box-shadow: 0 0 15px #FFFFFF;
   cursor: pointer;
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: all 0.5s ease;
 }
 
 .read-more-btn:hover {
-  background: linear-gradient(90deg, #7a0000, #660000);
   transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
@@ -1243,6 +1230,7 @@ hr {
 .slide img {
   flex: 1;
   width: 50%;
+  max-width: 50%;
   flex-shrink: 0;
   aspect-ratio: 1 / 1; /* makes each image a perfect square */
   object-fit: cover;
@@ -1521,7 +1509,7 @@ hr {
 [data-theme="dark"] .petal:hover,
 [data-theme="dark"] .worksheet-button:hover,
 [data-theme="dark"] .read-more-btn:hover {
-  background: linear-gradient(90deg, #4d0000, #330000);
+  background: linear-gradient(90deg, #660000, #4d0000);
 }
 
 /* ---------- Footer (dark mode) ---------- */
