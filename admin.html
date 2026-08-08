@@ -236,6 +236,14 @@
   }
 }
 
+      .selected-count {
+        display: inline-block;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #990000;
+        margin-left: 8px;
+      }
+
       .scroll-box {
         max-height: 240px;
         overflow-y: auto;
@@ -506,7 +514,8 @@
         <p class="hint">Newest 3 notices show the "New" badge automatically.</p>
         <button id="noticeSelectModeBtn" type="button" class="small-btn">Select</button>
         <button id="noticeSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
-        <ul id="noticeList"></ul>
+        <span id="noticeSelectedCount" class="selected-count"></span>
+        <ul id="noticeList" class="scroll-box"></ul>
         <button id="noticeDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
       </div>
 
@@ -556,6 +565,7 @@
         <p id="videoStatus" class="msg"></p>
         <button id="videoSelectModeBtn" type="button" class="small-btn">Select</button>
         <button id="videoSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+        <span id="videoSelectedCount" class="selected-count"></span>
         <ul id="videoAdminList" class="scroll-box"></ul>
         <button id="videoDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
       </div>
@@ -612,6 +622,7 @@
         <p id="attendanceRangeStatus" class="msg"></p>
         <button id="attendanceSelectModeBtn" type="button" class="small-btn">Select</button>
         <button id="attendanceSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+        <span id="attendanceSelectedCount" class="selected-count"></span>
         <ul id="attendanceRangeList" class="scroll-box"></ul>
         <div style="display:flex; gap:8px; margin-top:18px;">
           <button id="attendanceDeleteSelectedBtn" type="button" style="display:none; background:#c0392b; margin:0;">Delete Selected</button>
@@ -629,6 +640,7 @@
         <p id="studentStatus" class="msg"></p>
         <button id="studentSelectModeBtn" type="button" class="small-btn">Select</button>
         <button id="studentSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+        <span id="studentSelectedCount" class="selected-count"></span>
         <ul id="studentList" class="scroll-box"></ul>
         <button id="studentDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
       </div>
@@ -673,6 +685,7 @@
         <p class="eyebrow">Manage New Posts</p>
         <button id="blogSelectModeBtn" type="button" class="small-btn">Select</button>
         <button id="blogSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+        <span id="blogSelectedCount" class="selected-count"></span>
         <ul id="blogPostList" class="scroll-box"></ul>
         <button id="blogDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
       </div>
@@ -733,6 +746,7 @@
         <p id="resultStudentStatus" class="msg"></p>
         <button id="resultSelectModeBtn" type="button" class="small-btn">Select</button>
         <button id="resultSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+        <span id="resultSelectedCount" class="selected-count"></span>
         <ul id="resultStudentList" class="scroll-box"></ul>
         <button id="resultDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
       </div>
