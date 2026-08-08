@@ -105,6 +105,12 @@ const wnStatus = document.getElementById("wnStatus");
 const galleryRowsContainer = document.getElementById("galleryRowsContainer");
 const galleryImageInput = document.getElementById("galleryImageInput");
 const galleryAddBtn = document.getElementById("galleryAddBtn");
+galleryImageInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    galleryAddBtn.click();
+  }
+});
 const galleryAddStatus = document.getElementById("galleryAddStatus");
 const gallerySelectModeBtn = document.getElementById("gallerySelectModeBtn");
 const gallerySelectAllBtn = document.getElementById("gallerySelectAllBtn");
@@ -206,6 +212,23 @@ const resultNameInput = document.getElementById("resultNameInput");
 const resultMarksInput = document.getElementById("resultMarksInput");
 const resultAddStudentBtn = document.getElementById("resultAddStudentBtn");
 const resultStudentStatus = document.getElementById("resultStudentStatus");
+
+[resultRollInput, resultNameInput, resultMarksInput].forEach((input) => {
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      resultAddStudentBtn.click();
+    }
+  });
+});
+[resultTermNameInput, resultDateInput, resultSessionInput, resultSetCodeInput, resultMaxMarksInput].forEach((input) => {
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      resultSaveDetailsBtn.click();
+    }
+  });
+});
 const resultSelectModeBtn = document.getElementById("resultSelectModeBtn");
 const resultSelectAllBtn = document.getElementById("resultSelectAllBtn");
 const resultStudentList = document.getElementById("resultStudentList");
