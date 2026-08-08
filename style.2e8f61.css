@@ -789,7 +789,6 @@ tr {
   opacity: 0;
   transform: translate(0, 0) scale(0.3);
   transition: transform 0.15s ease-out, opacity 0.3s ease, box-shadow 0.3s ease, background 0.15s ease-out;
-  transition-delay: 0s, 0s, 0s, 0s;
   pointer-events: none;
   z-index: 1;
 }
@@ -804,10 +803,15 @@ tr {
   pointer-events: auto;
 }
 
-#floralMenu.open .petal:nth-child(2) { transition-delay: 0s, 0.03s, 0s, 0s; transform: translate(-14px, -73px) scale(1); }
-#floralMenu.open .petal:nth-child(3) { transition-delay: 0s, 0.08s, 0s, 0s; transform: translate(-68px, -32px) scale(1); }
-#floralMenu.open .petal:nth-child(4) { transition-delay: 0s, 0.13s, 0s, 0s; transform: translate(-68px, 32px) scale(1); }
-#floralMenu.open .petal:nth-child(5) { transition-delay: 0s, 0.18s, 0s, 0s; transform: translate(-14px, 74px) scale(1); }
+@keyframes petalBloom2 { from { opacity: 0; transform: translate(0, 0) scale(0.3); } to { opacity: 1; transform: translate(-14px, -73px) scale(1); } }
+@keyframes petalBloom3 { from { opacity: 0; transform: translate(0, 0) scale(0.3); } to { opacity: 1; transform: translate(-68px, -32px) scale(1); } }
+@keyframes petalBloom4 { from { opacity: 0; transform: translate(0, 0) scale(0.3); } to { opacity: 1; transform: translate(-68px, 32px) scale(1); } }
+@keyframes petalBloom5 { from { opacity: 0; transform: translate(0, 0) scale(0.3); } to { opacity: 1; transform: translate(-14px, 74px) scale(1); } }
+
+#floralMenu.open .petal:nth-child(2) { transform: translate(-14px, -73px) scale(1); animation: petalBloom2 0.35s ease 0.03s both; }
+#floralMenu.open .petal:nth-child(3) { transform: translate(-68px, -32px) scale(1); animation: petalBloom3 0.35s ease 0.08s both; }
+#floralMenu.open .petal:nth-child(4) { transform: translate(-68px, 32px) scale(1); animation: petalBloom4 0.35s ease 0.13s both; }
+#floralMenu.open .petal:nth-child(5) { transform: translate(-14px, 74px) scale(1); animation: petalBloom5 0.35s ease 0.18s both; }
 
 #floralMenu.open .petal:nth-child(2):hover { transform: translate(-14px, -76px) scale(1.1); }
 #floralMenu.open .petal:nth-child(3):hover { transform: translate(-68px, -35px) scale(1.1); }
