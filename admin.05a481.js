@@ -2136,8 +2136,19 @@ function addImageBlockRow(value) {
 }
 
 // ---------- Drag-and-drop reordering for content blocks ----------
+// Dragging is desktop-only; on mobile the ▲▼ buttons handle reordering instead.
+function isDesktopViewport() {
+  return window.matchMedia("(min-width: 768px)").matches;
+}
+function updateBlockDraggability() {
+  document.querySelectorAll(".blog-block-row, .blog-button-row").forEach((row) => {
+    row.draggable = isDesktopViewport();
+  });
+}
+window.addEventListener("resize", updateBlockDraggability);
+
 function makeBlockRowDraggable(row) {
-  row.draggable = true;
+  row.draggable = isDesktopViewport();
   row.addEventListener("dragstart", () => {
     setTimeout(() => row.classList.add("dragging"), 0);
   });
@@ -2246,7 +2257,7 @@ function addButtonRow(text, url) {
   row.appendChild(downBtn);
   row.appendChild(removeBtn);
 
-  row.draggable = true;
+  row.draggable = isDesktopViewport();
   row.addEventListener("dragstart", () => setTimeout(() => row.classList.add("dragging"), 0));
   row.addEventListener("dragend", () => row.classList.remove("dragging"));
 
