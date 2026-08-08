@@ -147,7 +147,7 @@
         padding: 0;
         margin: 8px 0 0;
       }
-      #noticeList li, #videoAdminList li, #syllabusRowList li, #studentList li, #attendanceStudentList li, #attendanceRangeList li, #blogPostList li, #resultStudentList li {
+      #noticeList li, #videoAdminList li, #syllabusRowList li, #studentList li, #attendanceStudentList li, #attendanceRangeList li, #blogPostList li, #resultStudentList li, #galleryRowsContainer li {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -158,16 +158,16 @@
         margin-bottom: 6px;
         font-size: 12.5px;
       }
-      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"], #studentList li input[type="checkbox"], #attendanceStudentList li input[type="checkbox"], #attendanceRangeList li input[type="checkbox"], #blogPostList li input[type="checkbox"], #resultStudentList li input[type="checkbox"] {
+      #noticeList li input[type="checkbox"], #videoAdminList li input[type="checkbox"], #syllabusRowList li input[type="checkbox"], #studentList li input[type="checkbox"], #attendanceStudentList li input[type="checkbox"], #attendanceRangeList li input[type="checkbox"], #blogPostList li input[type="checkbox"], #resultStudentList li input[type="checkbox"], #galleryRowsContainer li input[type="checkbox"] {
         width: auto;
         flex: none;
         display: none;
         accent-color: #990000;
       }
-      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"], #studentList.bulk-mode li input[type="checkbox"], #attendanceRangeList.bulk-mode li input[type="checkbox"], #blogPostList.bulk-mode li input[type="checkbox"], #resultStudentList.bulk-mode li input[type="checkbox"] {
+      #noticeList.bulk-mode li input[type="checkbox"], #videoAdminList.bulk-mode li input[type="checkbox"], #studentList.bulk-mode li input[type="checkbox"], #attendanceRangeList.bulk-mode li input[type="checkbox"], #blogPostList.bulk-mode li input[type="checkbox"], #resultStudentList.bulk-mode li input[type="checkbox"], #galleryRowsContainer.bulk-mode li input[type="checkbox"] {
         display: inline-block;
       }
-      #noticeList.bulk-mode li, #videoAdminList.bulk-mode li, #studentList.bulk-mode li, #attendanceRangeList.bulk-mode li, #blogPostList.bulk-mode li, #resultStudentList.bulk-mode li {
+      #noticeList.bulk-mode li, #videoAdminList.bulk-mode li, #studentList.bulk-mode li, #attendanceRangeList.bulk-mode li, #blogPostList.bulk-mode li, #resultStudentList.bulk-mode li, #galleryRowsContainer.bulk-mode li {
         cursor: pointer;
       }
       #noticeList li span, #videoAdminList li span, #syllabusRowList li span, #studentList li span, #attendanceStudentList li span, #attendanceRangeList li span, #blogPostList li span, #resultStudentList li span {
@@ -176,7 +176,12 @@
         word-break: break-word;
         overflow-wrap: break-word;
       }
-      #noticeList button, #videoAdminList button, #syllabusRowList button, #studentList button, #attendanceStudentList button, #attendanceRangeList button, #blogPostList button, #resultStudentList button {
+      #galleryRowsContainer li input[type="text"] {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+      }
+      #noticeList button, #videoAdminList button, #syllabusRowList button, #studentList button, #attendanceStudentList button, #attendanceRangeList button, #blogPostList button, #resultStudentList button, #galleryRowsContainer button {
         width: auto;
         margin: 0;
         padding: 5px 11px;
@@ -185,7 +190,7 @@
         box-shadow: none;
       }
       #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn, #studentList .edit-btn, #blogPostList .edit-btn, #resultStudentList .edit-btn { background: #1f6fd0; }
-      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn, #studentList .delete-btn, #attendanceRangeList .delete-btn, #blogPostList .delete-btn, #resultStudentList .delete-btn { background: #c0392b; }
+      #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn, #studentList .delete-btn, #attendanceRangeList .delete-btn, #blogPostList .delete-btn, #resultStudentList .delete-btn, #galleryRowsContainer .delete-btn { background: #c0392b; }
       .row-drag-handle {
   display: inline-block;
   width: 11px;
@@ -203,7 +208,7 @@
   background-size: 3px 3px;
   background-position: 0 0, 8px 0, 0 8px, 8px 8px, 0 16px, 8px 16px;
 }
-      #noticeList li.row-dragging, #videoAdminList li.row-dragging, #syllabusRowList li.row-dragging {
+      #noticeList li.row-dragging, #videoAdminList li.row-dragging, #syllabusRowList li.row-dragging, #galleryRowsContainer li.row-dragging {
         opacity: 0.4;
       }
       .row-actions {
@@ -291,16 +296,6 @@
         transform: translateY(0);
         box-shadow: 0 2px 6px rgba(122, 0, 0, 0.28);
       }
-      .gallery-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 8px;
-        cursor: grab;
-      }
-      .gallery-row.dragging { opacity: 0.4; }
-      .gallery-row label { margin: 0; flex: 0 0 70px; font-size: 12px; }
-      .gallery-row input { flex: 1; margin: 0; }
       .blog-remove-btn {
         width: auto;
         margin: 0;
@@ -535,18 +530,17 @@
       </div>
 
       <div class="section-block">
-        <p class="eyebrow">Gallery Images (8 photos)</p>
-        <div id="galleryRowsContainer" class="scroll-box">
-          <div class="gallery-row" data-input-id="galleryInput1"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput1">Photo 1 URL</label><input type="text" id="galleryInput1" placeholder="https://... or /images/..."></div>
-          <div class="gallery-row" data-input-id="galleryInput2"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput2">Photo 2 URL</label><input type="text" id="galleryInput2" placeholder="https://... or /images/..."></div>
-          <div class="gallery-row" data-input-id="galleryInput3"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput3">Photo 3 URL</label><input type="text" id="galleryInput3" placeholder="https://... or /images/..."></div>
-          <div class="gallery-row" data-input-id="galleryInput4"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput4">Photo 4 URL</label><input type="text" id="galleryInput4" placeholder="https://... or /images/..."></div>
-          <div class="gallery-row" data-input-id="galleryInput5"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput5">Photo 5 URL</label><input type="text" id="galleryInput5" placeholder="https://... or /images/..."></div>
-          <div class="gallery-row" data-input-id="galleryInput6"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput6">Photo 6 URL</label><input type="text" id="galleryInput6" placeholder="https://... or /images/..."></div>
-          <div class="gallery-row" data-input-id="galleryInput7"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput7">Photo 7 URL</label><input type="text" id="galleryInput7" placeholder="https://... or /images/..."></div>
-          <div class="gallery-row" data-input-id="galleryInput8"><span class="blog-block-drag-handle">⠿</span><label for="galleryInput8">Photo 8 URL</label><input type="text" id="galleryInput8" placeholder="https://... or /images/..."></div>
-        </div>
-        <p class="hint" style="margin-top:0;">Drag ⠿ to reorder photos — order here is the order shown on the site.</p>
+        <p class="eyebrow">Gallery Images</p>
+        <p class="hint" style="margin-top:0;">Public site slideshow shows the first 8 photos, in this order.</p>
+        <label for="galleryImageInput">Add a Photo</label>
+        <input type="text" id="galleryImageInput" placeholder="https://... or /images/...">
+        <button id="galleryAddBtn" type="button">Add Photo</button>
+        <p id="galleryAddStatus" class="msg"></p>
+        <button id="gallerySelectModeBtn" type="button" class="small-btn">Select</button>
+        <button id="gallerySelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+        <span id="gallerySelectedCount" class="selected-count"></span>
+        <ul id="galleryRowsContainer" class="scroll-box"></ul>
+        <button id="galleryDeleteSelectedBtn" type="button" style="display:none; background:#c0392b;">Delete Selected</button>
         <button id="gallerySaveBtn" type="button">Save Gallery</button>
         <p id="galleryStatus" class="msg"></p>
       </div>
