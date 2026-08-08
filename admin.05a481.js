@@ -82,6 +82,7 @@ const noticeList = document.getElementById("noticeList");
 const noticeDeleteSelectedBtn = document.getElementById("noticeDeleteSelectedBtn");
 const noticeSelectModeBtn = document.getElementById("noticeSelectModeBtn");
 const noticeSelectAllBtn = document.getElementById("noticeSelectAllBtn");
+const noticeSelectedCount = document.getElementById("noticeSelectedCount");
 
 noticeInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
@@ -124,6 +125,7 @@ const videoAdminList = document.getElementById("videoAdminList");
 const videoSelectModeBtn = document.getElementById("videoSelectModeBtn");
 const videoSelectAllBtn = document.getElementById("videoSelectAllBtn");
 const videoDeleteSelectedBtn = document.getElementById("videoDeleteSelectedBtn");
+const videoSelectedCount = document.getElementById("videoSelectedCount");
 
 const syllabusSessionSelect = document.getElementById("syllabusSessionSelect");
 const syllabusNewSessionBtn = document.getElementById("syllabusNewSessionBtn");
@@ -140,6 +142,7 @@ const studentList = document.getElementById("studentList");
 const studentSelectModeBtn = document.getElementById("studentSelectModeBtn");
 const studentSelectAllBtn = document.getElementById("studentSelectAllBtn");
 const studentDeleteSelectedBtn = document.getElementById("studentDeleteSelectedBtn");
+const studentSelectedCount = document.getElementById("studentSelectedCount");
 
 const attendanceDateInput = document.getElementById("attendanceDateInput");
 const attendanceHolidayView = document.getElementById("attendanceHolidayView");
@@ -158,6 +161,7 @@ const attendanceSelectModeBtn = document.getElementById("attendanceSelectModeBtn
 const attendanceSelectAllBtn = document.getElementById("attendanceSelectAllBtn");
 const attendanceRangeList = document.getElementById("attendanceRangeList");
 const attendanceDeleteSelectedBtn = document.getElementById("attendanceDeleteSelectedBtn");
+const attendanceSelectedCount = document.getElementById("attendanceSelectedCount");
 const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn");
 
 const blogTitleInput = document.getElementById("blogTitleInput");
@@ -173,6 +177,7 @@ const blogPostList = document.getElementById("blogPostList");
 const blogSelectModeBtn = document.getElementById("blogSelectModeBtn");
 const blogSelectAllBtn = document.getElementById("blogSelectAllBtn");
 const blogDeleteSelectedBtn = document.getElementById("blogDeleteSelectedBtn");
+const blogSelectedCount = document.getElementById("blogSelectedCount");
 
 const hubResultsBtn = document.getElementById("hubResultsBtn");
 const adminResultsView = document.getElementById("adminResultsView");
@@ -200,6 +205,7 @@ const resultSelectModeBtn = document.getElementById("resultSelectModeBtn");
 const resultSelectAllBtn = document.getElementById("resultSelectAllBtn");
 const resultStudentList = document.getElementById("resultStudentList");
 const resultDeleteSelectedBtn = document.getElementById("resultDeleteSelectedBtn");
+const resultSelectedCount = document.getElementById("resultSelectedCount");
 
 // ---------- Auth state ----------
 onAuthStateChanged(auth, async (user) => {
@@ -632,8 +638,9 @@ function setupSelectAll(listEl, selectAllBtn, selectModeBtn) {
 }
 
 function updateDeleteSelectedVisibility() {
-  const anyChecked = noticeList.querySelector('input[type="checkbox"]:checked');
-  noticeDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+  const checked = noticeList.querySelectorAll('input[type="checkbox"]:checked');
+  noticeDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
+  noticeSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
 }
 
 noticeSelectModeBtn.addEventListener("click", () => {
@@ -642,7 +649,7 @@ noticeSelectModeBtn.addEventListener("click", () => {
   noticeSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
   if (!enabling) {
     noticeList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    noticeDeleteSelectedBtn.style.display = "none";
+    updateDeleteSelectedVisibility();
   }
 });
 setupSelectAll(noticeList, noticeSelectAllBtn, noticeSelectModeBtn);
@@ -850,8 +857,9 @@ gallerySaveBtn.addEventListener("click", async () => {
 const VIDEOS_COL = collection(db, "videos");
 
 function updateVideoDeleteSelectedVisibility() {
-  const anyChecked = videoAdminList.querySelector('input[type="checkbox"]:checked');
-  videoDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+  const checked = videoAdminList.querySelectorAll('input[type="checkbox"]:checked');
+  videoDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
+  videoSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
 }
 
 videoSelectModeBtn.addEventListener("click", () => {
@@ -860,7 +868,7 @@ videoSelectModeBtn.addEventListener("click", () => {
   videoSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
   if (!enabling) {
     videoAdminList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    videoDeleteSelectedBtn.style.display = "none";
+    updateVideoDeleteSelectedVisibility();
   }
 });
 setupSelectAll(videoAdminList, videoSelectAllBtn, videoSelectModeBtn);
@@ -1384,8 +1392,9 @@ syllabusDeleteSessionBtn.addEventListener("click", async () => {
 const STUDENTS_COL = collection(db, "students");
 
 function updateStudentDeleteSelectedVisibility() {
-  const anyChecked = studentList.querySelector('input[type="checkbox"]:checked');
-  studentDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+  const checked = studentList.querySelectorAll('input[type="checkbox"]:checked');
+  studentDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
+  studentSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
 }
 
 studentSelectModeBtn.addEventListener("click", () => {
@@ -1394,7 +1403,7 @@ studentSelectModeBtn.addEventListener("click", () => {
   studentSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
   if (!enabling) {
     studentList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    studentDeleteSelectedBtn.style.display = "none";
+    updateStudentDeleteSelectedVisibility();
   }
 });
 setupSelectAll(studentList, studentSelectAllBtn, studentSelectModeBtn);
@@ -1749,8 +1758,9 @@ attendanceRemoveHolidayBtn.addEventListener("click", async () => {
 
 // ---------- Clear Attendance Records (date range, bulk delete) ----------
 function updateAttendanceDeleteSelectedVisibility() {
-  const anyChecked = attendanceRangeList.querySelector('input[type="checkbox"]:checked');
-  attendanceDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+  const checked = attendanceRangeList.querySelectorAll('input[type="checkbox"]:checked');
+  attendanceDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
+  attendanceSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
 }
 
 attendanceSelectModeBtn.addEventListener("click", () => {
@@ -1759,7 +1769,7 @@ attendanceSelectModeBtn.addEventListener("click", () => {
   attendanceSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
   if (!enabling) {
     attendanceRangeList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    attendanceDeleteSelectedBtn.style.display = "none";
+    updateAttendanceDeleteSelectedVisibility();
   }
 });
 setupSelectAll(attendanceRangeList, attendanceSelectAllBtn, attendanceSelectModeBtn);
@@ -1971,75 +1981,72 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
       });
     }
 
-    let pageInitialized = false;
-    let cursorY = margin;
-    const tableGap = 20; // gap between stacked tables on the same page
+    let isFirstPageOfDoc = true;
 
-    function newPage() {
-      if (pageInitialized) pdf.addPage();
-      pageInitialized = true;
-      drawPageFrame();
-      cursorY = margin;
-    }
-
-    // First page + title block
-    newPage();
-    {
-      const titleTop = margin + 10;
-      pdf.setFont("times", "bold");
-      pdf.setFontSize(16);
-      pdf.text("Babita Classes", pageWidth / 2, titleTop, { align: "center" });
-
-      pdf.setFont("times", "normal");
-      pdf.setFontSize(11);
-      const rangeLabel =
-        "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
-      pdf.text(rangeLabel, pageWidth / 2, titleTop + 18, { align: "center" });
-
-      const now = new Date();
-      const extractedLine =
-        "Extracted from https://babitaclasses.vercel.app/admin on " +
-        pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
-        " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
-      pdf.setFontSize(9);
-      pdf.text(extractedLine, pageWidth / 2, titleTop + 34, { align: "center" });
-
-      cursorY = titleTop + 34 + 26;
-    }
-
-    dateGroups.forEach((groupDates) => {
+    dateGroups.forEach((groupDates, groupIndex) => {
       const dateColW = Math.max(minDateColW, (tableWidth - rollColW - nameColW) / groupDates.length);
 
-      // Not enough room for a header + at least one row? start a new page for this group's table
-      if (cursorY + rowH * 2 > pageHeight - pageMargin - 10) {
-        newPage();
+      // ---- Pass 1: figure out how students split across pages for this date group ----
+      const firstPageTop = margin + 64;
+      const chunks = [];
+      let chunkStart = 0;
+      let y = (groupIndex === 0 ? firstPageTop : margin) + rowH;
+      for (let i = 0; i < students.length; i++) {
+        if (y + rowH > pageHeight - pageMargin - 10) {
+          chunks.push({
+            start: chunkStart,
+            end: i,
+            tableTop: groupIndex === 0 && chunks.length === 0 ? firstPageTop : margin,
+          });
+          chunkStart = i;
+          y = margin + rowH;
+        }
+        y += rowH;
       }
+      chunks.push({
+        start: chunkStart,
+        end: students.length,
+        tableTop: groupIndex === 0 && chunks.length === 0 ? firstPageTop : margin,
+      });
 
-      let idx = 0;
-      while (idx < students.length) {
-        // how many student rows fit below the header starting at cursorY
-        let y = cursorY + rowH;
-        let rowsThatFit = 0;
-        while (idx + rowsThatFit < students.length && y + rowH <= pageHeight - pageMargin - 10) {
-          y += rowH;
-          rowsThatFit++;
-        }
-        if (rowsThatFit === 0) {
-          newPage();
-          continue;
+      // ---- Pass 2: draw ----
+      chunks.forEach((chunk, chunkIndex) => {
+        if (!isFirstPageOfDoc) pdf.addPage();
+        isFirstPageOfDoc = false;
+        drawPageFrame();
+
+        if (groupIndex === 0 && chunkIndex === 0) {
+          const titleTop = margin + 10;
+          pdf.setFont("times", "bold");
+          pdf.setFontSize(16);
+          pdf.text("Babita Classes", pageWidth / 2, titleTop, { align: "center" });
+
+          pdf.setFont("times", "normal");
+          pdf.setFontSize(11);
+          const rangeLabel =
+            "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
+          pdf.text(rangeLabel, pageWidth / 2, titleTop + 18, { align: "center" });
+
+          const now = new Date();
+          const extractedLine =
+            "Extracted from https://babitaclasses.vercel.app/admin on " +
+            pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
+            " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
+          pdf.setFontSize(9);
+          pdf.text(extractedLine, pageWidth / 2, titleTop + 34, { align: "center" });
         }
 
-        const tableTop = cursorY;
+        const tableTop = chunk.tableTop;
         drawHeaderRow(tableTop, groupDates, dateColW);
         const bodyTop = tableTop + rowH;
-        const chunkEnd = idx + rowsThatFit;
-        const bodyBottom = bodyTop + rowsThatFit * rowH;
+        const bodyBottom = bodyTop + (chunk.end - chunk.start) * rowH;
 
+        // Roll No. + Name + non-holiday cells, per row
         pdf.setFont("times", "normal");
         pdf.setFontSize(9);
-        for (let i = idx; i < chunkEnd; i++) {
+        for (let i = chunk.start; i < chunk.end; i++) {
           const student = students[i];
-          const rowY = bodyTop + (i - idx) * rowH;
+          const rowY = bodyTop + (i - chunk.start) * rowH;
           let x = margin;
           pdf.rect(x, rowY, rollColW, rowH);
           pdf.text(student.rollNumber || "-", x + rollColW / 2, rowY + rowH / 2 + 3, { align: "center" });
@@ -2064,6 +2071,9 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           });
         }
 
+        // Merged holiday columns — one tall cell per holiday date, spanning this page's rows,
+        // with the holiday name rotated to read top-to-bottom. Long names wrap onto extra
+        // lines (stacked side-by-side within the column) instead of overflowing the cell.
         let hx = margin + rollColW + nameColW;
         groupDates.forEach(({ data }) => {
           if (data.holiday) {
@@ -2087,16 +2097,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           }
           hx += dateColW;
         });
-
-        idx = chunkEnd;
-        cursorY = bodyBottom;
-
-        if (idx < students.length) {
-          newPage();
-        }
-      }
-
-      cursorY += tableGap;
+      });
     });
 
     const today = new Date();
@@ -2121,8 +2122,9 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
 const BLOG_POSTS_COL = collection(db, "blogPosts");
 
 function updateBlogDeleteSelectedVisibility() {
-  const anyChecked = blogPostList.querySelector('input[type="checkbox"]:checked');
-  blogDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+  const checked = blogPostList.querySelectorAll('input[type="checkbox"]:checked');
+  blogDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
+  blogSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
 }
 
 blogSelectModeBtn.addEventListener("click", () => {
@@ -2131,7 +2133,7 @@ blogSelectModeBtn.addEventListener("click", () => {
   blogSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
   if (!enabling) {
     blogPostList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    blogDeleteSelectedBtn.style.display = "none";
+    updateBlogDeleteSelectedVisibility();
   }
 });
 setupSelectAll(blogPostList, blogSelectAllBtn, blogSelectModeBtn);
@@ -2683,6 +2685,7 @@ function previewResultId(term, student) {
 function renderResultStudents() {
   resultStudentList.innerHTML = "";
   resultDeleteSelectedBtn.style.display = "none";
+  resultSelectedCount.textContent = "";
   const term = getSelectedResultTerm();
   if (!term) return;
 
@@ -2693,8 +2696,9 @@ function renderResultStudents() {
     checkbox.type = "checkbox";
     checkbox.dataset.index = index;
     checkbox.addEventListener("change", () => {
-      const anyChecked = resultStudentList.querySelector('input[type="checkbox"]:checked');
-      resultDeleteSelectedBtn.style.display = anyChecked ? "block" : "none";
+      const checked = resultStudentList.querySelectorAll('input[type="checkbox"]:checked');
+      resultDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
+      resultSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
     });
     li.appendChild(checkbox);
 
@@ -2786,6 +2790,7 @@ resultSelectModeBtn.addEventListener("click", () => {
   if (!enabling) {
     resultStudentList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
     resultDeleteSelectedBtn.style.display = "none";
+    resultSelectedCount.textContent = "";
   }
 });
 setupSelectAll(resultStudentList, resultSelectAllBtn, resultSelectModeBtn);
