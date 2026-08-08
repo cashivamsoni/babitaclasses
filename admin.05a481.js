@@ -1971,72 +1971,75 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
       });
     }
 
-    let isFirstPageOfDoc = true;
+    let pageInitialized = false;
+    let cursorY = margin;
+    const tableGap = 20; // gap between stacked tables on the same page
 
-    dateGroups.forEach((groupDates, groupIndex) => {
+    function newPage() {
+      if (pageInitialized) pdf.addPage();
+      pageInitialized = true;
+      drawPageFrame();
+      cursorY = margin;
+    }
+
+    // First page + title block
+    newPage();
+    {
+      const titleTop = margin + 10;
+      pdf.setFont("times", "bold");
+      pdf.setFontSize(16);
+      pdf.text("Babita Classes", pageWidth / 2, titleTop, { align: "center" });
+
+      pdf.setFont("times", "normal");
+      pdf.setFontSize(11);
+      const rangeLabel =
+        "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
+      pdf.text(rangeLabel, pageWidth / 2, titleTop + 18, { align: "center" });
+
+      const now = new Date();
+      const extractedLine =
+        "Extracted from https://babitaclasses.vercel.app/admin on " +
+        pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
+        " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
+      pdf.setFontSize(9);
+      pdf.text(extractedLine, pageWidth / 2, titleTop + 34, { align: "center" });
+
+      cursorY = titleTop + 34 + 26;
+    }
+
+    dateGroups.forEach((groupDates) => {
       const dateColW = Math.max(minDateColW, (tableWidth - rollColW - nameColW) / groupDates.length);
 
-      // ---- Pass 1: figure out how students split across pages for this date group ----
-      const firstPageTop = margin + 64;
-      const chunks = [];
-      let chunkStart = 0;
-      let y = (groupIndex === 0 ? firstPageTop : margin) + rowH;
-      for (let i = 0; i < students.length; i++) {
-        if (y + rowH > pageHeight - pageMargin - 10) {
-          chunks.push({
-            start: chunkStart,
-            end: i,
-            tableTop: groupIndex === 0 && chunks.length === 0 ? firstPageTop : margin,
-          });
-          chunkStart = i;
-          y = margin + rowH;
-        }
-        y += rowH;
+      // Not enough room for a header + at least one row? start a new page for this group's table
+      if (cursorY + rowH * 2 > pageHeight - pageMargin - 10) {
+        newPage();
       }
-      chunks.push({
-        start: chunkStart,
-        end: students.length,
-        tableTop: groupIndex === 0 && chunks.length === 0 ? firstPageTop : margin,
-      });
 
-      // ---- Pass 2: draw ----
-      chunks.forEach((chunk, chunkIndex) => {
-        if (!isFirstPageOfDoc) pdf.addPage();
-        isFirstPageOfDoc = false;
-        drawPageFrame();
-
-        if (groupIndex === 0 && chunkIndex === 0) {
-          const titleTop = margin + 10;
-          pdf.setFont("times", "bold");
-          pdf.setFontSize(16);
-          pdf.text("Babita Classes", pageWidth / 2, titleTop, { align: "center" });
-
-          pdf.setFont("times", "normal");
-          pdf.setFontSize(11);
-          const rangeLabel =
-            "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
-          pdf.text(rangeLabel, pageWidth / 2, titleTop + 18, { align: "center" });
-
-          const now = new Date();
-          const extractedLine =
-            "Extracted from https://babitaclasses.vercel.app/admin on " +
-            pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
-            " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
-          pdf.setFontSize(9);
-          pdf.text(extractedLine, pageWidth / 2, titleTop + 34, { align: "center" });
+      let idx = 0;
+      while (idx < students.length) {
+        // how many student rows fit below the header starting at cursorY
+        let y = cursorY + rowH;
+        let rowsThatFit = 0;
+        while (idx + rowsThatFit < students.length && y + rowH <= pageHeight - pageMargin - 10) {
+          y += rowH;
+          rowsThatFit++;
+        }
+        if (rowsThatFit === 0) {
+          newPage();
+          continue;
         }
 
-        const tableTop = chunk.tableTop;
+        const tableTop = cursorY;
         drawHeaderRow(tableTop, groupDates, dateColW);
         const bodyTop = tableTop + rowH;
-        const bodyBottom = bodyTop + (chunk.end - chunk.start) * rowH;
+        const chunkEnd = idx + rowsThatFit;
+        const bodyBottom = bodyTop + rowsThatFit * rowH;
 
-        // Roll No. + Name + non-holiday cells, per row
         pdf.setFont("times", "normal");
         pdf.setFontSize(9);
-        for (let i = chunk.start; i < chunk.end; i++) {
+        for (let i = idx; i < chunkEnd; i++) {
           const student = students[i];
-          const rowY = bodyTop + (i - chunk.start) * rowH;
+          const rowY = bodyTop + (i - idx) * rowH;
           let x = margin;
           pdf.rect(x, rowY, rollColW, rowH);
           pdf.text(student.rollNumber || "-", x + rollColW / 2, rowY + rowH / 2 + 3, { align: "center" });
@@ -2061,9 +2064,6 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           });
         }
 
-        // Merged holiday columns — one tall cell per holiday date, spanning this page's rows,
-        // with the holiday name rotated to read top-to-bottom. Long names wrap onto extra
-        // lines (stacked side-by-side within the column) instead of overflowing the cell.
         let hx = margin + rollColW + nameColW;
         groupDates.forEach(({ data }) => {
           if (data.holiday) {
@@ -2087,7 +2087,16 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           }
           hx += dateColW;
         });
-      });
+
+        idx = chunkEnd;
+        cursorY = bodyBottom;
+
+        if (idx < students.length) {
+          newPage();
+        }
+      }
+
+      cursorY += tableGap;
     });
 
     const today = new Date();
