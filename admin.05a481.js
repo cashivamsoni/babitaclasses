@@ -476,10 +476,16 @@ function createRowMoveButtons(getIndex, onMove) {
 
 function makeRowDraggable(li, listEl, rowSelector, onDrop) {
   li.draggable = isDesktopViewport();
-  li.addEventListener("dragstart", () => setTimeout(() => li.classList.add("row-dragging"), 0));
+  li.addEventListener("dragstart", () => {
+    li.dataset.justDragged = "1";
+    setTimeout(() => li.classList.add("row-dragging"), 0);
+  });
   li.addEventListener("dragend", () => {
     li.classList.remove("row-dragging");
     onDrop();
+    setTimeout(() => {
+      delete li.dataset.justDragged;
+    }, 0);
   });
   if (!listEl.dataset.rowDragBound) {
     listEl.dataset.rowDragBound = "1";
@@ -501,6 +507,20 @@ function makeRowDraggable(li, listEl, rowSelector, onDrop) {
       else listEl.insertBefore(dragging, after);
     });
   }
+}
+
+// Lets a bulk-select list row be toggled by tapping anywhere on it, not just the
+// checkbox — while leaving buttons, the drag handle, move buttons, and an
+// in-progress drag/reorder untouched.
+function makeRowTapSelectable(li, checkbox, listEl) {
+  li.addEventListener("click", (e) => {
+    if (li.dataset.justDragged === "1") return;
+    if (e.target === checkbox) return;
+    if (e.target.closest("button, a, .row-drag-handle, .row-move-btns")) return;
+    if (!listEl.classList.contains("bulk-mode")) return;
+    checkbox.checked = !checkbox.checked;
+    checkbox.dispatchEvent(new Event("change"));
+  });
 }
 
 // ---------- Notices (add / edit / delete) ----------
@@ -539,6 +559,7 @@ async function renderNotices() {
       checkbox._noticeData = data;
       checkbox.addEventListener("change", updateDeleteSelectedVisibility);
       li.appendChild(checkbox);
+      makeRowTapSelectable(li, checkbox, noticeList);
 
       const span = document.createElement("span");
       span.textContent = data.text || "";
@@ -907,6 +928,7 @@ async function renderVideos() {
       checkbox._videoData = data;
       checkbox.addEventListener("change", updateVideoDeleteSelectedVisibility);
       li.appendChild(checkbox);
+      makeRowTapSelectable(li, checkbox, videoAdminList);
 
       const span = document.createElement("span");
       span.textContent = data.title || "";
@@ -1425,6 +1447,7 @@ async function renderStudents() {
       checkbox._studentData = data;
       checkbox.addEventListener("change", updateStudentDeleteSelectedVisibility);
       li.appendChild(checkbox);
+      makeRowTapSelectable(li, checkbox, studentList);
 
       const span = document.createElement("span");
       span.textContent = data.name + (data.rollNumber ? " (Roll " + data.rollNumber + ")" : "");
@@ -1815,6 +1838,7 @@ async function renderAttendanceRange(fromDate, toDate) {
       checkbox._attendanceData = data;
       checkbox.addEventListener("change", updateAttendanceDeleteSelectedVisibility);
       li.appendChild(checkbox);
+      makeRowTapSelectable(li, checkbox, attendanceRangeList);
 
       const span = document.createElement("span");
       span.textContent = id + " — " + summarizeAttendanceDoc(data);
@@ -2454,6 +2478,7 @@ async function renderBlogPosts() {
       checkbox._blogData = data;
       checkbox.addEventListener("change", updateBlogDeleteSelectedVisibility);
       li.appendChild(checkbox);
+      makeRowTapSelectable(li, checkbox, blogPostList);
 
       const span = document.createElement("span");
       span.textContent = (data.title || "") + (data.date ? " — " + data.date : "");
@@ -2701,6 +2726,7 @@ function renderResultStudents() {
       resultSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
     });
     li.appendChild(checkbox);
+    makeRowTapSelectable(li, checkbox, resultStudentList);
 
     const span = document.createElement("span");
     span.textContent =
