@@ -444,7 +444,6 @@ function showUndoToast(message, undoFn) {
 function createRowDragHandle() {
   const handle = document.createElement("span");
   handle.className = "row-drag-handle";
-  handle.textContent = "⠿";
   return handle;
 }
 
@@ -539,7 +538,11 @@ async function renderNotices() {
       span.textContent = data.text || "";
       li.appendChild(span);
 
-      li.appendChild(
+      const actions = document.createElement("div");
+      actions.className = "row-actions";
+      li.appendChild(actions);
+
+      actions.appendChild(
         createRowMoveButtons(
           () => [...noticeList.children].indexOf(li),
           async (index, direction) => {
@@ -575,7 +578,7 @@ async function renderNotices() {
           console.error(err);
         }
       });
-      li.appendChild(editBtn);
+      actions.appendChild(editBtn);
 
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
@@ -596,7 +599,7 @@ async function renderNotices() {
           console.error(err);
         }
       });
-      li.appendChild(deleteBtn);
+      actions.appendChild(deleteBtn);
 
       makeRowDraggable(li, noticeList, "li", persistNoticeOrder);
       noticeList.appendChild(li);
@@ -901,7 +904,11 @@ async function renderVideos() {
       span.textContent = data.title || "";
       li.appendChild(span);
 
-      li.appendChild(
+      const actions = document.createElement("div");
+      actions.className = "row-actions";
+      li.appendChild(actions);
+
+      actions.appendChild(
         createRowMoveButtons(
           () => [...videoAdminList.children].indexOf(li),
           async (index, direction) => {
@@ -941,7 +948,7 @@ async function renderVideos() {
           console.error(err);
         }
       });
-      li.appendChild(editBtn);
+      actions.appendChild(editBtn);
 
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
@@ -962,7 +969,7 @@ async function renderVideos() {
           console.error(err);
         }
       });
-      li.appendChild(deleteBtn);
+      actions.appendChild(deleteBtn);
 
       makeRowDraggable(li, videoAdminList, "li", persistVideoOrder);
       videoAdminList.appendChild(li);
@@ -1100,7 +1107,11 @@ function renderSyllabusRows() {
       row.exam + " — " + [row.syllabus, row.datesheet, row.result].filter(Boolean).join(" | ");
     li.appendChild(span);
 
-    li.appendChild(
+    const actions = document.createElement("div");
+    actions.className = "row-actions";
+    li.appendChild(actions);
+
+    actions.appendChild(
       createRowMoveButtons(
         () => [...syllabusRowList.children].indexOf(li),
         (i, direction) => moveSyllabusRow(i, direction)
@@ -1112,14 +1123,14 @@ function renderSyllabusRows() {
     editBtn.className = "edit-btn";
     editBtn.textContent = "Edit";
     editBtn.addEventListener("click", () => editSyllabusRow(index));
-    li.appendChild(editBtn);
+    actions.appendChild(editBtn);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "delete-btn";
     deleteBtn.textContent = "Delete";
     deleteBtn.addEventListener("click", () => deleteSyllabusRow(index));
-    li.appendChild(deleteBtn);
+    actions.appendChild(deleteBtn);
 
     makeRowDraggable(li, syllabusRowList, "li", persistSyllabusRowOrder);
     syllabusRowList.appendChild(li);
