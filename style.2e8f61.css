@@ -788,7 +788,8 @@ tr {
   text-decoration: none;
   opacity: 0;
   transform: translate(0, 0) scale(0.3);
-  transition: transform 0.35s ease, opacity 0.3s ease, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition: transform 0.15s ease-out, opacity 0.3s ease, box-shadow 0.3s ease, background 0.15s ease-out;
+  transition-delay: 0s, 0s, 0s, 0s;
   pointer-events: none;
   z-index: 1;
 }
@@ -803,15 +804,15 @@ tr {
   pointer-events: auto;
 }
 
-#floralMenu.open .petal:nth-child(2) { transition-delay: 0.03s; transform: translate(-14px, -73px) scale(1); }
-#floralMenu.open .petal:nth-child(3) { transition-delay: 0.08s; transform: translate(-68px, -32px) scale(1); }
-#floralMenu.open .petal:nth-child(4) { transition-delay: 0.13s; transform: translate(-68px, 32px) scale(1); }
-#floralMenu.open .petal:nth-child(5) { transition-delay: 0.18s; transform: translate(-14px, 74px) scale(1); }
+#floralMenu.open .petal:nth-child(2) { transition-delay: 0s, 0.03s, 0s, 0s; transform: translate(-14px, -73px) scale(1); }
+#floralMenu.open .petal:nth-child(3) { transition-delay: 0s, 0.08s, 0s, 0s; transform: translate(-68px, -32px) scale(1); }
+#floralMenu.open .petal:nth-child(4) { transition-delay: 0s, 0.13s, 0s, 0s; transform: translate(-68px, 32px) scale(1); }
+#floralMenu.open .petal:nth-child(5) { transition-delay: 0s, 0.18s, 0s, 0s; transform: translate(-14px, 74px) scale(1); }
 
-#floralMenu.open .petal:nth-child(2):hover { transition: transform 0.15s ease-out; transform: translate(-14px, -76px) scale(1.1); }
-#floralMenu.open .petal:nth-child(3):hover { transition: transform 0.15s ease-out; transform: translate(-68px, -35px) scale(1.1); }
-#floralMenu.open .petal:nth-child(4):hover { transition: transform 0.15s ease-out; transform: translate(-68px, 29px) scale(1.1); }
-#floralMenu.open .petal:nth-child(5):hover { transition: transform 0.15s ease-out; transform: translate(-14px, 71px) scale(1.1); }
+#floralMenu.open .petal:nth-child(2):hover { transform: translate(-14px, -76px) scale(1.1); }
+#floralMenu.open .petal:nth-child(3):hover { transform: translate(-68px, -35px) scale(1.1); }
+#floralMenu.open .petal:nth-child(4):hover { transform: translate(-68px, 29px) scale(1.1); }
+#floralMenu.open .petal:nth-child(5):hover { transform: translate(-14px, 71px) scale(1.1); }
 
 /* ---------- Welcome Popup ---------- */
 #popupOverlayUnique {
