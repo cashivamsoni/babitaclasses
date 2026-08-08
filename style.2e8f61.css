@@ -808,10 +808,10 @@ tr {
 #floralMenu.open .petal:nth-child(4) { transition-delay: 0.13s; transform: translate(-68px, 32px) scale(1); }
 #floralMenu.open .petal:nth-child(5) { transition-delay: 0.18s; transform: translate(-14px, 74px) scale(1); }
 
-#floralMenu.open .petal:nth-child(2):hover { transform: translate(-14px, -76px) scale(1.1); }
-#floralMenu.open .petal:nth-child(3):hover { transform: translate(-68px, -35px) scale(1.1); }
-#floralMenu.open .petal:nth-child(4):hover { transform: translate(-68px, 29px) scale(1.1); }
-#floralMenu.open .petal:nth-child(5):hover { transform: translate(-14px, 71px) scale(1.1); }
+#floralMenu.open .petal:nth-child(2):hover { transition: transform 0.15s ease-out; transform: translate(-14px, -76px) scale(1.1); }
+#floralMenu.open .petal:nth-child(3):hover { transition: transform 0.15s ease-out; transform: translate(-68px, -35px) scale(1.1); }
+#floralMenu.open .petal:nth-child(4):hover { transition: transform 0.15s ease-out; transform: translate(-68px, 29px) scale(1.1); }
+#floralMenu.open .petal:nth-child(5):hover { transition: transform 0.15s ease-out; transform: translate(-14px, 71px) scale(1.1); }
 
 /* ---------- Welcome Popup ---------- */
 #popupOverlayUnique {
@@ -1243,7 +1243,7 @@ hr {
 .slide img {
   flex: 1;
   width: 50%;
-  max-width: 50%;   /* ← added */
+  max-width: 50%;
   flex-shrink: 0;
   aspect-ratio: 1 / 1; /* makes each image a perfect square */
   object-fit: cover;
