@@ -190,6 +190,25 @@
       }
       #noticeList .edit-btn, #videoAdminList .edit-btn, #syllabusRowList .edit-btn, #studentList .edit-btn, #blogPostList .edit-btn, #resultStudentList .edit-btn { background: #1f6fd0; }
       #noticeList .delete-btn, #videoAdminList .delete-btn, #syllabusRowList .delete-btn, #studentList .delete-btn, #attendanceRangeList .delete-btn, #blogPostList .delete-btn, #resultStudentList .delete-btn { background: #c0392b; }
+      .row-drag-handle {
+        cursor: grab;
+        color: #b0a48f;
+        font-size: 15px;
+        flex: none;
+      }
+      #noticeList li.row-dragging, #videoAdminList li.row-dragging, #syllabusRowList li.row-dragging {
+        opacity: 0.4;
+      }
+      .row-move-btns {
+        display: flex;
+        gap: 4px;
+        flex: none;
+      }
+      @media (max-width: 767px) {
+        .row-drag-handle {
+          display: none;
+        }
+      }
 
       .scroll-box {
         max-height: 240px;
@@ -281,8 +300,7 @@
       .blog-block-header {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
+  justify-content: space-between;
   margin-bottom: 6px;
 }
       .blog-block-type {
