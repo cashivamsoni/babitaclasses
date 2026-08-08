@@ -102,9 +102,14 @@ const wnBtnUrlInput = document.getElementById("wnBtnUrlInput");
 const wnSaveBtn = document.getElementById("wnSaveBtn");
 const wnStatus = document.getElementById("wnStatus");
 
-const galleryInputs = [1, 2, 3, 4, 5, 6, 7, 8].map((n) =>
-  document.getElementById("galleryInput" + n)
-);
+const galleryRowsContainer = document.getElementById("galleryRowsContainer");
+const galleryImageInput = document.getElementById("galleryImageInput");
+const galleryAddBtn = document.getElementById("galleryAddBtn");
+const galleryAddStatus = document.getElementById("galleryAddStatus");
+const gallerySelectModeBtn = document.getElementById("gallerySelectModeBtn");
+const gallerySelectAllBtn = document.getElementById("gallerySelectAllBtn");
+const gallerySelectedCount = document.getElementById("gallerySelectedCount");
+const galleryDeleteSelectedBtn = document.getElementById("galleryDeleteSelectedBtn");
 const gallerySaveBtn = document.getElementById("gallerySaveBtn");
 const galleryStatus = document.getElementById("galleryStatus");
 
@@ -826,17 +831,82 @@ wnSaveBtn.addEventListener("click", async () => {
   }
 });
 
-// ---------- Gallery images (8 URLs) ----------
+// ---------- Gallery images (add / delete / select / reorder) ----------
 const GALLERY_DEFAULTS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => "/images/image" + n + ".jpg");
+
+function updateGalleryDeleteSelectedVisibility() {
+  const checked = galleryRowsContainer.querySelectorAll('input[type="checkbox"]:checked');
+  galleryDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
+  gallerySelectedCount.textContent = checked.length ? checked.length + " selected" : "";
+}
+
+function createGalleryRow(url) {
+  const li = document.createElement("li");
+
+  li.appendChild(createRowDragHandle());
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.addEventListener("change", updateGalleryDeleteSelectedVisibility);
+  li.appendChild(checkbox);
+  makeRowTapSelectable(li, checkbox, galleryRowsContainer);
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = url || "";
+  input.placeholder = "https://... or /images/...";
+  li.appendChild(input);
+
+  const actions = document.createElement("div");
+  actions.className = "row-actions";
+  li.appendChild(actions);
+
+  actions.appendChild(
+    createRowMoveButtons(
+      () => [...galleryRowsContainer.children].indexOf(li),
+      (index, direction) => {
+        const sibling = direction === "up" ? li.previousElementSibling : li.nextElementSibling;
+        if (!sibling) return;
+        if (direction === "up") galleryRowsContainer.insertBefore(li, sibling);
+        else galleryRowsContainer.insertBefore(sibling, li);
+      }
+    )
+  );
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "delete-btn";
+  deleteBtn.textContent = "Delete";
+  deleteBtn.addEventListener("click", () => {
+    li.remove();
+    updateGalleryDeleteSelectedVisibility();
+  });
+  actions.appendChild(deleteBtn);
+
+  makeRowDraggable(li, galleryRowsContainer, "li", () => {});
+  return li;
+}
+
+function renderGalleryRows(urls) {
+  galleryRowsContainer.innerHTML = "";
+  galleryDeleteSelectedBtn.style.display = "none";
+  gallerySelectedCount.textContent = "";
+  urls.forEach((url) => galleryRowsContainer.appendChild(createGalleryRow(url)));
+}
+
+function currentGalleryUrls() {
+  return [...galleryRowsContainer.querySelectorAll("li input[type=\"text\"]")]
+    .map((input) => input.value.trim())
+    .filter((v) => v);
+}
 
 async function loadGallery() {
   try {
     const snap = await getDoc(SITE_DOC);
     const stored = snap.exists() && Array.isArray(snap.data().galleryImages) ? snap.data().galleryImages : [];
-    galleryInputs.forEach((input, i) => {
-      input.value = stored[i] || GALLERY_DEFAULTS[i];
-    });
-    previousGalleryUrls = galleryInputs.map((input) => input.value);
+    const urls = stored.length ? stored : GALLERY_DEFAULTS;
+    renderGalleryRows(urls);
+    previousGalleryUrls = urls;
   } catch (err) {
     galleryStatus.textContent = "Could not load gallery: " + (err.code || err.message);
     galleryStatus.className = "msg error";
@@ -844,10 +914,42 @@ async function loadGallery() {
   }
 }
 
+galleryAddBtn.addEventListener("click", () => {
+  const url = galleryImageInput.value.trim();
+  if (!url) {
+    galleryAddStatus.textContent = "Enter a photo URL first.";
+    galleryAddStatus.className = "msg error";
+    return;
+  }
+  galleryRowsContainer.appendChild(createGalleryRow(url));
+  galleryImageInput.value = "";
+  galleryAddStatus.textContent = "Photo added — click Save Gallery to publish.";
+  galleryAddStatus.className = "msg success";
+});
+
+gallerySelectModeBtn.addEventListener("click", () => {
+  const enabling = !galleryRowsContainer.classList.contains("bulk-mode");
+  galleryRowsContainer.classList.toggle("bulk-mode", enabling);
+  gallerySelectModeBtn.textContent = enabling ? "Cancel" : "Select";
+  if (!enabling) {
+    galleryRowsContainer.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+    updateGalleryDeleteSelectedVisibility();
+  }
+});
+setupSelectAll(galleryRowsContainer, gallerySelectAllBtn, gallerySelectModeBtn);
+
+galleryDeleteSelectedBtn.addEventListener("click", () => {
+  const checked = galleryRowsContainer.querySelectorAll('input[type="checkbox"]:checked');
+  if (!checked.length) return;
+  if (!confirm("Delete " + checked.length + " selected photo(s)?")) return;
+  checked.forEach((cb) => cb.closest("li").remove());
+  updateGalleryDeleteSelectedVisibility();
+});
+
 gallerySaveBtn.addEventListener("click", async () => {
-  const values = galleryInputs.map((input) => input.value.trim());
-  if (values.some((v) => !v)) {
-    galleryStatus.textContent = "All 8 photo URLs need a value.";
+  const values = currentGalleryUrls();
+  if (!values.length) {
+    galleryStatus.textContent = "Add at least one photo URL.";
     galleryStatus.className = "msg error";
     return;
   }
@@ -862,7 +964,7 @@ gallerySaveBtn.addEventListener("click", async () => {
     galleryStatus.className = "msg success";
     showUndoToast("Gallery updated.", async () => {
       await setDoc(SITE_DOC, { galleryImages: previousValues }, { merge: true });
-      galleryInputs.forEach((input, i) => (input.value = previousValues[i]));
+      renderGalleryRows(previousValues);
       previousGalleryUrls = previousValues;
     });
   } catch (err) {
