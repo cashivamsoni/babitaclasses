@@ -1243,6 +1243,7 @@ hr {
 .slide img {
   flex: 1;
   width: 50%;
+  max-width: 50%;   /* ← added */
   flex-shrink: 0;
   aspect-ratio: 1 / 1; /* makes each image a perfect square */
   object-fit: cover;
