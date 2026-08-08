@@ -719,6 +719,8 @@ if (slideshow) {
   const noticeListEl = document.getElementById("noticeMarqueeList");
   const videoListEl = document.getElementById("videoList");
   const hasGalleryImgs = document.getElementById("galleryImg1");
+  const galleryContainerEl = document.querySelector(".slideshow-container");
+  const galleryDotsEl = document.querySelector(".dots");
   const syllabusEl = document.getElementById("syllabusDynamicSessions");
   const blogFeedEl = document.querySelector(".blog-feed");
   const searchListEl = document.getElementById("searchList");
@@ -767,11 +769,34 @@ if (slideshow) {
         if (wnBtnEl && data.whatsNewBtnText) wnBtnEl.textContent = data.whatsNewBtnText;
         if (wnBtnEl && data.whatsNewBtnUrl) wnBtnEl.href = data.whatsNewBtnUrl;
 
-        if (Array.isArray(data.galleryImages)) {
-          data.galleryImages.forEach((url, i) => {
-            const imgEl = document.getElementById("galleryImg" + (i + 1));
-            if (imgEl && url) imgEl.src = url;
-          });
+        if (Array.isArray(data.galleryImages) && data.galleryImages.length && galleryContainerEl) {
+          const urls = data.galleryImages.filter(Boolean);
+          const perSlide = 2;
+          galleryContainerEl.querySelectorAll(".slide").forEach((el) => el.remove());
+          const arrowRef = galleryContainerEl.querySelector(".prev") || null;
+          for (let i = 0; i < urls.length; i += perSlide) {
+            const slideDiv = document.createElement("div");
+            slideDiv.className = "slide fade";
+            urls.slice(i, i + perSlide).forEach((url, j) => {
+              const img = document.createElement("img");
+              img.src = url;
+              img.alt = "Babita Classes gallery photo " + (i + j + 1);
+              slideDiv.appendChild(img);
+            });
+            galleryContainerEl.insertBefore(slideDiv, arrowRef);
+          }
+          if (galleryDotsEl) {
+            galleryDotsEl.innerHTML = "";
+            const slideCount = Math.ceil(urls.length / perSlide);
+            for (let i = 1; i <= slideCount; i++) {
+              const dot = document.createElement("span");
+              dot.className = "dot";
+              dot.addEventListener("click", () => currentSlide(i));
+              galleryDotsEl.appendChild(dot);
+            }
+          }
+          slideIndex = 1;
+          showSlides(1);
         }
       }
 
