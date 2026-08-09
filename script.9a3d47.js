@@ -1316,16 +1316,16 @@ function buildSiteContext() {
 /* ---------- Local fallback (used only if the API call fails) ---------- */
 function localAssistantAnswer(rawQuery) {
   const q = rawQuery.toLowerCase().trim();
-  if (/\bfee|admission|age\b/.test(q)) {
+  if (/\b(fee|fees|admission|admissions|age)\b/.test(q)) {
     return 'Babita Classes is completely free of cost — there are no admission fees. The minimum admission age is 5 years. You can admit a child by filling the Admission Form (see the All URLs section).';
   }
-  if (/\bcontact|phone|call|whatsapp|email\b/.test(q)) {
+  if (/\b(contact|phone|call|whatsapp|email)\b/.test(q)) {
     return 'You can call or WhatsApp us at +91 73883 11148, or email babitaclasses7@gmail.com. See the Contact section below for more options.';
   }
-  if (/\blocation|address|where\b/.test(q)) {
+  if (/\b(location|address|where)\b/.test(q)) {
     return 'Babita Classes is located at 1/2, Juhi Bamburahiya Colony, Kanpur, Uttar Pradesh - 208014.';
   }
-  if (/\bresult\b/.test(q)) {
+  if (/\b(result|results)\b/.test(q)) {
     return 'You can check your result on the Results page by entering your roll number and full name exactly as registered.';
   }
   return "I couldn't reach the AI service right now — please check the FAQs, Syllabus, or Contact sections on this page, or call +91 73883 11148 for help.";
