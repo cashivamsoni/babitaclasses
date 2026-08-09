@@ -1617,7 +1617,7 @@ hr {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 15;
   background: linear-gradient(90deg, #990000, #800000);
   color: #FFFFFF;
   border: 2px solid white;
@@ -1646,7 +1646,7 @@ hr {
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.35;
-  z-index: 99;
+  z-index: 14;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.4s ease, transform 0.4s ease;
