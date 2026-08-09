@@ -336,7 +336,7 @@ details {
 
 .btn-inline:hover {
   background: linear-gradient(90deg, #7a0000, #660000);
-  transform: translateY(-3px) scale(1.1);
+  transform: translateY(-3px) scale(1.075);
   box-shadow: 0 0px 20px #FFFFFF;
 }
 
@@ -1508,6 +1508,7 @@ hr {
 [data-theme="dark"] #topBtn,
 [data-theme="dark"] #floralMain,
 [data-theme="dark"] .petal,
+[data-theme="dark"] .assistant-btn,
 [data-theme="dark"] .worksheet-button,
 [data-theme="dark"] .read-more-btn {
   background: linear-gradient(90deg, #660000, #4d0000);
@@ -1520,6 +1521,7 @@ hr {
 [data-theme="dark"] #topBtn:hover,
 [data-theme="dark"] #floralMain:hover,
 [data-theme="dark"] .petal:hover,
+[data-theme="dark"] .assistant-btn:hover,
 [data-theme="dark"] .worksheet-button:hover,
 [data-theme="dark"] .read-more-btn:hover {
   background: linear-gradient(90deg, #4d0000, #330000);
