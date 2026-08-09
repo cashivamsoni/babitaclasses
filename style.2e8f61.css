@@ -1580,7 +1580,7 @@ hr {
   fill: none;
   stroke-width: 4.5;
   stroke-linejoin: round;
-  stroke-dasharray: 20 124;
+  stroke-dasharray: 20 34;
   stroke-dashoffset: 0;
   font: 700 5em/1 "Open Sans", Impact, sans-serif;
   text-transform: uppercase;
@@ -1612,6 +1612,6 @@ hr {
 }
 @keyframes whatsnew-stroke {
   100% {
-    stroke-dashoffset: -144;
+    stroke-dashoffset: -54;
   }
 }
