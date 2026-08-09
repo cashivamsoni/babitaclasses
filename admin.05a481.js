@@ -901,8 +901,14 @@ function createGalleryRow(url) {
   deleteBtn.className = "delete-btn";
   deleteBtn.textContent = "Delete";
   deleteBtn.addEventListener("click", () => {
+    const nextSibling = li.nextSibling;
+    const parent = li.parentNode;
     li.remove();
     updateGalleryDeleteSelectedVisibility();
+    showUndoToast("Photo removed — click Save Gallery to publish.", () => {
+      parent.insertBefore(li, nextSibling);
+      updateGalleryDeleteSelectedVisibility();
+    });
   });
   actions.appendChild(deleteBtn);
 
@@ -965,8 +971,16 @@ galleryDeleteSelectedBtn.addEventListener("click", () => {
   const checked = galleryRowsContainer.querySelectorAll('input[type="checkbox"]:checked');
   if (!checked.length) return;
   if (!confirm("Delete " + checked.length + " selected photo(s)?")) return;
-  checked.forEach((cb) => cb.closest("li").remove());
+  const removed = [...checked].map((cb) => {
+    const li = cb.closest("li");
+    return { li, nextSibling: li.nextSibling, parent: li.parentNode };
+  });
+  removed.forEach(({ li }) => li.remove());
   updateGalleryDeleteSelectedVisibility();
+  showUndoToast(removed.length + " photo(s) removed — click Save Gallery to publish.", () => {
+    removed.forEach(({ li, nextSibling, parent }) => parent.insertBefore(li, nextSibling));
+    updateGalleryDeleteSelectedVisibility();
+  });
 });
 
 gallerySaveBtn.addEventListener("click", async () => {
@@ -2326,7 +2340,14 @@ function createBlockControls(row) {
   removeBtn.type = "button";
   removeBtn.className = "blog-remove-btn";
   removeBtn.textContent = "×";
-  removeBtn.addEventListener("click", () => row.remove());
+  removeBtn.addEventListener("click", () => {
+    const nextSibling = row.nextSibling;
+    const parent = row.parentNode;
+    row.remove();
+    showUndoToast("Block removed.", () => {
+      parent.insertBefore(row, nextSibling);
+    });
+  });
 
   controls.appendChild(upBtn);
   controls.appendChild(downBtn);
@@ -2509,7 +2530,14 @@ function addButtonRow(text, url) {
   removeBtn.type = "button";
   removeBtn.className = "blog-remove-btn";
   removeBtn.textContent = "×";
-  removeBtn.addEventListener("click", () => row.remove());
+  removeBtn.addEventListener("click", () => {
+    const nextSibling = row.nextSibling;
+    const parent = row.parentNode;
+    row.remove();
+    showUndoToast("Button removed.", () => {
+      parent.insertBefore(row, nextSibling);
+    });
+  });
 
   row.appendChild(handle);
   row.appendChild(textInput);
