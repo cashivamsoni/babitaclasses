@@ -5,13 +5,12 @@
 // POSTs { message, context } here; this file adds a system prompt,
 // calls Gemini, and returns { reply }.
 //
-// SECURITY NOTE: GEMINI_API_KEY is read from an environment variable so
-// the real key never sits in a file committed to the repo. Set it in the
-// Vercel dashboard: Project -> Settings -> Environment Variables ->
-// GEMINI_API_KEY. GEMINI_API_KEY_FALLBACK below is only a safety net so
-// the assistant still works on first deploy before that env var is set —
-// replace/remove it once GEMINI_API_KEY is configured on Vercel.
-const GEMINI_API_KEY_FALLBACK = "AQ.Ab8RN6KIOzhLgyPM63kmBrIaGBkIuHxlw5eE_JtwiYxYQPyqiw";
+// SECURITY NOTE: the API key lives ONLY in an environment variable, never
+// in this file. Set it in the Vercel dashboard: Project -> Settings ->
+// Environment Variables -> GEMINI_API_KEY (all environments), then
+// redeploy. A key hardcoded here would get caught by GitHub's secret
+// scanning on push and auto-revoked by Google — which is what happened
+// to the previous key.
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
 
 const SYSTEM_PROMPT = `You are the AI assistant embedded on the Babita Classes website (babitaclasses.vercel.app).
@@ -58,9 +57,9 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY || GEMINI_API_KEY_FALLBACK;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    res.status(500).json({ error: "Assistant is not configured (missing API key)" });
+    res.status(500).json({ error: "Assistant is not configured — GEMINI_API_KEY env var is missing on Vercel" });
     return;
   }
 
