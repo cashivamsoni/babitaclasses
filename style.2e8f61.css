@@ -1565,7 +1565,7 @@ hr {
 :not(html):not(body)::-webkit-scrollbar-thumb:hover {
   background: #a8a8b8;
 }
-/* Animated rainbow "WHAT'S NEW" heading for What's New section */
+/* Animated "WHAT'S NEW" heading for What's New section: soft glowing pulse, color-cycling solid text */
 @import url(https://fonts.googleapis.com/css?family=Open+Sans:800);
 
 .whatsnew-anim {
@@ -1575,43 +1575,28 @@ hr {
   height: 90px;
   margin: -16px auto -14px;
   overflow: visible;
+  animation: whatsnew-hue 10s linear infinite;
 }
-.whatsnew-anim .wn-text {
-  fill: none;
-  stroke-width: 4.5;
-  stroke-linejoin: round;
-  stroke-dasharray: 20 34;
-  stroke-dashoffset: 0;
+.whatsnew-anim .wn-glow,
+.whatsnew-anim .wn-crisp {
+  fill: currentColor;
   font: 700 5em/1 "Open Sans", Impact, sans-serif;
   text-transform: uppercase;
-  animation: whatsnew-stroke 6s infinite linear;
 }
-.whatsnew-anim .wn-text:nth-child(6n + 1) {
-  stroke: #ff0000;
-  animation-delay: 0s;
+.whatsnew-anim .wn-glow {
+  filter: blur(7px);
+  animation: whatsnew-pulse 2.4s ease-in-out infinite;
 }
-.whatsnew-anim .wn-text:nth-child(6n + 2) {
-  stroke: #ff8800;
-  animation-delay: -1s;
+@keyframes whatsnew-hue {
+  0%   { color: #ff3b3b; }
+  16%  { color: #ff8800; }
+  33%  { color: #1eb300; }
+  50%  { color: #1478ff; }
+  66%  { color: #8a2be2; }
+  83%  { color: #ff2e92; }
+  100% { color: #ff3b3b; }
 }
-.whatsnew-anim .wn-text:nth-child(6n + 3) {
-  stroke: #1eff00;
-  animation-delay: -2s;
-}
-.whatsnew-anim .wn-text:nth-child(6n + 4) {
-  stroke: #007bff;
-  animation-delay: -3s;
-}
-.whatsnew-anim .wn-text:nth-child(6n + 5) {
-  stroke: #7700ff;
-  animation-delay: -4s;
-}
-.whatsnew-anim .wn-text:nth-child(6n + 6) {
-  stroke: #ff0090;
-  animation-delay: -5s;
-}
-@keyframes whatsnew-stroke {
-  100% {
-    stroke-dashoffset: -54;
-  }
+@keyframes whatsnew-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.9; }
 }
