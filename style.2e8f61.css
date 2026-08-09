@@ -1760,7 +1760,7 @@ hr {
 }
 .assistant-msg-bot {
   align-self: flex-start;
-  background: rgba(153, 0, 0, 0.08);
+  background: #FFF6D9;
   color: #111;
   border-bottom-left-radius: 4px;
   text-align: justify;
