@@ -336,7 +336,7 @@ details {
 
 .btn-inline:hover {
   background: linear-gradient(90deg, #7a0000, #660000);
-  transform: translateY(-3px) scale(1.075);
+  transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
 
@@ -361,7 +361,7 @@ details {
 
 .btn-inline1:hover {
   background: linear-gradient(90deg, #7a0000, #660000);
-  transform: translateY(-3px) scale(1.075);
+  transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
 
@@ -1792,6 +1792,14 @@ hr {
   color: #111;
   border-bottom-left-radius: 4px;
   text-align: justify;
+}
+.assistant-msg-bot a {
+  color: #990000;
+  font-weight: 600;
+  text-decoration: underline;
+}
+.assistant-msg-bot a:hover {
+  color: #660000;
 }
 .assistant-msg-bot .assistant-emphasis {
   font-weight: 600;
