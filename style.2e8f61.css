@@ -336,7 +336,7 @@ details {
 
 .btn-inline:hover {
   background: linear-gradient(90deg, #7a0000, #660000);
-  transform: translateY(-3px) scale(1.075);
+  transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
 
@@ -361,7 +361,7 @@ details {
 
 .btn-inline1:hover {
   background: linear-gradient(90deg, #7a0000, #660000);
-  transform: translateY(-3px) scale(1.075);
+  transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
 
@@ -1601,6 +1601,25 @@ hr {
 @keyframes whatsnew-pulse {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 0.9; }
+}
+
+/* ---------- Results Archive links (result.html) ---------- */
+/* Scoped by container ID (not :not([class])) since result.5c1e93.js may
+   attach its own class to these links, which would bypass the generic
+   dark-mode unstyled-link rule above and leave them browser-default blue. */
+#resultsArchiveList a {
+  color: #990000;
+  font-weight: 600;
+  text-decoration: underline;
+}
+#resultsArchiveList a:hover {
+  color: #660000;
+}
+[data-theme="dark"] #resultsArchiveList a {
+  color: #ffffff;
+}
+[data-theme="dark"] #resultsArchiveList a:hover {
+  color: #ffd919;
 }
 
 /* =========================================================
