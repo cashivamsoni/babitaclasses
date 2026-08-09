@@ -1543,6 +1543,9 @@ hr {
   html {
     zoom: 0.9;
   }
+  .whatsnew-anim {
+    zoom: 1;
+  }
 }
 
 /* Styled scrollbar for inner scrollable panels (e.g. search/link lists,
