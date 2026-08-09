@@ -979,3 +979,401 @@ if (slideshow) {
     }
   })();
 })();
+
+/* =========================================================
+   AI Assistant — Babita Classes
+   Powered by Gemini via /api/chat (see api/chat.js). Answers
+   using the current page's own content (notices, FAQs,
+   mission, syllabus, faculty, contact) plus general
+   knowledge, with a local rule-based fallback if the API is
+   ever down or unconfigured.
+   ========================================================= */
+
+/* ---------- Hint bubble rotation ---------- */
+const BC_ASSISTANT_HINTS = [
+  'Need help? Ask here.',
+  'Try: "what are the fees?"',
+  'Ask about admissions.',
+  'Curious about our syllabus?',
+  'I can look things up for you.'
+];
+let _bcHintIndex = 0;
+let _bcHintTimer = null;
+let _bcHintCycleActive = false;
+
+function bcShowNextHint() {
+  const panel = document.getElementById('assistantPanel');
+  if (panel && !panel.classList.contains('hidden')) return; // paused while panel is open
+  const hintEl = document.getElementById('assistantHint');
+  if (!hintEl) return;
+
+  hintEl.textContent = BC_ASSISTANT_HINTS[_bcHintIndex % BC_ASSISTANT_HINTS.length];
+  _bcHintIndex++;
+  hintEl.classList.remove('hidden');
+  hintEl.classList.remove('show');
+  void hintEl.offsetHeight; // force reflow so the browser paints the "before" state first
+  requestAnimationFrame(() => hintEl.classList.add('show'));
+
+  _bcHintTimer = setTimeout(() => {
+    hintEl.classList.remove('show');
+    setTimeout(() => hintEl.classList.add('hidden'), 400);
+    _bcHintTimer = setTimeout(bcShowNextHint, 3000);
+  }, 4000);
+}
+
+function startAssistantHints() {
+  if (_bcHintCycleActive) return;
+  _bcHintCycleActive = true;
+  clearTimeout(_bcHintTimer);
+  _bcHintTimer = setTimeout(bcShowNextHint, 2000);
+}
+function stopAssistantHints() {
+  _bcHintCycleActive = false;
+  clearTimeout(_bcHintTimer);
+  const hintEl = document.getElementById('assistantHint');
+  if (hintEl) { hintEl.classList.remove('show'); hintEl.classList.add('hidden'); }
+}
+
+function toggleAssistant() {
+  const panel = document.getElementById('assistantPanel');
+  if (!panel) return;
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) {
+    stopAssistantHints();
+    const input = document.getElementById('assistantInput');
+    if (input) input.focus();
+  } else {
+    startAssistantHints();
+    stopAssistantSpeech();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', startAssistantHints);
+
+// Close the assistant panel when clicking outside it
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('assistantPanel');
+  const btn = document.getElementById('assistantBtn');
+  if (!panel || panel.classList.contains('hidden')) return;
+  if (!panel.contains(e.target) && btn && !btn.contains(e.target)) {
+    panel.classList.add('hidden');
+    startAssistantHints();
+    stopAssistantSpeech();
+  }
+});
+
+/* ---------- Message rendering ---------- */
+function bcEscHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function appendAssistantMessage(text, sender, isLoading = false) {
+  const container = document.getElementById('assistantMessages');
+  if (!container) return null;
+  const el = document.createElement('div');
+  el.className = `assistant-msg assistant-msg-${sender}${isLoading ? ' assistant-msg-loading' : ''}`;
+  if (sender === 'bot' && !isLoading) {
+    // escHtml first so nothing in the reply can inject real markup, THEN add
+    // our own <strong> tags for **bold** — safe because the only tags that
+    // can exist afterward are ones we just added ourselves.
+    el.innerHTML = bcEscHtml(text)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<span class="assistant-emphasis">$1</span>');
+  } else {
+    el.textContent = text;
+  }
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+  if (sender === 'bot' && !isLoading) {
+    const plain = text.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1');
+    _lastReplyPlainText = plain;
+    speakAssistantReply(plain);
+  }
+  return el;
+}
+
+/* ---------- Voice input (speech-to-text) ---------- */
+const _bcSpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+let _bcRecognizer = null;
+let _bcMicListening = false;
+
+function initAssistantVoice() {
+  const micBtn = document.getElementById('assistantMicBtn');
+  if (!micBtn) return;
+  if (!_bcSpeechRecognitionCtor) return; // not supported here — stay hidden
+
+  micBtn.classList.remove('hidden');
+  _bcRecognizer = new _bcSpeechRecognitionCtor();
+  _bcRecognizer.continuous = false;
+  _bcRecognizer.interimResults = false;
+  _bcRecognizer.lang = 'en-IN';
+
+  _bcRecognizer.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    const input = document.getElementById('assistantInput');
+    if (input) input.value = transcript;
+    sendAssistantMessage();
+  };
+  _bcRecognizer.onerror = () => setMicListening(false);
+  _bcRecognizer.onend = () => setMicListening(false);
+}
+
+function setMicListening(on) {
+  _bcMicListening = on;
+  const micBtn = document.getElementById('assistantMicBtn');
+  if (micBtn) micBtn.classList.toggle('listening', on);
+}
+
+function toggleAssistantMic() {
+  if (!_bcRecognizer) return;
+  if (_bcMicListening) {
+    _bcRecognizer.stop();
+    setMicListening(false);
+  } else {
+    stopAssistantSpeech(); // don't listen while it's still talking
+    try {
+      _bcRecognizer.start();
+      setMicListening(true);
+    } catch (_) { /* already started — ignore */ }
+  }
+}
+
+/* ---------- Voice output (text-to-speech) ---------- */
+const BC_SPEECH_CHARS_PER_SEC = 15;
+let _bcSpeechFullText = '';
+let _bcSpeechCharIndex = 0;
+let _bcSpeechPaused = false;
+let _bcSpeechStartTime = 0;
+let _bcSpeechStartIndex = 0;
+let _bcSpeechGeneration = 0;
+let _bcCurrentUtterance = null;
+let _lastReplyPlainText = '';
+
+function replayLastAssistantReply() {
+  if (!_lastReplyPlainText) return;
+  speakAssistantReply(_lastReplyPlainText);
+}
+
+function _bcDetachCurrentUtterance() {
+  if (_bcCurrentUtterance) {
+    _bcCurrentUtterance.onstart = null;
+    _bcCurrentUtterance.onend = null;
+    _bcCurrentUtterance.onerror = null;
+    _bcCurrentUtterance.onboundary = null;
+    _bcCurrentUtterance = null;
+  }
+}
+
+function speakAssistantReply(text) {
+  if (!('speechSynthesis' in window)) return;
+  _bcSpeechGeneration++;
+  _bcDetachCurrentUtterance();
+  speechSynthesis.cancel();
+  _bcSpeechFullText = text;
+  _bcSpeechCharIndex = 0;
+  _bcSpeechPaused = false;
+  _bcSpeakFrom(0);
+}
+
+function _bcSpeakFrom(charIndex) {
+  const remaining = _bcSpeechFullText.slice(charIndex);
+  if (!remaining) { setSpeechToggle(false); return; }
+  const myGen = ++_bcSpeechGeneration;
+  const utterance = new SpeechSynthesisUtterance(remaining);
+  _bcCurrentUtterance = utterance;
+  utterance.lang = 'en-IN';
+  utterance.onboundary = (e) => {
+    if (myGen !== _bcSpeechGeneration) return;
+    _bcSpeechCharIndex = charIndex + e.charIndex;
+  };
+  utterance.onstart = () => {
+    if (myGen !== _bcSpeechGeneration) return;
+    _bcSpeechStartTime = Date.now();
+    _bcSpeechStartIndex = charIndex;
+    setSpeechToggle(true, false);
+    setReplayVisible(false);
+  };
+  utterance.onend = () => {
+    if (myGen !== _bcSpeechGeneration) return;
+    if (!_bcSpeechPaused) { setSpeechToggle(false); setReplayVisible(true); }
+  };
+  utterance.onerror = () => {
+    if (myGen !== _bcSpeechGeneration) return;
+    if (!_bcSpeechPaused) setSpeechToggle(false);
+  };
+  speechSynthesis.speak(utterance);
+}
+
+function setSpeechToggle(visible, paused = false) {
+  const btn = document.getElementById('assistantSpeechToggle');
+  if (!btn) return;
+  btn.classList.toggle('hidden', !visible);
+  const icon = btn.querySelector('i');
+  if (icon) icon.className = paused ? 'fa fa-play' : 'fa fa-pause';
+  btn.setAttribute('aria-label', paused ? 'Resume reading' : 'Pause reading');
+}
+
+function setReplayVisible(visible) {
+  const btn = document.getElementById('assistantReplayBtn');
+  if (btn) btn.classList.toggle('hidden', !visible);
+}
+
+function toggleAssistantSpeech() {
+  if (!('speechSynthesis' in window)) return;
+  if (!_bcSpeechPaused) {
+    const elapsedSec = (Date.now() - _bcSpeechStartTime) / 1000;
+    const estimatedIndex = _bcSpeechStartIndex + Math.floor(elapsedSec * BC_SPEECH_CHARS_PER_SEC);
+    _bcSpeechCharIndex = Math.max(_bcSpeechCharIndex, estimatedIndex);
+    _bcSpeechPaused = true;
+    _bcSpeechGeneration++;
+    _bcDetachCurrentUtterance();
+    speechSynthesis.cancel();
+    setSpeechToggle(true, true);
+  } else {
+    _bcSpeechPaused = false;
+    _bcSpeakFrom(_bcSpeechCharIndex);
+  }
+}
+
+function stopAssistantSpeech() {
+  _bcSpeechGeneration++;
+  _bcDetachCurrentUtterance();
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  _bcSpeechPaused = false;
+  _bcSpeechFullText = '';
+  _bcSpeechCharIndex = 0;
+  setSpeechToggle(false);
+  setReplayVisible(false);
+}
+
+document.addEventListener('DOMContentLoaded', initAssistantVoice);
+
+/* ---------- Site context builder ----------
+   Reads whatever is currently on the page (notices, FAQs,
+   mission, director's desk, faculty, syllabus, contact,
+   results) so the assistant's answers always match what's
+   actually shown — no separate hardcoded copy to keep in sync. */
+function bcText(id) {
+  const el = document.getElementById(id);
+  return el ? el.textContent.trim().replace(/\s+/g, ' ') : '';
+}
+
+function buildSiteContext() {
+  const parts = [];
+
+  const notice = bcText('topMarquee');
+  if (notice) parts.push(`Notice board: ${notice}`);
+
+  const whatsNew = bcText('whatsNewText');
+  if (whatsNew) parts.push(`What's New: ${whatsNew}`);
+
+  const faqEl = document.getElementById('faq');
+  if (faqEl) {
+    const qas = [...faqEl.querySelectorAll('details')].map(d => {
+      const q = d.querySelector('summary')?.textContent.trim();
+      const a = d.querySelector('p')?.textContent.trim();
+      return q && a ? `Q: ${q} A: ${a}` : '';
+    }).filter(Boolean);
+    if (qas.length) parts.push(`FAQs:\n${qas.join('\n')}`);
+  }
+
+  const mission = bcText('mission');
+  if (mission) parts.push(`Our Mission & Services: ${mission}`);
+
+  const desk = bcText('fromdirectorsdesk');
+  if (desk) parts.push(`From Director's Desk: ${desk}`);
+
+  const facultyEl = document.getElementById('faculty');
+  if (facultyEl) {
+    const names = [...facultyEl.querySelectorAll('.faculty-card')]
+      .map(c => c.textContent.trim().replace(/\s+/g, ' '))
+      .filter(Boolean);
+    if (names.length) parts.push(`Faculty:\n${names.join('\n')}`);
+  }
+
+  const syllabusSection = document.getElementById('syllabus')?.closest('.section');
+  if (syllabusSection) {
+    parts.push(`Syllabus/Datesheet/Results section: ${syllabusSection.textContent.trim().replace(/\s+/g, ' ').slice(0, 1500)}`);
+  }
+
+  const resultHeader = bcText('resultHeaderDetails');
+  if (resultHeader) {
+    parts.push(`Latest declared result: ${resultHeader}, declared on ${bcText('resultHeaderDate')}.`);
+  }
+
+  const contactEl = document.getElementById('contact');
+  if (contactEl) {
+    parts.push(`Contact & Social: ${contactEl.textContent.trim().replace(/\s+/g, ' ')}`);
+  }
+
+  parts.push(`Current page: ${document.title} (${location.pathname})`);
+
+  return parts.join('\n\n');
+}
+
+/* ---------- Local fallback (used only if the API call fails) ---------- */
+function localAssistantAnswer(rawQuery) {
+  const q = rawQuery.toLowerCase().trim();
+  if (/\bfee|admission|age\b/.test(q)) {
+    return 'Babita Classes is completely free of cost — there are no admission fees. The minimum admission age is 5 years. You can admit a child by filling the Admission Form (see the All URLs section).';
+  }
+  if (/\bcontact|phone|call|whatsapp|email\b/.test(q)) {
+    return 'You can call or WhatsApp us at +91 73883 11148, or email babitaclasses7@gmail.com. See the Contact section below for more options.';
+  }
+  if (/\blocation|address|where\b/.test(q)) {
+    return 'Babita Classes is located at 1/2, Juhi Bamburahiya Colony, Kanpur, Uttar Pradesh - 208014.';
+  }
+  if (/\bresult\b/.test(q)) {
+    return 'You can check your result on the Results page by entering your roll number and full name exactly as registered.';
+  }
+  return "I couldn't reach the AI service right now — please check the FAQs, Syllabus, or Contact sections on this page, or call +91 73883 11148 for help.";
+}
+
+let _bcAssistantBusy = false;
+async function sendAssistantMessage() {
+  if (_bcAssistantBusy) return;
+  const input = document.getElementById('assistantInput');
+  if (!input) return;
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendAssistantMessage(msg, 'user');
+  const loadingEl = appendAssistantMessage('Thinking…', 'bot', true);
+  _bcAssistantBusy = true;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, context: buildSiteContext() })
+    });
+    let data = {};
+    try { data = await res.json(); } catch (_) { /* non-JSON error page */ }
+    if (loadingEl) loadingEl.remove();
+    if (!res.ok) {
+      // Fall back to local rule-based matching so a down/unconfigured API
+      // doesn't leave the assistant completely useless.
+      appendAssistantMessage(localAssistantAnswer(msg), 'bot');
+      return;
+    }
+    appendAssistantMessage(data.reply || "Sorry, I couldn't generate a response.", 'bot');
+  } catch (err) {
+    if (loadingEl) loadingEl.remove();
+    appendAssistantMessage(localAssistantAnswer(msg), 'bot');
+    console.error('Assistant API error:', err);
+  } finally {
+    _bcAssistantBusy = false;
+  }
+}
+
+// Enter to send in the assistant panel
+(function () {
+  const assistantInput = document.getElementById('assistantInput');
+  if (assistantInput) {
+    assistantInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); sendAssistantMessage(); }
+    });
+  }
+})();
