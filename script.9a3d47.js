@@ -1110,6 +1110,16 @@ function bcLinkify(html) {
   return html.replace(/%%BCLINK(\d+)%%/g, (_, i) => placeholders[Number(i)]);
 }
 
+// Same idea as bcLinkify but for plain text fed to speech synthesis — a
+// spoken URL comes out as a jumble of individual letters, so replace it
+// with its label (for markdown links) or "Click here" (for bare URLs)
+// instead, same as what the on-screen link text ends up saying.
+function bcSpeechSafeText(text) {
+  return text
+    .replace(/\[([^\[\]]+)\]\(https?:\/\/[^\s)]+\)/g, '$1')
+    .replace(/https?:\/\/\S+/g, 'Click here');
+}
+
 function appendAssistantMessage(text, sender, isLoading = false) {
   const container = document.getElementById('assistantMessages');
   if (!container) return null;
@@ -1130,7 +1140,9 @@ function appendAssistantMessage(text, sender, isLoading = false) {
   container.appendChild(el);
   container.scrollTop = container.scrollHeight;
   if (sender === 'bot' && !isLoading) {
-    const plain = text.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1');
+    const plain = bcSpeechSafeText(
+      text.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')
+    );
     _lastReplyPlainText = plain;
     speakAssistantReply(plain);
 
