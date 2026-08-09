@@ -84,6 +84,40 @@
       <button class="petal" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode"><i class="fa fa-moon-o" aria-hidden="true"></i></button>
       <button class="petal" id="floralNewBtn" aria-label="Translate to Hindi" title="Translate to Hindi"><i class="fa fa-language" aria-hidden="true"></i></button>
     </div>
+
+    <!-- AI Assistant -->
+    <div id="assistantHint" class="assistant-hint hidden"></div>
+    <button id="assistantBtn" class="assistant-btn" onclick="toggleAssistant()" aria-label="Ask Babita Classes Assistant" title="Ask Babita Classes Assistant">
+      <i class="fa fa-magic" aria-hidden="true"></i>
+    </button>
+    <div id="assistantPanel" class="assistant-panel hidden">
+      <div class="assistant-header">
+        <span><i class="fa fa-magic" aria-hidden="true"></i> Babita Classes Assistant</span>
+        <div class="assistant-header-actions">
+          <button id="assistantReplayBtn" class="hidden" onclick="replayLastAssistantReply()" aria-label="Replay last reply" title="Replay last reply">
+            <i class="fa fa-repeat" aria-hidden="true"></i>
+          </button>
+          <button id="assistantSpeechToggle" class="hidden" onclick="toggleAssistantSpeech()" aria-label="Pause reading" title="Pause reading">
+            <i class="fa fa-pause" aria-hidden="true"></i>
+          </button>
+          <button class="modal-close" onclick="toggleAssistant()" aria-label="Close assistant" title="Close">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div class="assistant-messages" id="assistantMessages">
+        <div class="assistant-msg assistant-msg-bot">Hi! Ask me about admissions, fees, results, syllabus, or anything else about Babita Classes.</div>
+      </div>
+      <div class="assistant-input-row">
+        <input type="text" id="assistantInput" placeholder="Ask something…" autocomplete="off">
+        <button id="assistantMicBtn" class="hidden" onclick="toggleAssistantMic()" aria-label="Voice input" title="Speak your question">
+          <i class="fa fa-microphone" aria-hidden="true"></i>
+        </button>
+        <button id="assistantSendBtn" onclick="sendAssistantMessage()" aria-label="Send">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
 <!-- Snowfall Effect -->
 <div aria-hidden="true" class="snowflakes">
   <div class="snowflake">❅</div>
