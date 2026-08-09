@@ -1908,9 +1908,6 @@ hr {
     right: 12px;
     width: calc(100vw - 24px);
   }
-  .assistant-hint {
-    right: 12px;
-  }
 }
 
 /* ---------- Dark mode ---------- */
