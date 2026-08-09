@@ -1368,6 +1368,21 @@ async function sendAssistantMessage() {
   }
 }
 
+// Close the assistant panel whenever the hamburger nav menu is opened,
+// so the nav never ends up rendering behind the (higher z-index) panel.
+(function () {
+  const menuToggleBtn = document.getElementById('menuToggle');
+  if (!menuToggleBtn) return;
+  menuToggleBtn.addEventListener('click', function () {
+    const panel = document.getElementById('assistantPanel');
+    if (panel && !panel.classList.contains('hidden')) {
+      panel.classList.add('hidden');
+      startAssistantHints();
+      stopAssistantSpeech();
+    }
+  });
+})();
+
 // Enter to send in the assistant panel
 (function () {
   const assistantInput = document.getElementById('assistantInput');
