@@ -361,7 +361,7 @@ details {
 
 .btn-inline1:hover {
   background: linear-gradient(90deg, #7a0000, #660000);
-  transform: translateY(-3px) scale(1.1);
+  transform: translateY(-3px) scale(1.075);
   box-shadow: 0 0px 20px #FFFFFF;
 }
 
