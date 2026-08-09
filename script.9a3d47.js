@@ -1069,6 +1069,47 @@ function bcEscHtml(str) {
   return div.innerHTML;
 }
 
+// Turns phone numbers, links, and emails in an (already-escaped) reply
+// into real clickable tel:/href/mailto: elements. Uses placeholder tokens
+// so each pass can't re-match text already produced by an earlier pass
+// (e.g. a URL already wrapped in an <a> tag from the markdown-link step).
+function bcLinkify(html) {
+  const placeholders = [];
+  const store = (anchorHtml) => {
+    placeholders.push(anchorHtml);
+    return `%%BCLINK${placeholders.length - 1}%%`;
+  };
+
+  // Markdown-style [label](url), e.g. "[Admission Form](https://forms.gle/...)"
+  html = html.replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) =>
+    store(`<a href="${url}" target="_blank" rel="noopener">${label}</a>`)
+  );
+
+  // Any remaining bare URLs (trim trailing punctuation like ". ," that
+  // usually belongs to the sentence, not the URL itself)
+  html = html.replace(/https?:\/\/[^\s<]+/g, (url) => {
+    let trail = '';
+    while (url && /[.,;:!?)\]"']$/.test(url)) {
+      trail = url.slice(-1) + trail;
+      url = url.slice(0, -1);
+    }
+    return store(`<a href="${url}" target="_blank" rel="noopener">Click here</a>`) + trail;
+  });
+
+  // Indian phone numbers in the site's own format, e.g. "+91 73883 11148"
+  html = html.replace(/\+91[\s-]?\d{5}[\s-]?\d{5}/g, (m) => {
+    const digits = '+' + m.replace(/[^\d]/g, '');
+    return store(`<a href="tel:${digits}">${m}</a>`);
+  });
+
+  // Email addresses
+  html = html.replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, (email) =>
+    store(`<a href="mailto:${email}">${email}</a>`)
+  );
+
+  return html.replace(/%%BCLINK(\d+)%%/g, (_, i) => placeholders[Number(i)]);
+}
+
 function appendAssistantMessage(text, sender, isLoading = false) {
   const container = document.getElementById('assistantMessages');
   if (!container) return null;
@@ -1076,11 +1117,13 @@ function appendAssistantMessage(text, sender, isLoading = false) {
   el.className = `assistant-msg assistant-msg-${sender}${isLoading ? ' assistant-msg-loading' : ''}`;
   if (sender === 'bot' && !isLoading) {
     // escHtml first so nothing in the reply can inject real markup, THEN add
-    // our own <strong> tags for **bold** — safe because the only tags that
-    // can exist afterward are ones we just added ourselves.
-    el.innerHTML = bcEscHtml(text)
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<span class="assistant-emphasis">$1</span>');
+    // our own <strong> tags for **bold** and real links — safe because the
+    // only tags that can exist afterward are ones we just added ourselves.
+    el.innerHTML = bcLinkify(
+      bcEscHtml(text)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<span class="assistant-emphasis">$1</span>')
+    );
   } else {
     el.textContent = text;
   }
@@ -1090,6 +1133,7 @@ function appendAssistantMessage(text, sender, isLoading = false) {
     const plain = text.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1');
     _lastReplyPlainText = plain;
     speakAssistantReply(plain);
+
   }
   return el;
 }
