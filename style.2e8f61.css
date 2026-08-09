@@ -13,6 +13,7 @@
   --btn-text: #FFF;
   --gap: 12px;
   font-family:
+    "Inter",
     system-ui,
     -apple-system,
     "Segoe UI",
@@ -214,6 +215,7 @@ nav.show {
 h1 {
   margin: 0 0 10px 0;
   font-size: 1.5em;
+  font-family: "DM Serif Display", Georgia, serif;
 }
 
 h2 {
@@ -838,7 +840,7 @@ tr {
   max-width: 90%;
   padding: 20px;
   text-align: center;
-  font-family: Arial, sans-serif;
+  font-family: "Inter", Arial, sans-serif;
   position: relative;
 }
 
@@ -976,7 +978,7 @@ footer a,
   flex-wrap: wrap;
   gap: 20px;
   margin: 20px;
-  font-family: Arial, sans-serif;
+  font-family: "Inter", Arial, sans-serif;
   justify-content: center;
 }
 
@@ -1312,7 +1314,7 @@ hr {
 .snowflake {
   color: #FFF;
   font-size: 3em; /* smaller flakes */
-  font-family: Arial, sans-serif;
+  font-family: "Inter", Arial, sans-serif;
   text-shadow: 0 0 5px #FFFFFF; /* subtle red glow */
   position: fixed;
   top: -10%;
