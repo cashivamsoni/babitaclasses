@@ -339,7 +339,7 @@ details {
 
 .btn-inline:hover {
   background: linear-gradient(90deg, #7a0000, #660000);
-  transform: translateY(-3px) scale(1.075);
+  transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
 
@@ -364,7 +364,7 @@ details {
 
 .btn-inline1:hover {
   background: linear-gradient(90deg, #7a0000, #660000);
-  transform: translateY(-3px) scale(1.075);
+  transform: translateY(-3px) scale(1.1);
   box-shadow: 0 0px 20px #FFFFFF;
 }
 
@@ -845,6 +845,10 @@ tr {
   position: relative;
 }
 
+#popupBoxUnique h1 {
+  font-size: 2.4em;
+}
+
 #popupCloseUnique {
   position: absolute;
   top: 12px;
@@ -1107,6 +1111,16 @@ footer a,
   font-size: 13px;
   color: #333;
   margin-bottom: 10px;
+}
+
+.modal-box a:not([class]) {
+  color: #990000;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.modal-box a:not([class]):hover {
+  color: #660000;
 }
 
 .modal-header {
@@ -1471,6 +1485,10 @@ hr {
 [data-theme="dark"] td a:not([class]),
 [data-theme="dark"] th a:not([class]) {
   color: #ffffff;
+}
+
+[data-theme="dark"] .modal-box a:not([class]):hover {
+  color: #ffd919;
 }
 
 /* ---------- Buttons (dark mode) ---------- */
