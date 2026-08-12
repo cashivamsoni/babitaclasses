@@ -1936,13 +1936,11 @@ attendanceSelectModeBtn.addEventListener("click", () => {
 setupSelectAll(attendanceRangeList, attendanceSelectAllBtn, attendanceSelectModeBtn);
 
 
-function summarizeAttendanceDoc(data) {
+function summarizeAttendanceDoc(data, totalStudents) {
   if (data.holiday) return "Holiday: " + data.holiday;
   const records = data.records || {};
-  const values = Object.values(records);
-  if (values.length === 0) return "No records";
-  const present = values.filter((v) => v === "present").length;
-  const absent = values.filter((v) => v === "absent").length;
+  const present = Object.values(records).filter((v) => v === "present").length;
+  const absent = Math.max(totalStudents - present, 0);
   return present + " present, " + absent + " absent";
 }
 
@@ -1955,17 +1953,34 @@ async function renderAttendanceRange(fromDate, toDate) {
       where(documentId(), ">=", fromDate),
       where(documentId(), "<=", toDate)
     );
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      attendanceRangeStatus.textContent = "No attendance records found in that range.";
+    const [snap, studentsSnap] = await Promise.all([getDocs(q), getDocs(STUDENTS_COL)]);
+    const totalStudents = studentsSnap.size;
+
+    const docMap = {};
+    snap.forEach((d) => (docMap[d.id] = d.data()));
+
+    // Every date in the range gets a row, even ones nobody ever opened — those
+    // default to "no holiday, nobody marked present" so they show (and export)
+    // as fully absent right away, instead of only appearing once someone visits
+    // Mark Attendance for that specific day.
+    const docs = [];
+    const cursor = new Date(fromDate + "T00:00:00");
+    const end = new Date(toDate + "T00:00:00");
+    while (cursor <= end) {
+      const yyyy = cursor.getFullYear();
+      const mm = String(cursor.getMonth() + 1).padStart(2, "0");
+      const dd = String(cursor.getDate()).padStart(2, "0");
+      const id = `${yyyy}-${mm}-${dd}`;
+      docs.push({ id, data: docMap[id] || { holiday: null, records: {} } });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    if (docs.length === 0) {
+      attendanceRangeStatus.textContent = "Pick a valid date range.";
       attendanceRangeStatus.className = "msg";
       return;
     }
     attendanceRangeStatus.textContent = "";
-
-    const docs = [];
-    snap.forEach((d) => docs.push({ id: d.id, data: d.data() }));
-    docs.sort((a, b) => a.id.localeCompare(b.id));
 
     docs.forEach(({ id, data }) => {
       const li = document.createElement("li");
@@ -1979,7 +1994,7 @@ async function renderAttendanceRange(fromDate, toDate) {
       makeRowTapSelectable(li, checkbox, attendanceRangeList);
 
       const span = document.createElement("span");
-      span.textContent = id + " — " + summarizeAttendanceDoc(data);
+      span.textContent = id + " — " + summarizeAttendanceDoc(data, totalStudents);
       li.appendChild(span);
 
       const deleteBtn = document.createElement("button");
