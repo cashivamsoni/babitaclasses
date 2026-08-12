@@ -694,11 +694,12 @@
             e.preventDefault();
 
             if (item.hasAttribute('open')) {
-              // Closing: animate from current height down to 0
+              // Closing: pin the current rendered height as the start point,
+              // force a reflow so the browser commits it, then collapse.
               answer.style.maxHeight = answer.scrollHeight + 'px';
-              requestAnimationFrame(function () {
-                answer.style.maxHeight = '0px';
-              });
+              answer.offsetHeight; // force reflow
+              answer.style.maxHeight = '0px';
+
               answer.addEventListener('transitionend', function handler(ev) {
                 if (ev.propertyName === 'max-height') {
                   item.removeAttribute('open');
@@ -706,9 +707,14 @@
                 }
               });
             } else {
-              // Opening: set 'open' first so scrollHeight measures real content
+              // Opening: reveal the element, force a reflow so the browser
+              // commits the 0px starting point, then grow to full height.
               item.setAttribute('open', '');
-              answer.style.maxHeight = answer.scrollHeight + 'px';
+              var targetHeight = answer.scrollHeight;
+              answer.style.maxHeight = '0px';
+              answer.offsetHeight; // force reflow
+              answer.style.maxHeight = targetHeight + 'px';
+
               answer.addEventListener('transitionend', function handler(ev) {
                 if (ev.propertyName === 'max-height') {
                   answer.style.maxHeight = 'none';
