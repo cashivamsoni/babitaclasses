@@ -658,14 +658,11 @@
 
         <label>Content (drag order matters — use ▲▼ to reorder)</label>
         <div id="blogBlocksContainer"></div>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button id="blogAddTextBlockBtn" type="button" class="small-btn" style="margin:0;">+ Add Text</button>
           <button id="blogAddImageBlockBtn" type="button" class="small-btn" style="margin:0;">+ Add Photo</button>
+          <button id="blogAddButtonBtn" type="button" class="small-btn" style="margin:0;">+ Add Button</button>
         </div>
-
-        <label style="margin-top:18px;">Buttons (optional)</label>
-        <div id="blogButtonsContainer"></div>
-        <button id="blogAddButtonBtn" type="button" class="small-btn">+ Add Button</button>
 
         <button id="blogAddBtn" type="button" style="margin-top:18px;">Add Post</button>
         <p id="blogStatus" class="msg"></p>
