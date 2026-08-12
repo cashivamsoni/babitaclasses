@@ -2855,7 +2855,7 @@ function fillResultDetailsForm(term) {
   resultTermStatusDisplay.textContent =
     term.status === "active"
       ? "This is the LATEST term — shown on the public Check Result search."
-      : "This term is ARCHIVED — visible in the Results Archive, not searchable by roll/name.";
+      : "This term is ARCHIVED — visible in the Results Archive, still searchable by roll/name.";
 }
 
 function previewResultId(term, student) {
