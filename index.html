@@ -680,5 +680,45 @@
     </div>
 
     <script src="script.9a3d47.js"></script>
+    <script>
+      (function () {
+        document.querySelectorAll('#faq details').forEach(function (item) {
+          var answer = item.querySelector('p.small');
+          if (!answer) return;
+
+          answer.style.maxHeight = '0px';
+          answer.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+
+          var summary = item.querySelector('summary');
+          summary.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            if (item.hasAttribute('open')) {
+              // Closing: animate from current height down to 0
+              answer.style.maxHeight = answer.scrollHeight + 'px';
+              requestAnimationFrame(function () {
+                answer.style.maxHeight = '0px';
+              });
+              answer.addEventListener('transitionend', function handler(ev) {
+                if (ev.propertyName === 'max-height') {
+                  item.removeAttribute('open');
+                  answer.removeEventListener('transitionend', handler);
+                }
+              });
+            } else {
+              // Opening: set 'open' first so scrollHeight measures real content
+              item.setAttribute('open', '');
+              answer.style.maxHeight = answer.scrollHeight + 'px';
+              answer.addEventListener('transitionend', function handler(ev) {
+                if (ev.propertyName === 'max-height') {
+                  answer.style.maxHeight = 'none';
+                  answer.removeEventListener('transitionend', handler);
+                }
+              });
+            }
+          });
+        });
+      })();
+    </script>
   </body>
 </html>
