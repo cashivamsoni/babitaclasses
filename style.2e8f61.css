@@ -257,6 +257,51 @@ details {
   font-size: 20px;
 }
 
+/* ---------- FAQ section ---------- */
+#faq summary {
+  cursor: pointer;
+  padding: 10px 4px;
+  font-weight: 600;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: color 0.25s ease;
+}
+
+#faq summary::-webkit-details-marker {
+  display: none;
+}
+
+#faq summary::after {
+  content: "+";
+  font-size: 22px;
+  font-weight: 700;
+  color: #990000;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+#faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+#faq summary:hover {
+  color: #990000;
+}
+
+#faq details p.small {
+  padding: 0 4px 10px 4px;
+}
+
+#faq hr {
+  height: 1px;
+  border: none;
+  margin: 4px 0;
+  background: linear-gradient(90deg, rgba(153,0,0,0) 0%, rgba(153,0,0,0.35) 50%, rgba(153,0,0,0) 100%);
+}
+
 .small-note {
   font-size: 13px;
   color: var(--muted);
@@ -1479,6 +1524,18 @@ hr {
 
 [data-theme="dark"] hr {
   background-color: rgba(255, 255, 255, 0.35);
+}
+
+[data-theme="dark"] #faq hr {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+}
+
+[data-theme="dark"] #faq summary::after {
+  color: #ffd919;
+}
+
+[data-theme="dark"] #faq summary:hover {
+  color: #ffd919;
 }
 
 /* Direct text links (plain <a> with no class) inside dark surfaces */
