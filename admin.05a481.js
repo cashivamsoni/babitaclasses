@@ -180,7 +180,6 @@ const blogDateInput = document.getElementById("blogDateInput");
 const blogBlocksContainer = document.getElementById("blogBlocksContainer");
 const blogAddTextBlockBtn = document.getElementById("blogAddTextBlockBtn");
 const blogAddImageBlockBtn = document.getElementById("blogAddImageBlockBtn");
-const blogButtonsContainer = document.getElementById("blogButtonsContainer");
 const blogAddButtonBtn = document.getElementById("blogAddButtonBtn");
 const blogAddBtn = document.getElementById("blogAddBtn");
 const blogStatus = document.getElementById("blogStatus");
@@ -2483,6 +2482,13 @@ function collectContentBlocks() {
   const blocks = [];
   blogBlocksContainer.querySelectorAll(".blog-block-row").forEach((row) => {
     const type = row.dataset.blockType;
+    if (type === "button") {
+      const inputs = row.querySelectorAll("input");
+      const text = inputs[0].value.trim();
+      const url = inputs[1].value.trim();
+      if (text && url) blocks.push({ type: "button", text, url });
+      return;
+    }
     const field = row.querySelector("textarea, input");
     const value = field.value.trim();
     if (value) blocks.push({ type, value });
@@ -2490,16 +2496,10 @@ function collectContentBlocks() {
   return blocks;
 }
 
-function moveButtonRow(row, direction) {
-  const sibling = direction === "up" ? row.previousElementSibling : row.nextElementSibling;
-  if (!sibling) return;
-  if (direction === "up") blogButtonsContainer.insertBefore(row, sibling);
-  else blogButtonsContainer.insertBefore(sibling, row);
-}
-
 function addButtonRow(text, url) {
   const row = document.createElement("div");
-  row.className = "blog-dynamic-row blog-button-row";
+  row.className = "blog-block-row blog-button-row blog-dynamic-row";
+  row.dataset.blockType = "button";
 
   const handle = document.createElement("span");
   handle.className = "blog-block-drag-handle";
@@ -2514,62 +2514,14 @@ function addButtonRow(text, url) {
   urlInput.placeholder = "https://...";
   urlInput.value = url || "";
 
-  const upBtn = document.createElement("button");
-  upBtn.type = "button";
-  upBtn.className = "move-btn";
-  upBtn.textContent = "▲";
-  upBtn.addEventListener("click", () => moveButtonRow(row, "up"));
-
-  const downBtn = document.createElement("button");
-  downBtn.type = "button";
-  downBtn.className = "move-btn";
-  downBtn.textContent = "▼";
-  downBtn.addEventListener("click", () => moveButtonRow(row, "down"));
-
-  const removeBtn = document.createElement("button");
-  removeBtn.type = "button";
-  removeBtn.className = "blog-remove-btn";
-  removeBtn.textContent = "×";
-  removeBtn.addEventListener("click", () => {
-    const nextSibling = row.nextSibling;
-    const parent = row.parentNode;
-    row.remove();
-    showUndoToast("Button removed.", () => {
-      parent.insertBefore(row, nextSibling);
-    });
-  });
-
   row.appendChild(handle);
   row.appendChild(textInput);
   row.appendChild(urlInput);
-  row.appendChild(upBtn);
-  row.appendChild(downBtn);
-  row.appendChild(removeBtn);
+  row.appendChild(createBlockControls(row));
 
-  row.draggable = isDesktopViewport();
-  row.addEventListener("dragstart", () => setTimeout(() => row.classList.add("dragging"), 0));
-  row.addEventListener("dragend", () => row.classList.remove("dragging"));
-
-  blogButtonsContainer.appendChild(row);
+  makeBlockRowDraggable(row);
+  blogBlocksContainer.appendChild(row);
 }
-
-blogButtonsContainer.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  const dragging = blogButtonsContainer.querySelector(".blog-button-row.dragging");
-  if (!dragging) return;
-  const rows = [...blogButtonsContainer.querySelectorAll(".blog-button-row:not(.dragging)")];
-  const after = rows.reduce(
-    (closest, row) => {
-      const box = row.getBoundingClientRect();
-      const offset = e.clientY - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) return { offset, element: row };
-      return closest;
-    },
-    { offset: Number.NEGATIVE_INFINITY, element: null }
-  ).element;
-  if (after == null) blogButtonsContainer.appendChild(dragging);
-  else blogButtonsContainer.insertBefore(dragging, after);
-});
 
 blogAddButtonBtn.addEventListener("click", () => addButtonRow());
 addTextBlockRow();
@@ -2577,7 +2529,7 @@ addButtonRow();
 
 function collectButtons() {
   const buttons = [];
-  blogButtonsContainer.querySelectorAll(".blog-dynamic-row").forEach((row) => {
+  blogBlocksContainer.querySelectorAll(".blog-button-row").forEach((row) => {
     const inputs = row.querySelectorAll("input");
     const text = inputs[0].value.trim();
     const url = inputs[1].value.trim();
@@ -2590,7 +2542,6 @@ function clearBlogForm() {
   blogTitleInput.value = "";
   blogDateInput.value = "";
   blogBlocksContainer.innerHTML = "";
-  blogButtonsContainer.innerHTML = "";
   addTextBlockRow();
   addButtonRow();
 }
@@ -2600,9 +2551,11 @@ function fillBlogForm(data) {
   blogDateInput.value = data.date || "";
 
   blogBlocksContainer.innerHTML = "";
+  const hasInlineButtons = Array.isArray(data.contentBlocks) && data.contentBlocks.some((b) => b.type === "button");
   if (Array.isArray(data.contentBlocks) && data.contentBlocks.length) {
     data.contentBlocks.forEach((b) => {
       if (b.type === "image") addImageBlockRow(b.value);
+      else if (b.type === "button") addButtonRow(b.text, b.url);
       else addTextBlockRow(b.value);
     });
   } else {
@@ -2614,14 +2567,18 @@ function fillBlogForm(data) {
     if (!data.fullText && legacyImages.length === 0) addTextBlockRow();
   }
 
-  blogButtonsContainer.innerHTML = "";
-  const buttons = Array.isArray(data.buttons) && data.buttons.length
-    ? data.buttons
-    : data.buttonText && data.buttonUrl
-    ? [{ text: data.buttonText, url: data.buttonUrl }]
-    : [];
-  if (buttons.length) buttons.forEach((b) => addButtonRow(b.text, b.url));
-  else addButtonRow();
+  // Posts saved before buttons could be placed inline still keep their buttons in the
+  // separate `buttons` field — append those at the end, same as before. Once resaved,
+  // their position becomes whatever the editor drags them to, via contentBlocks above.
+  if (!hasInlineButtons) {
+    const buttons = Array.isArray(data.buttons) && data.buttons.length
+      ? data.buttons
+      : data.buttonText && data.buttonUrl
+      ? [{ text: data.buttonText, url: data.buttonUrl }]
+      : [];
+    if (buttons.length) buttons.forEach((b) => addButtonRow(b.text, b.url));
+    else addButtonRow();
+  }
 }
 
 async function renderBlogPosts() {
@@ -2855,7 +2812,7 @@ function fillResultDetailsForm(term) {
   resultTermStatusDisplay.textContent =
     term.status === "active"
       ? "This is the LATEST term — shown on the public Check Result search."
-      : "This term is ARCHIVED — visible in the Results Archive, still searchable by roll/name.";
+      : "This term is ARCHIVED — visible in the Results Archive, not searchable by roll/name.";
 }
 
 function previewResultId(term, student) {
