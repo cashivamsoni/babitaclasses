@@ -1,3271 +1,879 @@
-// ---------- Firebase setup ----------
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  setPersistence,
-  browserLocalPersistence,
-  browserSessionPersistence,
-} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  getDocs,
-  serverTimestamp,
-  documentId,
-  where,
-  deleteField,
-} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCeIXfg73jN9d6rvzkeenfUja3lyCVPWMA",
-  authDomain: "babitaclasses-eb3e4.firebaseapp.com",
-  projectId: "babitaclasses-eb3e4",
-  storageBucket: "babitaclasses-eb3e4.firebasestorage.app",
-  messagingSenderId: "191824554368",
-  appId: "1:191824554368:web:bb9f7af3c4634f7616f965",
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Single doc that holds simple site-wide fields (starting with lastUpdated)
-const SITE_DOC = doc(db, "site", "meta");
-let previousMarqueeText = "";
-let previousWnState = {};
-let previousGalleryUrls = [];
-
-// ---------- Elements ----------
-const loginView = document.getElementById("loginView");
-const adminHub = document.getElementById("adminHub");
-const adminView = document.getElementById("adminView");
-const hubHomeBtn = document.getElementById("hubHomeBtn");
-const backToHubBtn = document.getElementById("backToHubBtn");
-const hubAttendanceBtn = document.getElementById("hubAttendanceBtn");
-const adminAttendanceView = document.getElementById("adminAttendanceView");
-const attendanceBackBtn = document.getElementById("attendanceBackBtn");
-const attendanceLogoutBtn = document.getElementById("attendanceLogoutBtn");
-const hubBlogBtn = document.getElementById("hubBlogBtn");
-const adminBlogView = document.getElementById("adminBlogView");
-const blogBackBtn = document.getElementById("blogBackBtn");
-const blogLogoutBtn = document.getElementById("blogLogoutBtn");
-const loginForm = document.getElementById("loginForm");
-const emailInput = document.getElementById("emailInput");
-const passwordInput = document.getElementById("passwordInput");
-const rememberMeInput = document.getElementById("rememberMeInput");
-const loginError = document.getElementById("loginError");
-
-const lastUpdatedDisplay = document.getElementById("lastUpdatedDisplay");
-const saveStatus = document.getElementById("saveStatus");
-const hubLogoutBtn = document.getElementById("hubLogoutBtn");
-const editorLogoutBtn = document.getElementById("editorLogoutBtn");
-
-const marqueeInput = document.getElementById("marqueeInput");
-const marqueeSaveBtn = document.getElementById("marqueeSaveBtn");
-const marqueeStatus = document.getElementById("marqueeStatus");
-
-const noticeInput = document.getElementById("noticeInput");
-const noticeAddBtn = document.getElementById("noticeAddBtn");
-const noticeStatus = document.getElementById("noticeStatus");
-const noticeList = document.getElementById("noticeList");
-const noticeDeleteSelectedBtn = document.getElementById("noticeDeleteSelectedBtn");
-const noticeSelectModeBtn = document.getElementById("noticeSelectModeBtn");
-const noticeSelectAllBtn = document.getElementById("noticeSelectAllBtn");
-const noticeSelectedCount = document.getElementById("noticeSelectedCount");
-
-noticeInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    noticeAddBtn.click();
-  }
-});
-
-const undoToast = document.getElementById("undoToast");
-const undoToastMsg = document.getElementById("undoToastMsg");
-const undoToastBtn = document.getElementById("undoToastBtn");
-
-const wnTextInput = document.getElementById("wnTextInput");
-const wnImageUrlInput = document.getElementById("wnImageUrlInput");
-const wnBtnTextInput = document.getElementById("wnBtnTextInput");
-const wnBtnUrlInput = document.getElementById("wnBtnUrlInput");
-const wnSaveBtn = document.getElementById("wnSaveBtn");
-const wnStatus = document.getElementById("wnStatus");
-
-const galleryRowsContainer = document.getElementById("galleryRowsContainer");
-const galleryImageInput = document.getElementById("galleryImageInput");
-const galleryAddBtn = document.getElementById("galleryAddBtn");
-galleryImageInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    galleryAddBtn.click();
-  }
-});
-const galleryAddStatus = document.getElementById("galleryAddStatus");
-const gallerySelectModeBtn = document.getElementById("gallerySelectModeBtn");
-const gallerySelectAllBtn = document.getElementById("gallerySelectAllBtn");
-const gallerySelectedCount = document.getElementById("gallerySelectedCount");
-const galleryDeleteSelectedBtn = document.getElementById("galleryDeleteSelectedBtn");
-const gallerySaveBtn = document.getElementById("gallerySaveBtn");
-const galleryStatus = document.getElementById("galleryStatus");
-
-const videoTitleInput = document.getElementById("videoTitleInput");
-const videoUrlInput = document.getElementById("videoUrlInput");
-const videoAddBtn = document.getElementById("videoAddBtn");
-
-[videoTitleInput, videoUrlInput].forEach((input) => {
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      videoAddBtn.click();
-    }
-  });
-});
-const videoStatus = document.getElementById("videoStatus");
-const videoAdminList = document.getElementById("videoAdminList");
-const videoSelectModeBtn = document.getElementById("videoSelectModeBtn");
-const videoSelectAllBtn = document.getElementById("videoSelectAllBtn");
-const videoDeleteSelectedBtn = document.getElementById("videoDeleteSelectedBtn");
-const videoSelectedCount = document.getElementById("videoSelectedCount");
-
-const syllabusSessionSelect = document.getElementById("syllabusSessionSelect");
-const syllabusNewSessionBtn = document.getElementById("syllabusNewSessionBtn");
-const syllabusDeleteSessionBtn = document.getElementById("syllabusDeleteSessionBtn");
-const syllabusStatus = document.getElementById("syllabusStatus");
-const syllabusAddRowBtn = document.getElementById("syllabusAddRowBtn");
-const syllabusRowList = document.getElementById("syllabusRowList");
-
-const studentNameInput = document.getElementById("studentNameInput");
-const studentRollInput = document.getElementById("studentRollInput");
-const studentAddBtn = document.getElementById("studentAddBtn");
-const studentStatus = document.getElementById("studentStatus");
-const studentList = document.getElementById("studentList");
-const studentSelectModeBtn = document.getElementById("studentSelectModeBtn");
-const studentSelectAllBtn = document.getElementById("studentSelectAllBtn");
-const studentDeleteSelectedBtn = document.getElementById("studentDeleteSelectedBtn");
-const studentSelectedCount = document.getElementById("studentSelectedCount");
-
-const attendanceDateInput = document.getElementById("attendanceDateInput");
-const attendanceHolidayView = document.getElementById("attendanceHolidayView");
-const attendanceHolidayName = document.getElementById("attendanceHolidayName");
-const attendanceRemoveHolidayBtn = document.getElementById("attendanceRemoveHolidayBtn");
-const attendanceMarkView = document.getElementById("attendanceMarkView");
-const attendanceMarkHolidayBtn = document.getElementById("attendanceMarkHolidayBtn");
-const attendanceStudentList = document.getElementById("attendanceStudentList");
-const attendanceStatus = document.getElementById("attendanceStatus");
-
-const attendanceFromInput = document.getElementById("attendanceFromInput");
-const attendanceToInput = document.getElementById("attendanceToInput");
-const attendanceLoadRangeBtn = document.getElementById("attendanceLoadRangeBtn");
-const attendanceRangeStatus = document.getElementById("attendanceRangeStatus");
-const attendanceSelectModeBtn = document.getElementById("attendanceSelectModeBtn");
-const attendanceSelectAllBtn = document.getElementById("attendanceSelectAllBtn");
-const attendanceRangeList = document.getElementById("attendanceRangeList");
-const attendanceDeleteSelectedBtn = document.getElementById("attendanceDeleteSelectedBtn");
-const attendanceSelectedCount = document.getElementById("attendanceSelectedCount");
-const attendanceExportPdfBtn = document.getElementById("attendanceExportPdfBtn");
-
-const blogTitleInput = document.getElementById("blogTitleInput");
-const blogDateInput = document.getElementById("blogDateInput");
-const blogBlocksContainer = document.getElementById("blogBlocksContainer");
-const blogAddTextBlockBtn = document.getElementById("blogAddTextBlockBtn");
-const blogAddImageBlockBtn = document.getElementById("blogAddImageBlockBtn");
-const blogAddButtonBtn = document.getElementById("blogAddButtonBtn");
-const blogAddBtn = document.getElementById("blogAddBtn");
-const blogStatus = document.getElementById("blogStatus");
-const blogPostList = document.getElementById("blogPostList");
-const blogSelectModeBtn = document.getElementById("blogSelectModeBtn");
-const blogSelectAllBtn = document.getElementById("blogSelectAllBtn");
-const blogDeleteSelectedBtn = document.getElementById("blogDeleteSelectedBtn");
-const blogSelectedCount = document.getElementById("blogSelectedCount");
-
-const hubResultsBtn = document.getElementById("hubResultsBtn");
-const adminResultsView = document.getElementById("adminResultsView");
-const resultsBackBtn = document.getElementById("resultsBackBtn");
-const resultsLogoutBtn = document.getElementById("resultsLogoutBtn");
-const resultTermSelect = document.getElementById("resultTermSelect");
-const resultTermStatusDisplay = document.getElementById("resultTermStatusDisplay");
-const resultNewTermBtn = document.getElementById("resultNewTermBtn");
-const resultDeleteTermBtn = document.getElementById("resultDeleteTermBtn");
-const resultPublishBtn = document.getElementById("resultPublishBtn");
-const resultStatus = document.getElementById("resultStatus");
-const resultTermNameInput = document.getElementById("resultTermNameInput");
-const resultDateInput = document.getElementById("resultDateInput");
-const resultSessionInput = document.getElementById("resultSessionInput");
-const resultSetCodeInput = document.getElementById("resultSetCodeInput");
-const resultMaxMarksInput = document.getElementById("resultMaxMarksInput");
-const resultSaveDetailsBtn = document.getElementById("resultSaveDetailsBtn");
-const resultDetailsStatus = document.getElementById("resultDetailsStatus");
-const resultRollInput = document.getElementById("resultRollInput");
-const resultNameInput = document.getElementById("resultNameInput");
-const resultMarksInput = document.getElementById("resultMarksInput");
-const resultAddStudentBtn = document.getElementById("resultAddStudentBtn");
-const resultStudentStatus = document.getElementById("resultStudentStatus");
-
-[resultRollInput, resultNameInput, resultMarksInput].forEach((input) => {
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      resultAddStudentBtn.click();
-    }
-  });
-});
-[resultTermNameInput, resultDateInput, resultSessionInput, resultSetCodeInput, resultMaxMarksInput].forEach((input) => {
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      resultSaveDetailsBtn.click();
-    }
-  });
-});
-const resultSelectModeBtn = document.getElementById("resultSelectModeBtn");
-const resultSelectAllBtn = document.getElementById("resultSelectAllBtn");
-const resultStudentList = document.getElementById("resultStudentList");
-const resultDeleteSelectedBtn = document.getElementById("resultDeleteSelectedBtn");
-const resultSelectedCount = document.getElementById("resultSelectedCount");
-
-// ---------- Auth state ----------
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    loginView.style.display = "none";
-    adminView.style.display = "none";
-    adminAttendanceView.style.display = "none";
-    adminBlogView.style.display = "none";
-    adminResultsView.style.display = "none";
-    adminHub.style.display = "block";
-    await loadLastUpdatedDisplay();
-    await loadMarquee();
-    await loadWhatsNew();
-    await loadGallery();
-    await renderNotices();
-    await renderVideos();
-    await loadSyllabusSessions();
-  } else {
-    adminHub.style.display = "none";
-    adminView.style.display = "none";
-    adminAttendanceView.style.display = "none";
-    adminBlogView.style.display = "none";
-    adminResultsView.style.display = "none";
-    loginView.style.display = "block";
-    loginForm.reset();
-  }
-});
-
-hubHomeBtn.addEventListener("click", () => {
-  adminHub.style.display = "none";
-  adminView.style.display = "block";
-});
-
-backToHubBtn.addEventListener("click", () => {
-  adminView.style.display = "none";
-  adminHub.style.display = "block";
-});
-
-hubAttendanceBtn.addEventListener("click", async () => {
-  adminHub.style.display = "none";
-  adminAttendanceView.style.display = "block";
-  const todayStr = todayISO();
-  attendanceDateInput.value = todayStr;
-  attendanceFromInput.value = todayStr;
-  attendanceToInput.value = todayStr;
-  await loadStudents();
-  await loadAttendanceForDate(todayStr);
-});
-
-attendanceBackBtn.addEventListener("click", () => {
-  adminAttendanceView.style.display = "none";
-  adminHub.style.display = "block";
-});
-
-attendanceLogoutBtn.addEventListener("click", () => signOut(auth));
-
-hubBlogBtn.addEventListener("click", async () => {
-  adminHub.style.display = "none";
-  adminBlogView.style.display = "block";
-  await renderBlogPosts();
-});
-
-blogBackBtn.addEventListener("click", () => {
-  adminBlogView.style.display = "none";
-  adminHub.style.display = "block";
-});
-
-blogLogoutBtn.addEventListener("click", () => signOut(auth));
-
-hubResultsBtn.addEventListener("click", async () => {
-  adminHub.style.display = "none";
-  adminResultsView.style.display = "block";
-  await loadResultTerms();
-});
-
-resultsBackBtn.addEventListener("click", () => {
-  adminResultsView.style.display = "none";
-  adminHub.style.display = "block";
-});
-
-resultsLogoutBtn.addEventListener("click", () => signOut(auth));
-
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  loginError.textContent = "";
-  const submitBtn = loginForm.querySelector("button");
-  submitBtn.disabled = true;
-  try {
-    await setPersistence(
-      auth,
-      rememberMeInput.checked ? browserLocalPersistence : browserSessionPersistence
-    );
-    await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
-  } catch (err) {
-    loginError.textContent = "Login failed — check your email and password.";
-    console.error(err);
-  } finally {
-    submitBtn.disabled = false;
-  }
-});
-
-hubLogoutBtn.addEventListener("click", () => signOut(auth));
-editorLogoutBtn.addEventListener("click", () => signOut(auth));
-
-const markUpdatedTodayBtn = document.getElementById("markUpdatedTodayBtn");
-
-// ---------- Last updated date: shown on the hub, only updates on button click ----------
-function todayISO() {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function formatReadable(isoDate) {
-  const d = new Date(isoDate + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-}
-
-async function loadLastUpdatedDisplay() {
-  try {
-    const snap = await getDoc(SITE_DOC);
-    if (snap.exists() && snap.data().lastUpdated) {
-      lastUpdatedDisplay.textContent = formatReadable(snap.data().lastUpdated);
-    }
-  } catch (err) {
-    saveStatus.textContent = "Could not load current date: " + (err.code || err.message);
-    saveStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-markUpdatedTodayBtn.addEventListener("click", async () => {
-  const previousDisplay = lastUpdatedDisplay.textContent;
-  let previousStored = null;
-  try {
-    const snap = await getDoc(SITE_DOC);
-    previousStored = snap.exists() ? snap.data().lastUpdated : null;
-  } catch (err) {
-    // If this read fails, undo just won't be offered below — the main action still proceeds.
-  }
-
-  saveStatus.textContent = "Updating...";
-  saveStatus.className = "msg";
-  const today = todayISO();
-  try {
-    await setDoc(SITE_DOC, { lastUpdated: today }, { merge: true });
-    lastUpdatedDisplay.textContent = formatReadable(today);
-    saveStatus.textContent = "Site marked as updated today.";
-    saveStatus.className = "msg success";
-    showUndoToast("Marked as updated today.", async () => {
-      if (previousStored) {
-        await setDoc(SITE_DOC, { lastUpdated: previousStored }, { merge: true });
-      }
-      lastUpdatedDisplay.textContent = previousDisplay;
-    });
-  } catch (err) {
-    saveStatus.textContent = "Could not update: " + (err.code || err.message);
-    saveStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-// ---------- Top marquee text ----------
-async function loadMarquee() {
-  try {
-    const snap = await getDoc(SITE_DOC);
-    if (snap.exists() && snap.data().marqueeText) {
-      marqueeInput.value = snap.data().marqueeText;
-    }
-    previousMarqueeText = marqueeInput.value;
-  } catch (err) {
-    marqueeStatus.textContent = "Could not load marquee: " + (err.code || err.message);
-    marqueeStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-marqueeSaveBtn.addEventListener("click", async () => {
-  const value = marqueeInput.value.trim();
-  if (!value) {
-    marqueeStatus.textContent = "Marquee text can't be empty.";
-    marqueeStatus.className = "msg error";
-    return;
-  }
-  const previousValue = previousMarqueeText;
-  marqueeSaveBtn.disabled = true;
-  marqueeStatus.textContent = "Saving...";
-  marqueeStatus.className = "msg";
-  try {
-    await setDoc(SITE_DOC, { marqueeText: value }, { merge: true });
-    previousMarqueeText = value;
-    marqueeStatus.textContent = "Marquee updated.";
-    marqueeStatus.className = "msg success";
-    showUndoToast("Marquee updated.", async () => {
-      await setDoc(SITE_DOC, { marqueeText: previousValue }, { merge: true });
-      marqueeInput.value = previousValue;
-      previousMarqueeText = previousValue;
-    });
-  } catch (err) {
-    marqueeStatus.textContent = "Save failed: " + (err.code || err.message);
-    marqueeStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    marqueeSaveBtn.disabled = false;
-  }
-});
-
-// ---------- Undo toast (6s window) ----------
-let undoTimer = null;
-let currentUndoHandler = null;
-
-function showUndoToast(message, undoFn) {
-  clearTimeout(undoTimer);
-  if (currentUndoHandler) {
-    undoToastBtn.removeEventListener("click", currentUndoHandler);
-  }
-
-  undoToastMsg.textContent = message;
-  undoToast.classList.add("show");
-
-  currentUndoHandler = async () => {
-    clearTimeout(undoTimer);
-    undoToast.classList.remove("show");
-    undoToastBtn.removeEventListener("click", currentUndoHandler);
-    currentUndoHandler = null;
-    await undoFn();
-  };
-  undoToastBtn.addEventListener("click", currentUndoHandler);
-
-  undoTimer = setTimeout(() => {
-    undoToast.classList.remove("show");
-    if (currentUndoHandler) {
-      undoToastBtn.removeEventListener("click", currentUndoHandler);
-      currentUndoHandler = null;
-    }
-  }, 6000);
-}
-
-// ---------- Shared drag-handle / move-buttons row reordering (desktop drag, mobile ▲▼) ----------
-function createRowDragHandle() {
-  const handle = document.createElement("span");
-  handle.className = "row-drag-handle";
-  return handle;
-}
-
-function createRowMoveButtons(getIndex, onMove) {
-  const wrap = document.createElement("span");
-  wrap.className = "row-move-btns";
-
-  const upBtn = document.createElement("button");
-  upBtn.type = "button";
-  upBtn.className = "move-btn";
-  upBtn.textContent = "▲";
-  upBtn.addEventListener("click", () => onMove(getIndex(), "up"));
-
-  const downBtn = document.createElement("button");
-  downBtn.type = "button";
-  downBtn.className = "move-btn";
-  downBtn.textContent = "▼";
-  downBtn.addEventListener("click", () => onMove(getIndex(), "down"));
-
-  wrap.appendChild(upBtn);
-  wrap.appendChild(downBtn);
-  return wrap;
-}
-
-function makeRowDraggable(li, listEl, rowSelector, onDrop) {
-  li.draggable = isDesktopViewport();
-  li.addEventListener("dragstart", () => {
-    li.dataset.justDragged = "1";
-    setTimeout(() => li.classList.add("row-dragging"), 0);
-  });
-  li.addEventListener("dragend", () => {
-    li.classList.remove("row-dragging");
-    onDrop();
-    setTimeout(() => {
-      delete li.dataset.justDragged;
-    }, 0);
-  });
-  if (!listEl.dataset.rowDragBound) {
-    listEl.dataset.rowDragBound = "1";
-    listEl.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      const dragging = listEl.querySelector(rowSelector + ".row-dragging");
-      if (!dragging) return;
-      const rows = [...listEl.querySelectorAll(rowSelector + ":not(.row-dragging)")];
-      const after = rows.reduce(
-        (closest, row) => {
-          const box = row.getBoundingClientRect();
-          const offset = e.clientY - box.top - box.height / 2;
-          if (offset < 0 && offset > closest.offset) return { offset, element: row };
-          return closest;
-        },
-        { offset: Number.NEGATIVE_INFINITY, element: null }
-      ).element;
-      if (after == null) listEl.appendChild(dragging);
-      else listEl.insertBefore(dragging, after);
-    });
-  }
-}
-
-// Lets a bulk-select list row be toggled by tapping anywhere on it, not just the
-// checkbox — while leaving buttons, the drag handle, move buttons, and an
-// in-progress drag/reorder untouched.
-function makeRowTapSelectable(li, checkbox, listEl) {
-  li.addEventListener("click", (e) => {
-    if (li.dataset.justDragged === "1") return;
-    if (e.target === checkbox) return;
-    if (e.target.closest("button, a, .row-drag-handle, .row-move-btns")) return;
-    if (!listEl.classList.contains("bulk-mode")) return;
-    checkbox.checked = !checkbox.checked;
-    checkbox.dispatchEvent(new Event("change"));
-  });
-}
-
-// ---------- Notices (add / edit / delete) ----------
-const NOTICES_COL = collection(db, "notices");
-
-async function renderNotices() {
-  noticeList.innerHTML = "";
-  noticeDeleteSelectedBtn.style.display = "none";
-  try {
-    const q = query(NOTICES_COL, orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    const items = [];
-    snap.forEach((docSnap) => items.push({ id: docSnap.id, data: docSnap.data() }));
-
-    if (items.some((it) => it.data.order === undefined)) {
-      await Promise.all(items.map((it, index) => updateDoc(doc(db, "notices", it.id), { order: index })));
-      items.forEach((it, index) => (it.data.order = index));
-    }
-    items.sort((a, b) => a.data.order - b.data.order);
-
-    async function persistNoticeOrder() {
-      const ids = [...noticeList.children].map((li) => li.dataset.id);
-      await Promise.all(ids.map((id, index) => updateDoc(doc(db, "notices", id), { order: index })));
-    }
-
-    items.forEach((item) => {
-      const { id, data } = item;
-      const li = document.createElement("li");
-      li.dataset.id = id;
-
-      li.appendChild(createRowDragHandle());
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.dataset.id = id;
-      checkbox._noticeData = data;
-      checkbox.addEventListener("change", updateDeleteSelectedVisibility);
-      li.appendChild(checkbox);
-      makeRowTapSelectable(li, checkbox, noticeList);
-
-      const span = document.createElement("span");
-      span.textContent = data.text || "";
-      li.appendChild(span);
-
-      const actions = document.createElement("div");
-      actions.className = "row-actions";
-      li.appendChild(actions);
-
-      actions.appendChild(
-        createRowMoveButtons(
-          () => [...noticeList.children].indexOf(li),
-          async (index, direction) => {
-            const sibling = direction === "up" ? li.previousElementSibling : li.nextElementSibling;
-            if (!sibling) return;
-            if (direction === "up") noticeList.insertBefore(li, sibling);
-            else noticeList.insertBefore(sibling, li);
-            await persistNoticeOrder();
-          }
-        )
-      );
-
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "edit-btn";
-      editBtn.textContent = "Edit";
-      editBtn.addEventListener("click", async () => {
-        const previousText = data.text || "";
-        const updated = prompt("Edit notice:", previousText);
-        if (updated === null) return;
-        const trimmed = updated.trim();
-        if (!trimmed) return;
-        try {
-          await updateDoc(doc(db, "notices", id), { text: trimmed });
-          await renderNotices();
-          showUndoToast("Notice updated.", async () => {
-            await updateDoc(doc(db, "notices", id), { text: previousText });
-            await renderNotices();
-          });
-        } catch (err) {
-          noticeStatus.textContent = "Edit failed: " + (err.code || err.message);
-          noticeStatus.className = "msg error";
-          console.error(err);
-        }
-      });
-      actions.appendChild(editBtn);
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "delete-btn";
-      deleteBtn.textContent = "Delete";
-      deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete this notice?")) return;
-        try {
-          await deleteDoc(doc(db, "notices", id));
-          await renderNotices();
-          showUndoToast("Notice deleted.", async () => {
-            await setDoc(doc(db, "notices", id), data);
-            await renderNotices();
-          });
-        } catch (err) {
-          noticeStatus.textContent = "Delete failed: " + (err.code || err.message);
-          noticeStatus.className = "msg error";
-          console.error(err);
-        }
-      });
-      actions.appendChild(deleteBtn);
-
-      makeRowDraggable(li, noticeList, "li", persistNoticeOrder);
-      noticeList.appendChild(li);
-    });
-  } catch (err) {
-    noticeStatus.textContent = "Could not load notices: " + (err.code || err.message);
-    noticeStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-// ---------- Shared "Select All / Deselect All" helper for every bulk-select list ----------
-function setupSelectAll(listEl, selectAllBtn, selectModeBtn) {
-  selectAllBtn.addEventListener("click", () => {
-    const checkboxes = listEl.querySelectorAll('input[type="checkbox"]');
-    const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every((cb) => cb.checked);
-    checkboxes.forEach((cb) => {
-      cb.checked = !allChecked;
-      cb.dispatchEvent(new Event("change"));
-    });
-    selectAllBtn.textContent = allChecked ? "Select All" : "Deselect All";
-  });
-
-  // Show/hide Select All alongside bulk-mode, and reset its label each time
-  selectModeBtn.addEventListener("click", () => {
-    const enabling = listEl.classList.contains("bulk-mode");
-    selectAllBtn.style.display = enabling ? "inline-block" : "none";
-    selectAllBtn.textContent = "Select All";
-  });
-}
-
-function updateDeleteSelectedVisibility() {
-  const checked = noticeList.querySelectorAll('input[type="checkbox"]:checked');
-  noticeDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
-  noticeSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
-}
-
-noticeSelectModeBtn.addEventListener("click", () => {
-  const enabling = !noticeList.classList.contains("bulk-mode");
-  noticeList.classList.toggle("bulk-mode", enabling);
-  noticeSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
-  if (!enabling) {
-    noticeList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    updateDeleteSelectedVisibility();
-  }
-});
-setupSelectAll(noticeList, noticeSelectAllBtn, noticeSelectModeBtn);
-
-
-noticeDeleteSelectedBtn.addEventListener("click", async () => {
-  const checked = noticeList.querySelectorAll('input[type="checkbox"]:checked');
-  if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected notice(s)?")) return;
-
-  noticeDeleteSelectedBtn.disabled = true;
-  noticeStatus.textContent = "Deleting...";
-  noticeStatus.className = "msg";
-  try {
-    const deleted = [];
-    for (const cb of checked) {
-      deleted.push({ id: cb.dataset.id, data: cb._noticeData });
-      await deleteDoc(doc(db, "notices", cb.dataset.id));
-    }
-    noticeStatus.textContent = "Selected notices deleted.";
-    noticeStatus.className = "msg success";
-    await renderNotices();
-    showUndoToast(deleted.length + " notice(s) deleted.", async () => {
-      for (const item of deleted) {
-        await setDoc(doc(db, "notices", item.id), item.data);
-      }
-      await renderNotices();
-    });
-  } catch (err) {
-    noticeStatus.textContent = "Delete failed: " + (err.code || err.message);
-    noticeStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    noticeDeleteSelectedBtn.disabled = false;
-  }
-});
-
-noticeAddBtn.addEventListener("click", async () => {
-  const value = noticeInput.value.trim();
-  if (!value) {
-    noticeStatus.textContent = "Type a notice first.";
-    noticeStatus.className = "msg error";
-    return;
-  }
-  noticeAddBtn.disabled = true;
-  noticeStatus.textContent = "Adding...";
-  noticeStatus.className = "msg";
-  try {
-    const newDoc = await addDoc(NOTICES_COL, { text: value, createdAt: serverTimestamp(), order: -Date.now() });
-    noticeInput.value = "";
-    noticeStatus.textContent = "Notice added.";
-    noticeStatus.className = "msg success";
-    await renderNotices();
-    showUndoToast("Notice added.", async () => {
-      await deleteDoc(doc(db, "notices", newDoc.id));
-      await renderNotices();
-    });
-  } catch (err) {
-    noticeStatus.textContent = "Could not add notice: " + (err.code || err.message);
-    noticeStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    noticeAddBtn.disabled = false;
-  }
-});
-
-// ---------- What's New section (text, image, button) ----------
-// Fallbacks match what's currently hardcoded on the live site, so the
-// admin form shows the real current content even before anything is
-// saved to Firestore.
-const WN_DEFAULTS = {
-  text: "The UP Board (UPMSP) has declared the results for class 10th and 12th and our student Vasu got 61.5% in class 10th with 73 marks in English.",
-  image: "/images/newbanner.png",
-  btnText: "Open Facebook Post",
-  btnUrl: "https://www.facebook.com/share/p/1EHf5KEr9N/",
-};
-
-async function loadWhatsNew() {
-  try {
-    const snap = await getDoc(SITE_DOC);
-    const data = snap.exists() ? snap.data() : {};
-    wnTextInput.value = data.whatsNewText || WN_DEFAULTS.text;
-    wnImageUrlInput.value = data.whatsNewImage || WN_DEFAULTS.image;
-    wnBtnTextInput.value = data.whatsNewBtnText || WN_DEFAULTS.btnText;
-    wnBtnUrlInput.value = data.whatsNewBtnUrl || WN_DEFAULTS.btnUrl;
-    previousWnState = {
-      text: wnTextInput.value,
-      image: wnImageUrlInput.value,
-      btnText: wnBtnTextInput.value,
-      btnUrl: wnBtnUrlInput.value,
-    };
-  } catch (err) {
-    wnStatus.textContent = "Could not load current content: " + (err.code || err.message);
-    wnStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-
-wnSaveBtn.addEventListener("click", async () => {
-  const text = wnTextInput.value.trim();
-  const image = wnImageUrlInput.value.trim();
-  const btnText = wnBtnTextInput.value.trim();
-  const btnUrl = wnBtnUrlInput.value.trim();
-
-  if (!text || !image || !btnText || !btnUrl) {
-    wnStatus.textContent = "All four fields need a value.";
-    wnStatus.className = "msg error";
-    return;
-  }
-
-  const previousState = previousWnState;
-  wnSaveBtn.disabled = true;
-  wnStatus.textContent = "Saving...";
-  wnStatus.className = "msg";
-  try {
-    await setDoc(
-      SITE_DOC,
-      {
-        whatsNewText: text,
-        whatsNewImage: image,
-        whatsNewBtnText: btnText,
-        whatsNewBtnUrl: btnUrl,
-      },
-      { merge: true }
-    );
-    previousWnState = { text, image, btnText, btnUrl };
-    wnStatus.textContent = "What's New section updated.";
-    wnStatus.className = "msg success";
-    showUndoToast("What's New updated.", async () => {
-      await setDoc(
-        SITE_DOC,
-        {
-          whatsNewText: previousState.text,
-          whatsNewImage: previousState.image,
-          whatsNewBtnText: previousState.btnText,
-          whatsNewBtnUrl: previousState.btnUrl,
-        },
-        { merge: true }
-      );
-      wnTextInput.value = previousState.text;
-      wnImageUrlInput.value = previousState.image;
-      wnBtnTextInput.value = previousState.btnText;
-      wnBtnUrlInput.value = previousState.btnUrl;
-      previousWnState = previousState;
-    });
-  } catch (err) {
-    wnStatus.textContent = "Save failed: " + (err.code || err.message);
-    wnStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    wnSaveBtn.disabled = false;
-  }
-});
-
-// ---------- Gallery images (add / delete / select / reorder) ----------
-const GALLERY_DEFAULTS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => "/images/image" + n + ".jpg");
-
-function updateGalleryDeleteSelectedVisibility() {
-  const checked = galleryRowsContainer.querySelectorAll('input[type="checkbox"]:checked');
-  galleryDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
-  gallerySelectedCount.textContent = checked.length ? checked.length + " selected" : "";
-}
-
-function createGalleryRow(url) {
-  const li = document.createElement("li");
-
-  li.appendChild(createRowDragHandle());
-
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.addEventListener("change", updateGalleryDeleteSelectedVisibility);
-  li.appendChild(checkbox);
-  makeRowTapSelectable(li, checkbox, galleryRowsContainer);
-
-  const input = document.createElement("input");
-  input.type = "text";
-  input.value = url || "";
-  input.placeholder = "https://... or /images/...";
-  li.appendChild(input);
-
-  const actions = document.createElement("div");
-  actions.className = "row-actions";
-  li.appendChild(actions);
-
-  actions.appendChild(
-    createRowMoveButtons(
-      () => [...galleryRowsContainer.children].indexOf(li),
-      (index, direction) => {
-        const sibling = direction === "up" ? li.previousElementSibling : li.nextElementSibling;
-        if (!sibling) return;
-        if (direction === "up") galleryRowsContainer.insertBefore(li, sibling);
-        else galleryRowsContainer.insertBefore(sibling, li);
-      }
-    )
-  );
-
-  const deleteBtn = document.createElement("button");
-  deleteBtn.type = "button";
-  deleteBtn.className = "delete-btn";
-  deleteBtn.textContent = "Delete";
-  deleteBtn.addEventListener("click", () => {
-    const nextSibling = li.nextSibling;
-    const parent = li.parentNode;
-    li.remove();
-    updateGalleryDeleteSelectedVisibility();
-    showUndoToast("Photo removed — click Save Gallery to publish.", () => {
-      parent.insertBefore(li, nextSibling);
-      updateGalleryDeleteSelectedVisibility();
-    });
-  });
-  actions.appendChild(deleteBtn);
-
-  makeRowDraggable(li, galleryRowsContainer, "li", () => {});
-  return li;
-}
-
-function renderGalleryRows(urls) {
-  galleryRowsContainer.innerHTML = "";
-  galleryDeleteSelectedBtn.style.display = "none";
-  gallerySelectedCount.textContent = "";
-  urls.forEach((url) => galleryRowsContainer.appendChild(createGalleryRow(url)));
-}
-
-function currentGalleryUrls() {
-  return [...galleryRowsContainer.querySelectorAll("li input[type=\"text\"]")]
-    .map((input) => input.value.trim())
-    .filter((v) => v);
-}
-
-async function loadGallery() {
-  try {
-    const snap = await getDoc(SITE_DOC);
-    const stored = snap.exists() && Array.isArray(snap.data().galleryImages) ? snap.data().galleryImages : [];
-    const urls = stored.length ? stored : GALLERY_DEFAULTS;
-    renderGalleryRows(urls);
-    previousGalleryUrls = urls;
-  } catch (err) {
-    galleryStatus.textContent = "Could not load gallery: " + (err.code || err.message);
-    galleryStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-galleryAddBtn.addEventListener("click", () => {
-  const url = galleryImageInput.value.trim();
-  if (!url) {
-    galleryAddStatus.textContent = "Enter a photo URL first.";
-    galleryAddStatus.className = "msg error";
-    return;
-  }
-  galleryRowsContainer.appendChild(createGalleryRow(url));
-  galleryImageInput.value = "";
-  galleryAddStatus.textContent = "Photo added — click Save Gallery to publish.";
-  galleryAddStatus.className = "msg success";
-});
-
-gallerySelectModeBtn.addEventListener("click", () => {
-  const enabling = !galleryRowsContainer.classList.contains("bulk-mode");
-  galleryRowsContainer.classList.toggle("bulk-mode", enabling);
-  gallerySelectModeBtn.textContent = enabling ? "Cancel" : "Select";
-  if (!enabling) {
-    galleryRowsContainer.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    updateGalleryDeleteSelectedVisibility();
-  }
-});
-setupSelectAll(galleryRowsContainer, gallerySelectAllBtn, gallerySelectModeBtn);
-
-galleryDeleteSelectedBtn.addEventListener("click", () => {
-  const checked = galleryRowsContainer.querySelectorAll('input[type="checkbox"]:checked');
-  if (!checked.length) return;
-  if (!confirm("Delete " + checked.length + " selected photo(s)?")) return;
-  const removed = [...checked].map((cb) => {
-    const li = cb.closest("li");
-    return { li, nextSibling: li.nextSibling, parent: li.parentNode };
-  });
-  removed.forEach(({ li }) => li.remove());
-  updateGalleryDeleteSelectedVisibility();
-  showUndoToast(removed.length + " photo(s) removed — click Save Gallery to publish.", () => {
-    removed.forEach(({ li, nextSibling, parent }) => parent.insertBefore(li, nextSibling));
-    updateGalleryDeleteSelectedVisibility();
-  });
-});
-
-gallerySaveBtn.addEventListener("click", async () => {
-  const values = currentGalleryUrls();
-  if (!values.length) {
-    galleryStatus.textContent = "Add at least one photo URL.";
-    galleryStatus.className = "msg error";
-    return;
-  }
-  const previousValues = previousGalleryUrls;
-  gallerySaveBtn.disabled = true;
-  galleryStatus.textContent = "Saving...";
-  galleryStatus.className = "msg";
-  try {
-    await setDoc(SITE_DOC, { galleryImages: values }, { merge: true });
-    previousGalleryUrls = values;
-    galleryStatus.textContent = "Gallery updated.";
-    galleryStatus.className = "msg success";
-    showUndoToast("Gallery updated.", async () => {
-      await setDoc(SITE_DOC, { galleryImages: previousValues }, { merge: true });
-      renderGalleryRows(previousValues);
-      previousGalleryUrls = previousValues;
-    });
-  } catch (err) {
-    galleryStatus.textContent = "Save failed: " + (err.code || err.message);
-    galleryStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    gallerySaveBtn.disabled = false;
-  }
-});
-
-// ---------- Function Videos (add / edit / delete) ----------
-const VIDEOS_COL = collection(db, "videos");
-
-function updateVideoDeleteSelectedVisibility() {
-  const checked = videoAdminList.querySelectorAll('input[type="checkbox"]:checked');
-  videoDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
-  videoSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
-}
-
-videoSelectModeBtn.addEventListener("click", () => {
-  const enabling = !videoAdminList.classList.contains("bulk-mode");
-  videoAdminList.classList.toggle("bulk-mode", enabling);
-  videoSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
-  if (!enabling) {
-    videoAdminList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    updateVideoDeleteSelectedVisibility();
-  }
-});
-setupSelectAll(videoAdminList, videoSelectAllBtn, videoSelectModeBtn);
-
-
-async function renderVideos() {
-  videoAdminList.innerHTML = "";
-  videoDeleteSelectedBtn.style.display = "none";
-  try {
-    const q = query(VIDEOS_COL, orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    const items = [];
-    snap.forEach((docSnap) => items.push({ id: docSnap.id, data: docSnap.data() }));
-
-    if (items.some((it) => it.data.order === undefined)) {
-      await Promise.all(items.map((it, index) => updateDoc(doc(db, "videos", it.id), { order: index })));
-      items.forEach((it, index) => (it.data.order = index));
-    }
-    items.sort((a, b) => a.data.order - b.data.order);
-
-    async function persistVideoOrder() {
-      const ids = [...videoAdminList.children].map((li) => li.dataset.id);
-      await Promise.all(ids.map((id, index) => updateDoc(doc(db, "videos", id), { order: index })));
-    }
-
-    items.forEach((item) => {
-      const { id, data } = item;
-      const li = document.createElement("li");
-      li.dataset.id = id;
-
-      li.appendChild(createRowDragHandle());
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.dataset.id = id;
-      checkbox._videoData = data;
-      checkbox.addEventListener("change", updateVideoDeleteSelectedVisibility);
-      li.appendChild(checkbox);
-      makeRowTapSelectable(li, checkbox, videoAdminList);
-
-      const span = document.createElement("span");
-      span.textContent = data.title || "";
-      li.appendChild(span);
-
-      const actions = document.createElement("div");
-      actions.className = "row-actions";
-      li.appendChild(actions);
-
-      actions.appendChild(
-        createRowMoveButtons(
-          () => [...videoAdminList.children].indexOf(li),
-          async (index, direction) => {
-            const sibling = direction === "up" ? li.previousElementSibling : li.nextElementSibling;
-            if (!sibling) return;
-            if (direction === "up") videoAdminList.insertBefore(li, sibling);
-            else videoAdminList.insertBefore(sibling, li);
-            await persistVideoOrder();
-          }
-        )
-      );
-
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "edit-btn";
-      editBtn.textContent = "Edit";
-      editBtn.addEventListener("click", async () => {
-        const previousTitle = data.title || "";
-        const previousUrl = data.url || "";
-        const updatedTitle = prompt("Edit title:", previousTitle);
-        if (updatedTitle === null) return;
-        const updatedUrl = prompt("Edit URL:", previousUrl);
-        if (updatedUrl === null) return;
-        const title = updatedTitle.trim();
-        const url = updatedUrl.trim();
-        if (!title || !url) return;
-        try {
-          await updateDoc(doc(db, "videos", id), { title, url });
-          await renderVideos();
-          showUndoToast("Video updated.", async () => {
-            await updateDoc(doc(db, "videos", id), { title: previousTitle, url: previousUrl });
-            await renderVideos();
-          });
-        } catch (err) {
-          videoStatus.textContent = "Edit failed: " + (err.code || err.message);
-          videoStatus.className = "msg error";
-          console.error(err);
-        }
-      });
-      actions.appendChild(editBtn);
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "delete-btn";
-      deleteBtn.textContent = "Delete";
-      deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete this video?")) return;
-        try {
-          await deleteDoc(doc(db, "videos", id));
-          await renderVideos();
-          showUndoToast("Video deleted.", async () => {
-            await setDoc(doc(db, "videos", id), data);
-            await renderVideos();
-          });
-        } catch (err) {
-          videoStatus.textContent = "Delete failed: " + (err.code || err.message);
-          videoStatus.className = "msg error";
-          console.error(err);
-        }
-      });
-      actions.appendChild(deleteBtn);
-
-      makeRowDraggable(li, videoAdminList, "li", persistVideoOrder);
-      videoAdminList.appendChild(li);
-    });
-  } catch (err) {
-    videoStatus.textContent = "Could not load videos: " + (err.code || err.message);
-    videoStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-videoDeleteSelectedBtn.addEventListener("click", async () => {
-  const checked = videoAdminList.querySelectorAll('input[type="checkbox"]:checked');
-  if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected video(s)?")) return;
-
-  videoDeleteSelectedBtn.disabled = true;
-  videoStatus.textContent = "Deleting...";
-  videoStatus.className = "msg";
-  try {
-    const deleted = [];
-    for (const cb of checked) {
-      deleted.push({ id: cb.dataset.id, data: cb._videoData });
-      await deleteDoc(doc(db, "videos", cb.dataset.id));
-    }
-    videoStatus.textContent = "Selected videos deleted.";
-    videoStatus.className = "msg success";
-    await renderVideos();
-    showUndoToast(deleted.length + " video(s) deleted.", async () => {
-      for (const item of deleted) {
-        await setDoc(doc(db, "videos", item.id), item.data);
-      }
-      await renderVideos();
-    });
-  } catch (err) {
-    videoStatus.textContent = "Delete failed: " + (err.code || err.message);
-    videoStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    videoDeleteSelectedBtn.disabled = false;
-  }
-});
-
-videoAddBtn.addEventListener("click", async () => {
-  const title = videoTitleInput.value.trim();
-  const url = videoUrlInput.value.trim();
-  if (!title || !url) {
-    videoStatus.textContent = "Both title and URL are needed.";
-    videoStatus.className = "msg error";
-    return;
-  }
-  videoAddBtn.disabled = true;
-  videoStatus.textContent = "Adding...";
-  videoStatus.className = "msg";
-  try {
-    const newDoc = await addDoc(VIDEOS_COL, { title, url, createdAt: serverTimestamp(), order: -Date.now() });
-    videoTitleInput.value = "";
-    videoUrlInput.value = "";
-    videoStatus.textContent = "Video added.";
-    videoStatus.className = "msg success";
-    await renderVideos();
-    showUndoToast("Video added.", async () => {
-      await deleteDoc(doc(db, "videos", newDoc.id));
-      await renderVideos();
-    });
-  } catch (err) {
-    videoStatus.textContent = "Could not add video: " + (err.code || err.message);
-    videoStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    videoAddBtn.disabled = false;
-  }
-});
-
-// ---------- Syllabus Sessions ----------
-// Only sessions saved here are admin-managed. Older static sessions
-// (2020-21 through 2023-24) stay untouched in the page's own HTML.
-const SYLLABUS_COL = collection(db, "syllabusSessions");
-
-const DEFAULT_SYLLABUS_SESSION = {
-  id: "2025-26",
-  order: 2025,
-  rows: [
-    {
-      exam: "Test - 1",
-      syllabus: "https://drive.google.com/file/d/1x4jFCTrxftFXBarUP9tbFCjtMXPR-Qn2/view?usp=drivesdk",
-      datesheet: "Part A - 3 May 2025 (Saturday), Part B - 13 May 2025 (Tuesday)",
-      result: "https://drive.google.com/uc?export=download&id=1uxiqSSvlqzyRat2JHAMJBsNFsWbHshX0",
-    },
-    { exam: "Test - 2", syllabus: "NA", datesheet: "NA", result: "NA" },
-    {
-      exam: "Term - 1",
-      syllabus: "https://drive.google.com/uc?export=download&id=1UDdI_iiWPK-rjmnpoQ5TRZpnzqJJlPpB",
-      datesheet: "27 July 2025 (Sunday)",
-      result: "https://drive.google.com/uc?export=download&id=1VMijTLYNzxrlDvZZfcyS5RsRwyBuCLZm",
-    },
-    { exam: "Term - 2", syllabus: "NA", datesheet: "NA", result: "NA" },
-  ],
-};
-
-let syllabusSessionsCache = [];
-let selectedSyllabusId = null;
-
-function populateSyllabusSelect() {
-  syllabusSessionSelect.innerHTML = "";
-  syllabusSessionsCache.forEach((s) => {
-    const opt = document.createElement("option");
-    opt.value = s.id;
-    opt.textContent = s.id;
-    syllabusSessionSelect.appendChild(opt);
-  });
-}
-
-function getSelectedSession() {
-  return syllabusSessionsCache.find((s) => s.id === selectedSyllabusId);
-}
-
-async function saveSyllabusSession(session) {
-  await setDoc(doc(db, "syllabusSessions", session.id), { order: session.order, rows: session.rows });
-}
-
-function renderSyllabusRows() {
-  syllabusRowList.innerHTML = "";
-  const session = getSelectedSession();
-  if (!session) return;
-
-  session.rows.forEach((row, index) => {
-    const li = document.createElement("li");
-    li._rowRef = row;
-
-    li.appendChild(createRowDragHandle());
-
-    const span = document.createElement("span");
-    span.textContent =
-      row.exam + " — " + [row.syllabus, row.datesheet, row.result].filter(Boolean).join(" | ");
-    li.appendChild(span);
-
-    const actions = document.createElement("div");
-    actions.className = "row-actions";
-    li.appendChild(actions);
-
-    actions.appendChild(
-      createRowMoveButtons(
-        () => [...syllabusRowList.children].indexOf(li),
-        (i, direction) => moveSyllabusRow(i, direction)
-      )
-    );
-
-    const editBtn = document.createElement("button");
-    editBtn.type = "button";
-    editBtn.className = "edit-btn";
-    editBtn.textContent = "Edit";
-    editBtn.addEventListener("click", () => editSyllabusRow(index));
-    actions.appendChild(editBtn);
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.className = "delete-btn";
-    deleteBtn.textContent = "Delete";
-    deleteBtn.addEventListener("click", () => deleteSyllabusRow(index));
-    actions.appendChild(deleteBtn);
-
-    makeRowDraggable(li, syllabusRowList, "li", persistSyllabusRowOrder);
-    syllabusRowList.appendChild(li);
-  });
-}
-
-async function persistSyllabusRowOrder() {
-  const session = getSelectedSession();
-  session.rows = [...syllabusRowList.children].map((li) => li._rowRef);
-  try {
-    await saveSyllabusSession(session);
-    renderSyllabusRows();
-  } catch (err) {
-    syllabusStatus.textContent = "Reorder failed: " + (err.code || err.message);
-    syllabusStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-async function moveSyllabusRow(index, direction) {
-  const session = getSelectedSession();
-  const targetIndex = direction === "up" ? index - 1 : index + 1;
-  if (targetIndex < 0 || targetIndex >= session.rows.length) return;
-  const rows = session.rows;
-  [rows[index], rows[targetIndex]] = [rows[targetIndex], rows[index]];
-  try {
-    await saveSyllabusSession(session);
-    renderSyllabusRows();
-  } catch (err) {
-    [rows[index], rows[targetIndex]] = [rows[targetIndex], rows[index]];
-    syllabusStatus.textContent = "Reorder failed: " + (err.code || err.message);
-    syllabusStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-async function loadSyllabusSessions() {
-  try {
-    const q = query(SYLLABUS_COL, orderBy("order", "desc"));
-    const snap = await getDocs(q);
-    syllabusSessionsCache = [];
-    snap.forEach((d) => {
-      const data = d.data();
-      syllabusSessionsCache.push({
-        id: d.id,
-        order: data.order,
-        rows: Array.isArray(data.rows) ? data.rows : [],
-      });
-    });
-    if (syllabusSessionsCache.length === 0) {
-      syllabusSessionsCache.push({
-        ...DEFAULT_SYLLABUS_SESSION,
-        rows: DEFAULT_SYLLABUS_SESSION.rows.slice(),
-      });
-    }
-    populateSyllabusSelect();
-    selectedSyllabusId = syllabusSessionsCache[0].id;
-    syllabusSessionSelect.value = selectedSyllabusId;
-    renderSyllabusRows();
-  } catch (err) {
-    syllabusStatus.textContent = "Could not load sessions: " + (err.code || err.message);
-    syllabusStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-async function editSyllabusRow(index) {
-  const session = getSelectedSession();
-  const row = session.rows[index];
-  const previousRow = { ...row };
-
-  const exam = prompt("Exam name:", row.exam);
-  if (exam === null) return;
-  const syllabus = prompt("Syllabus (paste a link, or type text/NA):", row.syllabus);
-  if (syllabus === null) return;
-  const datesheet = prompt("Datesheet (paste a link, or type text/date):", row.datesheet);
-  if (datesheet === null) return;
-  const result = prompt("Result (paste a link, or type text/NA):", row.result);
-  if (result === null) return;
-
-  session.rows[index] = {
-    exam: exam.trim(),
-    syllabus: syllabus.trim(),
-    datesheet: datesheet.trim(),
-    result: result.trim(),
-  };
-  syllabusStatus.textContent = "Saving...";
-  syllabusStatus.className = "msg";
-  try {
-    await saveSyllabusSession(session);
-    renderSyllabusRows();
-    syllabusStatus.textContent = "Row updated.";
-    syllabusStatus.className = "msg success";
-    showUndoToast("Row updated.", async () => {
-      session.rows[index] = previousRow;
-      await saveSyllabusSession(session);
-      renderSyllabusRows();
-    });
-  } catch (err) {
-    session.rows[index] = previousRow;
-    syllabusStatus.textContent = "Save failed: " + (err.code || err.message);
-    syllabusStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-async function deleteSyllabusRow(index) {
-  if (!confirm("Delete this row?")) return;
-  const session = getSelectedSession();
-  const removedRow = session.rows[index];
-  session.rows.splice(index, 1);
-  syllabusStatus.textContent = "Deleting...";
-  syllabusStatus.className = "msg";
-  try {
-    await saveSyllabusSession(session);
-    renderSyllabusRows();
-    syllabusStatus.textContent = "Row deleted.";
-    syllabusStatus.className = "msg success";
-    showUndoToast("Row deleted.", async () => {
-      session.rows.splice(index, 0, removedRow);
-      await saveSyllabusSession(session);
-      renderSyllabusRows();
-    });
-  } catch (err) {
-    session.rows.splice(index, 0, removedRow);
-    syllabusStatus.textContent = "Delete failed: " + (err.code || err.message);
-    syllabusStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-syllabusAddRowBtn.addEventListener("click", async () => {
-  const session = getSelectedSession();
-  if (!session) return;
-  const exam = prompt("Exam name:", "");
-  if (exam === null || !exam.trim()) return;
-  const syllabus = prompt("Syllabus (paste a link, or type text/NA):", "NA") || "NA";
-  const datesheet = prompt("Datesheet (paste a link, or type text/date):", "NA") || "NA";
-  const result = prompt("Result (paste a link, or type text/NA):", "NA") || "NA";
-
-  session.rows.push({
-    exam: exam.trim(),
-    syllabus: syllabus.trim(),
-    datesheet: datesheet.trim(),
-    result: result.trim(),
-  });
-  syllabusStatus.textContent = "Saving...";
-  syllabusStatus.className = "msg";
-  try {
-    await saveSyllabusSession(session);
-    renderSyllabusRows();
-    syllabusStatus.textContent = "Row added.";
-    syllabusStatus.className = "msg success";
-    showUndoToast("Row added.", async () => {
-      session.rows.pop();
-      await saveSyllabusSession(session);
-      renderSyllabusRows();
-    });
-  } catch (err) {
-    session.rows.pop();
-    syllabusStatus.textContent = "Could not add row: " + (err.code || err.message);
-    syllabusStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-syllabusSessionSelect.addEventListener("change", () => {
-  selectedSyllabusId = syllabusSessionSelect.value;
-  renderSyllabusRows();
-});
-
-syllabusNewSessionBtn.addEventListener("click", async () => {
-  const label = prompt("New session label (e.g. 2026-27):", "");
-  if (!label || !label.trim()) return;
-  const trimmed = label.trim();
-  if (syllabusSessionsCache.some((s) => s.id === trimmed)) {
-    syllabusStatus.textContent = "That session already exists.";
-    syllabusStatus.className = "msg error";
-    return;
-  }
-  const orderMatch = trimmed.match(/\d{4}/);
-  const order = orderMatch ? parseInt(orderMatch[0], 10) : Date.now();
-  const newSession = { id: trimmed, order, rows: [] };
-  syllabusStatus.textContent = "Creating...";
-  syllabusStatus.className = "msg";
-  try {
-    await saveSyllabusSession(newSession);
-    syllabusSessionsCache.push(newSession);
-    syllabusSessionsCache.sort((a, b) => b.order - a.order);
-    populateSyllabusSelect();
-    selectedSyllabusId = trimmed;
-    syllabusSessionSelect.value = trimmed;
-    renderSyllabusRows();
-    syllabusStatus.textContent = "Session created.";
-    syllabusStatus.className = "msg success";
-    showUndoToast('Session "' + trimmed + '" created.', async () => {
-      await deleteDoc(doc(db, "syllabusSessions", trimmed));
-      syllabusSessionsCache = syllabusSessionsCache.filter((s) => s.id !== trimmed);
-      if (syllabusSessionsCache.length === 0) {
-        syllabusSessionsCache.push({
-          ...DEFAULT_SYLLABUS_SESSION,
-          rows: DEFAULT_SYLLABUS_SESSION.rows.slice(),
-        });
-      }
-      populateSyllabusSelect();
-      selectedSyllabusId = syllabusSessionsCache[0].id;
-      syllabusSessionSelect.value = selectedSyllabusId;
-      renderSyllabusRows();
-    });
-  } catch (err) {
-    syllabusStatus.textContent = "Could not create session: " + (err.code || err.message);
-    syllabusStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-syllabusDeleteSessionBtn.addEventListener("click", async () => {
-  const session = getSelectedSession();
-  if (!session) return;
-  if (!confirm('Delete session "' + session.id + '"? This removes it from the live site.')) return;
-  const deletedSession = { id: session.id, order: session.order, rows: session.rows.slice() };
-  syllabusStatus.textContent = "Deleting...";
-  syllabusStatus.className = "msg";
-  try {
-    await deleteDoc(doc(db, "syllabusSessions", session.id));
-    syllabusSessionsCache = syllabusSessionsCache.filter((s) => s.id !== session.id);
-    if (syllabusSessionsCache.length === 0) {
-      syllabusSessionsCache.push({
-        ...DEFAULT_SYLLABUS_SESSION,
-        rows: DEFAULT_SYLLABUS_SESSION.rows.slice(),
-      });
-    }
-    populateSyllabusSelect();
-    selectedSyllabusId = syllabusSessionsCache[0].id;
-    syllabusSessionSelect.value = selectedSyllabusId;
-    renderSyllabusRows();
-    syllabusStatus.textContent = "Session deleted.";
-    syllabusStatus.className = "msg success";
-    showUndoToast('Session "' + deletedSession.id + '" deleted.', async () => {
-      await saveSyllabusSession(deletedSession);
-      await loadSyllabusSessions();
-    });
-  } catch (err) {
-    syllabusStatus.textContent = "Delete failed: " + (err.code || err.message);
-    syllabusStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-// ---------- Students (add / edit / delete) ----------
-const STUDENTS_COL = collection(db, "students");
-
-function updateStudentDeleteSelectedVisibility() {
-  const checked = studentList.querySelectorAll('input[type="checkbox"]:checked');
-  studentDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
-  studentSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
-}
-
-studentSelectModeBtn.addEventListener("click", () => {
-  const enabling = !studentList.classList.contains("bulk-mode");
-  studentList.classList.toggle("bulk-mode", enabling);
-  studentSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
-  if (!enabling) {
-    studentList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    updateStudentDeleteSelectedVisibility();
-  }
-});
-setupSelectAll(studentList, studentSelectAllBtn, studentSelectModeBtn);
-
-
-async function renderStudents() {
-  studentList.innerHTML = "";
-  studentDeleteSelectedBtn.style.display = "none";
-  try {
-    const q = query(STUDENTS_COL, orderBy("name", "asc"));
-    const snap = await getDocs(q);
-    snap.forEach((docSnap) => {
-      const data = docSnap.data();
-      const li = document.createElement("li");
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.dataset.id = docSnap.id;
-      checkbox._studentData = data;
-      checkbox.addEventListener("change", updateStudentDeleteSelectedVisibility);
-      li.appendChild(checkbox);
-      makeRowTapSelectable(li, checkbox, studentList);
-
-      const span = document.createElement("span");
-      span.textContent = data.name + (data.rollNumber ? " (Roll " + data.rollNumber + ")" : "");
-      li.appendChild(span);
-
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "edit-btn";
-      editBtn.textContent = "Edit";
-      editBtn.addEventListener("click", async () => {
-        const previousName = data.name || "";
-        const previousRoll = data.rollNumber || "";
-        const updatedName = prompt("Student name:", previousName);
-        if (updatedName === null) return;
-        const updatedRoll = prompt("Roll number (optional):", previousRoll);
-        if (updatedRoll === null) return;
-        const name = updatedName.trim();
-        if (!name) return;
-        const rollNumber = updatedRoll.trim();
-        try {
-          await updateDoc(doc(db, "students", docSnap.id), { name, rollNumber });
-          await renderStudents();
-          showUndoToast("Student updated.", async () => {
-            await updateDoc(doc(db, "students", docSnap.id), {
-              name: previousName,
-              rollNumber: previousRoll,
-            });
-            await renderStudents();
-          });
-        } catch (err) {
-          studentStatus.textContent = "Edit failed: " + (err.code || err.message);
-          studentStatus.className = "msg error";
-          console.error(err);
-        }
-      });
-      li.appendChild(editBtn);
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "delete-btn";
-      deleteBtn.textContent = "Delete";
-      deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete this student?")) return;
-        const deletedId = docSnap.id;
-        try {
-          await deleteDoc(doc(db, "students", deletedId));
-          await renderStudents();
-          showUndoToast("Student deleted.", async () => {
-            await setDoc(doc(db, "students", deletedId), data);
-            await renderStudents();
-          });
-        } catch (err) {
-          studentStatus.textContent = "Delete failed: " + (err.code || err.message);
-          studentStatus.className = "msg error";
-          console.error(err);
-        }
-      });
-      li.appendChild(deleteBtn);
-
-      studentList.appendChild(li);
-    });
-  } catch (err) {
-    studentStatus.textContent = "Could not load students: " + (err.code || err.message);
-    studentStatus.className = "msg error";
-    console.error(err);
-  }
-  await refreshAttendanceStudentsIfOpen();
-}
-
-async function refreshAttendanceStudentsIfOpen() {
-  if (!currentAttendanceDate) return;
-  try {
-    const studentsSnap = await getDocs(query(STUDENTS_COL, orderBy("name", "asc")));
-    studentsCache = [];
-    studentsSnap.forEach((d) => studentsCache.push({ id: d.id, ...d.data() }));
-    if (!currentAttendanceDoc.holiday) renderAttendanceStudentList();
-  } catch (err) {
-    // Silent — the Mark Attendance list just stays as it was.
-  }
-}
-
-async function loadStudents() {
-  await renderStudents();
-}
-
-studentDeleteSelectedBtn.addEventListener("click", async () => {
-  const checked = studentList.querySelectorAll('input[type="checkbox"]:checked');
-  if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected student(s)?")) return;
-
-  studentDeleteSelectedBtn.disabled = true;
-  studentStatus.textContent = "Deleting...";
-  studentStatus.className = "msg";
-  try {
-    const deleted = [];
-    for (const cb of checked) {
-      deleted.push({ id: cb.dataset.id, data: cb._studentData });
-      await deleteDoc(doc(db, "students", cb.dataset.id));
-    }
-    studentStatus.textContent = "Selected students deleted.";
-    studentStatus.className = "msg success";
-    await renderStudents();
-    showUndoToast(deleted.length + " student(s) deleted.", async () => {
-      for (const item of deleted) {
-        await setDoc(doc(db, "students", item.id), item.data);
-      }
-      await renderStudents();
-    });
-  } catch (err) {
-    studentStatus.textContent = "Delete failed: " + (err.code || err.message);
-    studentStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    studentDeleteSelectedBtn.disabled = false;
-  }
-});
-
-studentAddBtn.addEventListener("click", async () => {
-  const name = studentNameInput.value.trim();
-  const rollNumber = studentRollInput.value.trim();
-  if (!name) {
-    studentStatus.textContent = "Student name is required.";
-    studentStatus.className = "msg error";
-    return;
-  }
-  studentAddBtn.disabled = true;
-  studentStatus.textContent = "Adding...";
-  studentStatus.className = "msg";
-  try {
-    const newDoc = await addDoc(STUDENTS_COL, { name, rollNumber, createdAt: serverTimestamp() });
-    studentNameInput.value = "";
-    studentRollInput.value = "";
-
-    // Backfill "Absent" into every existing attendance date, so this student's
-    // history shows Absent rather than a blank for days before they joined.
-    const attendanceSnap = await getDocs(collection(db, "attendance"));
-    const backfillPromises = [];
-    attendanceSnap.forEach((d) => {
-      const data = d.data();
-      if (!data.holiday) {
-        backfillPromises.push(
-          setDoc(doc(db, "attendance", d.id), { records: { [newDoc.id]: "absent" } }, { merge: true })
-        );
-      }
-    });
-    await Promise.all(backfillPromises);
-
-    studentStatus.textContent = "Student added.";
-    studentStatus.className = "msg success";
-    await renderStudents();
-    showUndoToast("Student added.", async () => {
-      await deleteDoc(doc(db, "students", newDoc.id));
-      await renderStudents();
-    });
-  } catch (err) {
-    studentStatus.textContent = "Could not add student: " + (err.code || err.message);
-    studentStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    studentAddBtn.disabled = false;
-  }
-});
-
-[studentNameInput, studentRollInput].forEach((input) => {
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      studentAddBtn.click();
-    }
-  });
-});
-
-// ---------- Mark Attendance ----------
-const ATTENDANCE_COL = collection(db, "attendance");
-let currentAttendanceDate = null;
-let currentAttendanceDoc = { holiday: null, records: {} };
-let studentsCache = [];
-
-async function loadAttendanceForDate(dateStr) {
-  currentAttendanceDate = dateStr;
-  attendanceStatus.textContent = "Loading...";
-  attendanceStatus.className = "msg";
-  try {
-    const snap = await getDoc(doc(db, "attendance", dateStr));
-    currentAttendanceDoc = snap.exists()
-      ? { holiday: snap.data().holiday || null, records: snap.data().records || {} }
-      : { holiday: null, records: {} };
-
-    const studentsSnap = await getDocs(query(STUDENTS_COL, orderBy("name", "asc")));
-    studentsCache = [];
-    studentsSnap.forEach((d) => studentsCache.push({ id: d.id, ...d.data() }));
-
-    renderAttendanceView();
-    attendanceStatus.textContent = "";
-  } catch (err) {
-    attendanceStatus.textContent = "Could not load attendance: " + (err.code || err.message);
-    attendanceStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-function renderAttendanceView() {
-  if (currentAttendanceDoc.holiday) {
-    attendanceHolidayView.style.display = "block";
-    attendanceMarkView.style.display = "none";
-    attendanceHolidayName.textContent = currentAttendanceDoc.holiday;
-  } else {
-    attendanceHolidayView.style.display = "none";
-    attendanceMarkView.style.display = "block";
-    renderAttendanceStudentList();
-  }
-}
-
-function renderAttendanceStudentList() {
-  attendanceStudentList.innerHTML = "";
-  studentsCache.forEach((student) => {
-    const li = document.createElement("li");
-
-    const span = document.createElement("span");
-    span.textContent = student.name + (student.rollNumber ? " (Roll " + student.rollNumber + ")" : "");
-    li.appendChild(span);
-
-    const status = currentAttendanceDoc.records[student.id] || "absent";
-
-    const presentBtn = document.createElement("button");
-    presentBtn.type = "button";
-    presentBtn.textContent = "Present";
-    presentBtn.style.background = status === "present" ? "#1e8f2e" : "#ccc";
-    presentBtn.style.color = status === "present" ? "#fff" : "#555";
-    presentBtn.addEventListener("click", () => setAttendanceStatus(student.id, "present"));
-    li.appendChild(presentBtn);
-
-    const absentBtn = document.createElement("button");
-    absentBtn.type = "button";
-    absentBtn.textContent = "Absent";
-    absentBtn.style.background = status === "absent" ? "#c0392b" : "#ccc";
-    absentBtn.style.color = status === "absent" ? "#fff" : "#555";
-    absentBtn.addEventListener("click", () => setAttendanceStatus(student.id, "absent"));
-    li.appendChild(absentBtn);
-
-    attendanceStudentList.appendChild(li);
-  });
-}
-
-async function setAttendanceStatus(studentId, status) {
-  const previousStatus = currentAttendanceDoc.records[studentId]; // undefined if unset
-  currentAttendanceDoc.records[studentId] = status;
-  renderAttendanceStudentList();
-  try {
-    await setDoc(
-      doc(db, "attendance", currentAttendanceDate),
-      { records: { [studentId]: status } },
-      { merge: true }
-    );
-    showUndoToast("Attendance updated.", async () => {
-      if (previousStatus === undefined) {
-        delete currentAttendanceDoc.records[studentId];
-        await setDoc(
-          doc(db, "attendance", currentAttendanceDate),
-          { records: { [studentId]: deleteField() } },
-          { merge: true }
-        );
-      } else {
-        currentAttendanceDoc.records[studentId] = previousStatus;
-        await setDoc(
-          doc(db, "attendance", currentAttendanceDate),
-          { records: { [studentId]: previousStatus } },
-          { merge: true }
-        );
-      }
-      renderAttendanceStudentList();
-    });
-  } catch (err) {
-    currentAttendanceDoc.records[studentId] = previousStatus;
-    renderAttendanceStudentList();
-    attendanceStatus.textContent = "Could not save: " + (err.code || err.message);
-    attendanceStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-attendanceDateInput.addEventListener("change", () => {
-  if (attendanceDateInput.value) loadAttendanceForDate(attendanceDateInput.value);
-});
-
-attendanceMarkHolidayBtn.addEventListener("click", async () => {
-  const name = prompt("Holiday name:", "");
-  if (!name || !name.trim()) return;
-  const trimmed = name.trim();
-  try {
-    await setDoc(doc(db, "attendance", currentAttendanceDate), { holiday: trimmed }, { merge: true });
-    currentAttendanceDoc.holiday = trimmed;
-    renderAttendanceView();
-    showUndoToast('Marked as holiday: "' + trimmed + '".', async () => {
-      await setDoc(
-        doc(db, "attendance", currentAttendanceDate),
-        { holiday: deleteField() },
-        { merge: true }
-      );
-      currentAttendanceDoc.holiday = null;
-      renderAttendanceView();
-    });
-  } catch (err) {
-    attendanceStatus.textContent = "Could not mark holiday: " + (err.code || err.message);
-    attendanceStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-attendanceRemoveHolidayBtn.addEventListener("click", async () => {
-  const previousName = currentAttendanceDoc.holiday;
-  try {
-    await setDoc(doc(db, "attendance", currentAttendanceDate), { holiday: deleteField() }, { merge: true });
-    currentAttendanceDoc.holiday = null;
-    renderAttendanceView();
-    showUndoToast("Holiday removed.", async () => {
-      await setDoc(
-        doc(db, "attendance", currentAttendanceDate),
-        { holiday: previousName },
-        { merge: true }
-      );
-      currentAttendanceDoc.holiday = previousName;
-      renderAttendanceView();
-    });
-  } catch (err) {
-    attendanceStatus.textContent = "Could not remove holiday: " + (err.code || err.message);
-    attendanceStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-// ---------- Clear Attendance Records (date range, bulk delete) ----------
-function updateAttendanceDeleteSelectedVisibility() {
-  const checked = attendanceRangeList.querySelectorAll('input[type="checkbox"]:checked');
-  attendanceDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
-  attendanceSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
-}
-
-attendanceSelectModeBtn.addEventListener("click", () => {
-  const enabling = !attendanceRangeList.classList.contains("bulk-mode");
-  attendanceRangeList.classList.toggle("bulk-mode", enabling);
-  attendanceSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
-  if (!enabling) {
-    attendanceRangeList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    updateAttendanceDeleteSelectedVisibility();
-  }
-});
-setupSelectAll(attendanceRangeList, attendanceSelectAllBtn, attendanceSelectModeBtn);
-
-
-function summarizeAttendanceDoc(data, totalStudents) {
-  if (data.holiday) return "Holiday: " + data.holiday;
-  const records = data.records || {};
-  const present = Object.values(records).filter((v) => v === "present").length;
-  const absent = Math.max(totalStudents - present, 0);
-  return present + " present, " + absent + " absent";
-}
-
-async function renderAttendanceRange(fromDate, toDate) {
-  attendanceRangeList.innerHTML = "";
-  attendanceDeleteSelectedBtn.style.display = "none";
-  try {
-    const q = query(
-      ATTENDANCE_COL,
-      where(documentId(), ">=", fromDate),
-      where(documentId(), "<=", toDate)
-    );
-    const [snap, studentsSnap] = await Promise.all([getDocs(q), getDocs(STUDENTS_COL)]);
-    const totalStudents = studentsSnap.size;
-
-    const docMap = {};
-    snap.forEach((d) => (docMap[d.id] = d.data()));
-
-    // Every date in the range gets a row, even ones nobody ever opened — those
-    // default to "no holiday, nobody marked present" so they show (and export)
-    // as fully absent right away, instead of only appearing once someone visits
-    // Mark Attendance for that specific day.
-    const docs = [];
-    const cursor = new Date(fromDate + "T00:00:00");
-    const end = new Date(toDate + "T00:00:00");
-    while (cursor <= end) {
-      const yyyy = cursor.getFullYear();
-      const mm = String(cursor.getMonth() + 1).padStart(2, "0");
-      const dd = String(cursor.getDate()).padStart(2, "0");
-      const id = `${yyyy}-${mm}-${dd}`;
-      docs.push({ id, data: docMap[id] || { holiday: null, records: {} } });
-      cursor.setDate(cursor.getDate() + 1);
-    }
-
-    if (docs.length === 0) {
-      attendanceRangeStatus.textContent = "Pick a valid date range.";
-      attendanceRangeStatus.className = "msg";
-      return;
-    }
-    attendanceRangeStatus.textContent = "";
-
-    docs.forEach(({ id, data }) => {
-      const li = document.createElement("li");
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.dataset.id = id;
-      checkbox._attendanceData = data;
-      checkbox.addEventListener("change", updateAttendanceDeleteSelectedVisibility);
-      li.appendChild(checkbox);
-      makeRowTapSelectable(li, checkbox, attendanceRangeList);
-
-      const span = document.createElement("span");
-      span.textContent = id + " — " + summarizeAttendanceDoc(data, totalStudents);
-      li.appendChild(span);
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "delete-btn";
-      deleteBtn.textContent = "Delete";
-      deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete attendance for " + id + "?")) return;
-        try {
-          await deleteDoc(doc(db, "attendance", id));
-          await renderAttendanceRange(fromDate, toDate);
-          showUndoToast("Attendance for " + id + " deleted.", async () => {
-            await setDoc(doc(db, "attendance", id), data);
-            await renderAttendanceRange(fromDate, toDate);
-          });
-        } catch (err) {
-          attendanceRangeStatus.textContent = "Delete failed: " + (err.code || err.message);
-          attendanceRangeStatus.className = "msg error";
-          console.error(err);
-        }
-      });
-      li.appendChild(deleteBtn);
-
-      attendanceRangeList.appendChild(li);
-    });
-  } catch (err) {
-    attendanceRangeStatus.textContent = "Could not load records: " + (err.code || err.message);
-    attendanceRangeStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-attendanceLoadRangeBtn.addEventListener("click", () => {
-  const from = attendanceFromInput.value;
-  const to = attendanceToInput.value;
-  if (!from || !to) {
-    attendanceRangeStatus.textContent = "Pick both a From and To date.";
-    attendanceRangeStatus.className = "msg error";
-    return;
-  }
-  if (from > to) {
-    attendanceRangeStatus.textContent = "From date must be before To date.";
-    attendanceRangeStatus.className = "msg error";
-    return;
-  }
-  renderAttendanceRange(from, to);
-});
-
-attendanceDeleteSelectedBtn.addEventListener("click", async () => {
-  const checked = attendanceRangeList.querySelectorAll('input[type="checkbox"]:checked');
-  if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected date(s) of attendance?")) return;
-
-  const from = attendanceFromInput.value;
-  const to = attendanceToInput.value;
-  attendanceDeleteSelectedBtn.disabled = true;
-  attendanceRangeStatus.textContent = "Deleting...";
-  attendanceRangeStatus.className = "msg";
-  try {
-    const deleted = [];
-    for (const cb of checked) {
-      deleted.push({ id: cb.dataset.id, data: cb._attendanceData });
-      await deleteDoc(doc(db, "attendance", cb.dataset.id));
-    }
-    attendanceRangeStatus.textContent = "Selected records deleted.";
-    attendanceRangeStatus.className = "msg success";
-    await renderAttendanceRange(from, to);
-    showUndoToast(deleted.length + " date(s) of attendance deleted.", async () => {
-      for (const item of deleted) {
-        await setDoc(doc(db, "attendance", item.id), item.data);
-      }
-      await renderAttendanceRange(from, to);
-    });
-  } catch (err) {
-    attendanceRangeStatus.textContent = "Delete failed: " + (err.code || err.message);
-    attendanceRangeStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    attendanceDeleteSelectedBtn.disabled = false;
-  }
-});
-
-
-// ---------- Export Attendance PDF (selected dates from Clear Attendance Records) ----------
-function pad2(n) {
-  return String(n).padStart(2, "0");
-}
-function formatDMY(isoDate) {
-  const [y, m, d] = isoDate.split("-");
-  return `${d}-${m}-${y}`;
-}
-
-attendanceExportPdfBtn.addEventListener("click", async () => {
-  const checked = attendanceRangeList.querySelectorAll('input[type="checkbox"]:checked');
-  if (checked.length === 0) {
-    attendanceRangeStatus.textContent = "Select at least one date first (tap Select, then check dates).";
-    attendanceRangeStatus.className = "msg error";
-    return;
-  }
-
-  attendanceRangeStatus.textContent = "Generating PDF...";
-  attendanceRangeStatus.className = "msg";
-
-  try {
-    const dates = Array.from(checked)
-      .map((cb) => ({ id: cb.dataset.id, data: cb._attendanceData }))
-      .sort((a, b) => a.id.localeCompare(b.id));
-
-    const studentsSnap = await getDocs(query(STUDENTS_COL, orderBy("name", "asc")));
-    const students = [];
-    studentsSnap.forEach((d) => students.push({ id: d.id, ...d.data() }));
-    students.sort((a, b) => {
-      const rollA = parseInt(a.rollNumber, 10);
-      const rollB = parseInt(b.rollNumber, 10);
-      if (!isNaN(rollA) && !isNaN(rollB)) return rollA - rollB;
-      if (!isNaN(rollA)) return -1;
-      if (!isNaN(rollB)) return 1;
-      return (a.name || "").localeCompare(b.name || "");
-    });
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 26;
-    const pageMargin = 12; // thin frame margin, like the marksheet PDFs
-
-    function drawPageFrame() {
-      pdf.setLineWidth(0.5);
-      pdf.setDrawColor(0, 0, 0);
-      pdf.rect(pageMargin, pageMargin, pageWidth - pageMargin * 2, pageHeight - pageMargin * 2);
-    }
-
-    // Table geometry — split dates into groups so each group's columns stay readable,
-    // instead of shrinking everything to fit on one wide page
-    const rollColW = 45;
-    const nameColW = 110;
-    const tableWidth = pageWidth - margin * 2;
-    const minDateColW = 55;
-    const maxDatesPerGroup = Math.max(1, Math.floor((tableWidth - rollColW - nameColW) / minDateColW));
-    const dateGroups = [];
-    for (let i = 0; i < dates.length; i += maxDatesPerGroup) {
-      dateGroups.push(dates.slice(i, i + maxDatesPerGroup));
-    }
-    const rowH = 22;
-
-    function drawHeaderRow(y, groupDates, dateColW) {
-      pdf.setFont("times", "bold");
-      pdf.setFontSize(9);
-      let x = margin;
-      pdf.rect(x, y, rollColW, rowH);
-      pdf.text("Roll No.", x + rollColW / 2, y + rowH / 2 + 3, { align: "center" });
-      x += rollColW;
-      pdf.rect(x, y, nameColW, rowH);
-      pdf.text("Name", x + nameColW / 2, y + rowH / 2 + 3, { align: "center" });
-      x += nameColW;
-      groupDates.forEach(({ id }) => {
-        pdf.rect(x, y, dateColW, rowH);
-        pdf.text(formatDMY(id), x + dateColW / 2, y + rowH / 2 + 3, { align: "center" });
-        x += dateColW;
-      });
-    }
-
-    let pageInitialized = false;
-    let cursorY = margin;
-    const tableGap = 20; // gap between stacked tables on the same page
-
-    function newPage() {
-      if (pageInitialized) pdf.addPage();
-      pageInitialized = true;
-      drawPageFrame();
-      cursorY = margin;
-    }
-
-    // First page + title block
-    newPage();
-    {
-      const titleTop = margin + 10;
-      pdf.setFont("times", "bold");
-      pdf.setFontSize(16);
-      pdf.text("Babita Classes", pageWidth / 2, titleTop, { align: "center" });
-
-      pdf.setFont("times", "normal");
-      pdf.setFontSize(11);
-      const rangeLabel =
-        "Attendance data from " + formatDMY(dates[0].id) + " to " + formatDMY(dates[dates.length - 1].id);
-      pdf.text(rangeLabel, pageWidth / 2, titleTop + 18, { align: "center" });
-
-      const now = new Date();
-      const extractedLine =
-        "Extracted from https://babitaclasses.vercel.app/admin on " +
-        pad2(now.getDate()) + "-" + pad2(now.getMonth() + 1) + "-" + now.getFullYear() +
-        " " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
-      pdf.setFontSize(9);
-      pdf.text(extractedLine, pageWidth / 2, titleTop + 34, { align: "center" });
-
-      cursorY = titleTop + 34 + 26;
-    }
-
-    dateGroups.forEach((groupDates) => {
-      const dateColW = Math.max(minDateColW, (tableWidth - rollColW - nameColW) / groupDates.length);
-
-      // Not enough room for a header + at least one row? start a new page for this group's table
-      if (cursorY + rowH * 2 > pageHeight - pageMargin - 10) {
-        newPage();
-      }
-
-      let idx = 0;
-      while (idx < students.length) {
-        // how many student rows fit below the header starting at cursorY
-        let y = cursorY + rowH;
-        let rowsThatFit = 0;
-        while (idx + rowsThatFit < students.length && y + rowH <= pageHeight - pageMargin - 10) {
-          y += rowH;
-          rowsThatFit++;
-        }
-        if (rowsThatFit === 0) {
-          newPage();
-          continue;
-        }
-
-        const tableTop = cursorY;
-        drawHeaderRow(tableTop, groupDates, dateColW);
-        const bodyTop = tableTop + rowH;
-        const chunkEnd = idx + rowsThatFit;
-        const bodyBottom = bodyTop + rowsThatFit * rowH;
-
-        pdf.setFont("times", "normal");
-        pdf.setFontSize(9);
-        for (let i = idx; i < chunkEnd; i++) {
-          const student = students[i];
-          const rowY = bodyTop + (i - idx) * rowH;
-          let x = margin;
-          pdf.rect(x, rowY, rollColW, rowH);
-          pdf.text(student.rollNumber || "-", x + rollColW / 2, rowY + rowH / 2 + 3, { align: "center" });
-          x += rollColW;
-          pdf.rect(x, rowY, nameColW, rowH);
-          const nameLines = pdf.splitTextToSize(student.name || "", nameColW - 6);
-          pdf.text(nameLines[0] || "", x + 4, rowY + rowH / 2 + 3);
-          x += nameColW;
-
-          groupDates.forEach(({ data }) => {
-            if (!data.holiday) {
-              pdf.rect(x, rowY, dateColW, rowH);
-              const status = (data.records || {})[student.id] || "absent";
-              const cellText = status === "present" ? "Present" : "Absent";
-              if (status === "present") pdf.setTextColor(30, 140, 40);
-              else pdf.setTextColor(192, 57, 43);
-              pdf.text(cellText, x + dateColW / 2, rowY + rowH / 2 + 3, { align: "center" });
-              pdf.setTextColor(0, 0, 0);
-            }
-            x += dateColW;
-          });
-        }
-
-        let hx = margin + rollColW + nameColW;
-        groupDates.forEach(({ data }) => {
-          if (data.holiday) {
-            const cellH = bodyBottom - bodyTop;
-            pdf.rect(hx, bodyTop, dateColW, cellH);
-            pdf.setFont("times", "bold");
-            pdf.setFontSize(9);
-            pdf.setTextColor(192, 57, 43);
-
-            const lines = pdf.splitTextToSize(data.holiday, Math.max(cellH - 8, 20));
-            const lineSpacing = 12;
-            const totalW = lines.length * lineSpacing;
-            let lineX = hx + dateColW / 2 - totalW / 2 + lineSpacing / 2;
-            lines.forEach((line) => {
-              const lineW = pdf.getTextWidth(line);
-              const lineY = bodyTop + (cellH + lineW) / 2;
-              pdf.text(line, lineX, lineY, { angle: 90 });
-              lineX += lineSpacing;
-            });
-            pdf.setTextColor(0, 0, 0);
-          }
-          hx += dateColW;
-        });
-
-        idx = chunkEnd;
-        cursorY = bodyBottom;
-
-        if (idx < students.length) {
-          newPage();
-        }
-      }
-
-      cursorY += tableGap;
-    });
-
-    const today = new Date();
-    const filename =
-      "Babita Classes Attendance Record " +
-      pad2(today.getDate()) + "-" + pad2(today.getMonth() + 1) + "-" + today.getFullYear() +
-      " " +
-      pad2(today.getHours()) + "-" + pad2(today.getMinutes()) + "-" + pad2(today.getSeconds()) +
-      ".pdf";
-    pdf.save(filename);
-
-    attendanceRangeStatus.textContent = "PDF downloaded.";
-    attendanceRangeStatus.className = "msg success";
-  } catch (err) {
-    attendanceRangeStatus.textContent = "Could not generate PDF: " + (err.message || err);
-    attendanceRangeStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-// ---------- Blog Posts (add / edit / delete) ----------
-const BLOG_POSTS_COL = collection(db, "blogPosts");
-
-function updateBlogDeleteSelectedVisibility() {
-  const checked = blogPostList.querySelectorAll('input[type="checkbox"]:checked');
-  blogDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
-  blogSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
-}
-
-blogSelectModeBtn.addEventListener("click", () => {
-  const enabling = !blogPostList.classList.contains("bulk-mode");
-  blogPostList.classList.toggle("bulk-mode", enabling);
-  blogSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
-  if (!enabling) {
-    blogPostList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    updateBlogDeleteSelectedVisibility();
-  }
-});
-setupSelectAll(blogPostList, blogSelectAllBtn, blogSelectModeBtn);
-
-function moveBlockRow(row, direction) {
-  const sibling = direction === "up" ? row.previousElementSibling : row.nextElementSibling;
-  if (!sibling) return;
-  if (direction === "up") {
-    blogBlocksContainer.insertBefore(row, sibling);
-  } else {
-    blogBlocksContainer.insertBefore(sibling, row);
-  }
-}
-
-function createBlockControls(row) {
-  const controls = document.createElement("div");
-  controls.className = "blog-block-controls";
-
-  const upBtn = document.createElement("button");
-  upBtn.type = "button";
-  upBtn.className = "move-btn";
-  upBtn.textContent = "▲";
-  upBtn.addEventListener("click", () => moveBlockRow(row, "up"));
-
-  const downBtn = document.createElement("button");
-  downBtn.type = "button";
-  downBtn.className = "move-btn";
-  downBtn.textContent = "▼";
-  downBtn.addEventListener("click", () => moveBlockRow(row, "down"));
-
-  const removeBtn = document.createElement("button");
-  removeBtn.type = "button";
-  removeBtn.className = "blog-remove-btn";
-  removeBtn.textContent = "×";
-  removeBtn.addEventListener("click", () => {
-    const nextSibling = row.nextSibling;
-    const parent = row.parentNode;
-    row.remove();
-    showUndoToast("Block removed.", () => {
-      parent.insertBefore(row, nextSibling);
-    });
-  });
-
-  controls.appendChild(upBtn);
-  controls.appendChild(downBtn);
-  controls.appendChild(removeBtn);
-  return controls;
-}
-
-function addTextBlockRow(value) {
-  const row = document.createElement("div");
-  row.className = "blog-block-row";
-  row.dataset.blockType = "text";
-
-  const header = document.createElement("div");
-  header.className = "blog-block-header";
-  const labelGroup = document.createElement("span");
-  const handle = document.createElement("span");
-  handle.className = "blog-block-drag-handle";
-  handle.textContent = "⠿";
-  labelGroup.appendChild(handle);
-  const label = document.createElement("span");
-  label.className = "blog-block-type";
-  label.textContent = "Text";
-  labelGroup.appendChild(label);
-  header.appendChild(labelGroup);
-  header.appendChild(createBlockControls(row));
-  row.appendChild(header);
-
-  const textarea = document.createElement("textarea");
-  textarea.rows = 4;
-  textarea.placeholder = "Paragraph text...";
-  textarea.value = value || "";
-  row.appendChild(textarea);
-
-  makeBlockRowDraggable(row);
-  blogBlocksContainer.appendChild(row);
-}
-
-function addImageBlockRow(value) {
-  const row = document.createElement("div");
-  row.className = "blog-block-row";
-  row.dataset.blockType = "image";
-
-  const header = document.createElement("div");
-  header.className = "blog-block-header";
-  const labelGroup = document.createElement("span");
-  const handle = document.createElement("span");
-  handle.className = "blog-block-drag-handle";
-  handle.textContent = "⠿";
-  labelGroup.appendChild(handle);
-  const label = document.createElement("span");
-  label.className = "blog-block-type";
-  label.textContent = "Photo";
-  labelGroup.appendChild(label);
-  header.appendChild(labelGroup);
-  header.appendChild(createBlockControls(row));
-  row.appendChild(header);
-
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = "https://...";
-  input.value = value || "";
-  row.appendChild(input);
-
-  makeBlockRowDraggable(row);
-  blogBlocksContainer.appendChild(row);
-}
-
-// ---------- Drag-and-drop reordering for content blocks ----------
-// Dragging is desktop-only; on mobile the ▲▼ buttons handle reordering instead.
-function isDesktopViewport() {
-  return window.matchMedia("(min-width: 768px)").matches;
-}
-function updateBlockDraggability() {
-  document
-    .querySelectorAll(".blog-block-row, .blog-button-row, #noticeList li, #videoAdminList li, #syllabusRowList li")
-    .forEach((row) => {
-      row.draggable = isDesktopViewport();
-    });
-}
-window.addEventListener("resize", updateBlockDraggability);
-
-function makeBlockRowDraggable(row) {
-  row.draggable = isDesktopViewport();
-  row.addEventListener("dragstart", () => {
-    setTimeout(() => row.classList.add("dragging"), 0);
-  });
-  row.addEventListener("dragend", () => {
-    row.classList.remove("dragging");
-  });
-}
-
-function getBlockRowAfterDrag(container, y) {
-  const rows = [...container.querySelectorAll(".blog-block-row:not(.dragging)")];
-  return rows.reduce(
-    (closest, row) => {
-      const box = row.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset, element: row };
-      }
-      return closest;
-    },
-    { offset: Number.NEGATIVE_INFINITY, element: null }
-  ).element;
-}
-
-blogBlocksContainer.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  const dragging = blogBlocksContainer.querySelector(".blog-block-row.dragging");
-  if (!dragging) return;
-  const afterElement = getBlockRowAfterDrag(blogBlocksContainer, e.clientY);
-  if (afterElement == null) {
-    blogBlocksContainer.appendChild(dragging);
-  } else {
-    blogBlocksContainer.insertBefore(dragging, afterElement);
-  }
-});
-
-blogAddTextBlockBtn.addEventListener("click", () => addTextBlockRow());
-blogAddImageBlockBtn.addEventListener("click", () => addImageBlockRow());
-
-function derivePreviewText(text) {
-  const clean = (text || "").trim().replace(/\s+/g, " ");
-  if (!clean) return "";
-  const maxLen = 160;
-  if (clean.length <= maxLen) return clean;
-  const cut = clean.slice(0, maxLen);
-  const lastSpace = cut.lastIndexOf(" ");
-  return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut) + "...";
-}
-
-function collectContentBlocks() {
-  const blocks = [];
-  blogBlocksContainer.querySelectorAll(".blog-block-row").forEach((row) => {
-    const type = row.dataset.blockType;
-    if (type === "button") {
-      const inputs = row.querySelectorAll("input");
-      const text = inputs[0].value.trim();
-      const url = inputs[1].value.trim();
-      if (text && url) blocks.push({ type: "button", text, url });
-      return;
-    }
-    const field = row.querySelector("textarea, input");
-    const value = field.value.trim();
-    if (value) blocks.push({ type, value });
-  });
-  return blocks;
-}
-
-function addButtonRow(text, url) {
-  const row = document.createElement("div");
-  row.className = "blog-block-row blog-button-row blog-dynamic-row";
-  row.dataset.blockType = "button";
-
-  const handle = document.createElement("span");
-  handle.className = "blog-block-drag-handle";
-  handle.textContent = "⠿";
-
-  const textInput = document.createElement("input");
-  textInput.type = "text";
-  textInput.placeholder = "Button text";
-  textInput.value = text || "";
-  const urlInput = document.createElement("input");
-  urlInput.type = "text";
-  urlInput.placeholder = "https://...";
-  urlInput.value = url || "";
-
-  row.appendChild(handle);
-  row.appendChild(textInput);
-  row.appendChild(urlInput);
-  row.appendChild(createBlockControls(row));
-
-  makeBlockRowDraggable(row);
-  blogBlocksContainer.appendChild(row);
-}
-
-blogAddButtonBtn.addEventListener("click", () => addButtonRow());
-addTextBlockRow();
-addButtonRow();
-
-function collectButtons() {
-  const buttons = [];
-  blogBlocksContainer.querySelectorAll(".blog-button-row").forEach((row) => {
-    const inputs = row.querySelectorAll("input");
-    const text = inputs[0].value.trim();
-    const url = inputs[1].value.trim();
-    if (text && url) buttons.push({ text, url });
-  });
-  return buttons;
-}
-
-function clearBlogForm() {
-  blogTitleInput.value = "";
-  blogDateInput.value = "";
-  blogBlocksContainer.innerHTML = "";
-  addTextBlockRow();
-  addButtonRow();
-}
-
-function fillBlogForm(data) {
-  blogTitleInput.value = data.title || "";
-  blogDateInput.value = data.date || "";
-
-  blogBlocksContainer.innerHTML = "";
-  const hasInlineButtons = Array.isArray(data.contentBlocks) && data.contentBlocks.some((b) => b.type === "button");
-  if (Array.isArray(data.contentBlocks) && data.contentBlocks.length) {
-    data.contentBlocks.forEach((b) => {
-      if (b.type === "image") addImageBlockRow(b.value);
-      else if (b.type === "button") addButtonRow(b.text, b.url);
-      else addTextBlockRow(b.value);
-    });
-  } else {
-    // Legacy posts saved before content-blocks existed: one text block from
-    // fullText, then one image block per legacy imageUrls entry.
-    if (data.fullText) addTextBlockRow(data.fullText);
-    const legacyImages = Array.isArray(data.imageUrls) && data.imageUrls.length ? data.imageUrls : data.imageUrl ? [data.imageUrl] : [];
-    legacyImages.forEach((url) => addImageBlockRow(url));
-    if (!data.fullText && legacyImages.length === 0) addTextBlockRow();
-  }
-
-  // Posts saved before buttons could be placed inline still keep their buttons in the
-  // separate `buttons` field — append those at the end, same as before. Once resaved,
-  // their position becomes whatever the editor drags them to, via contentBlocks above.
-  if (!hasInlineButtons) {
-    const buttons = Array.isArray(data.buttons) && data.buttons.length
-      ? data.buttons
-      : data.buttonText && data.buttonUrl
-      ? [{ text: data.buttonText, url: data.buttonUrl }]
-      : [];
-    if (buttons.length) buttons.forEach((b) => addButtonRow(b.text, b.url));
-    else addButtonRow();
-  }
-}
-
-async function renderBlogPosts() {
-  blogPostList.innerHTML = "";
-  blogDeleteSelectedBtn.style.display = "none";
-  try {
-    const q = query(BLOG_POSTS_COL, orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    snap.forEach((docSnap) => {
-      const data = docSnap.data();
-      const li = document.createElement("li");
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.dataset.id = docSnap.id;
-      checkbox._blogData = data;
-      checkbox.addEventListener("change", updateBlogDeleteSelectedVisibility);
-      li.appendChild(checkbox);
-      makeRowTapSelectable(li, checkbox, blogPostList);
-
-      const span = document.createElement("span");
-      span.textContent = (data.title || "") + (data.date ? " — " + data.date : "");
-      li.appendChild(span);
-
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "edit-btn";
-      editBtn.textContent = "Edit";
-      editBtn.addEventListener("click", () => {
-        fillBlogForm(data);
-        blogAddBtn.textContent = "Save Changes";
-        blogAddBtn.dataset.editingId = docSnap.id;
-        blogAddBtn.dataset.editingDate = data.date || "";
-        blogStatus.textContent = 'Editing "' + (data.title || "") + '" — scroll up to edit and save.';
-        blogStatus.className = "msg";
-        window.scrollTo({ top: adminBlogView.offsetTop, behavior: "smooth" });
-      });
-      li.appendChild(editBtn);
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "delete-btn";
-      deleteBtn.textContent = "Delete";
-      deleteBtn.addEventListener("click", async () => {
-        if (!confirm('Delete "' + (data.title || "this post") + '"?')) return;
-        const deletedId = docSnap.id;
-        try {
-          await deleteDoc(doc(db, "blogPosts", deletedId));
-          await renderBlogPosts();
-          showUndoToast("Post deleted.", async () => {
-            await setDoc(doc(db, "blogPosts", deletedId), data);
-            await renderBlogPosts();
-          });
-        } catch (err) {
-          blogStatus.textContent = "Delete failed: " + (err.code || err.message);
-          blogStatus.className = "msg error";
-          console.error(err);
-        }
-      });
-      li.appendChild(deleteBtn);
-
-      blogPostList.appendChild(li);
-    });
-  } catch (err) {
-    blogStatus.textContent = "Could not load posts: " + (err.code || err.message);
-    blogStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-blogDeleteSelectedBtn.addEventListener("click", async () => {
-  const checked = blogPostList.querySelectorAll('input[type="checkbox"]:checked');
-  if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected post(s)?")) return;
-
-  blogDeleteSelectedBtn.disabled = true;
-  blogStatus.textContent = "Deleting...";
-  blogStatus.className = "msg";
-  try {
-    const deleted = [];
-    for (const cb of checked) {
-      deleted.push({ id: cb.dataset.id, data: cb._blogData });
-      await deleteDoc(doc(db, "blogPosts", cb.dataset.id));
-    }
-    blogStatus.textContent = "Selected posts deleted.";
-    blogStatus.className = "msg success";
-    await renderBlogPosts();
-    showUndoToast(deleted.length + " post(s) deleted.", async () => {
-      for (const item of deleted) {
-        await setDoc(doc(db, "blogPosts", item.id), item.data);
-      }
-      await renderBlogPosts();
-    });
-  } catch (err) {
-    blogStatus.textContent = "Delete failed: " + (err.code || err.message);
-    blogStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    blogDeleteSelectedBtn.disabled = false;
-  }
-});
-
-blogAddBtn.addEventListener("click", async () => {
-  const title = blogTitleInput.value.trim();
-  const contentBlocks = collectContentBlocks();
-  const buttons = collectButtons();
-  const editingId = blogAddBtn.dataset.editingId;
-  const manualDate = blogDateInput.value.trim();
-  const date = manualDate || (editingId ? blogAddBtn.dataset.editingDate || formatReadable(todayISO()) : formatReadable(todayISO()));
-
-  if (!title || contentBlocks.length === 0) {
-    blogStatus.textContent = "Title and at least one content block are required.";
-    blogStatus.className = "msg error";
-    return;
-  }
-
-  const firstTextBlock = contentBlocks.find((b) => b.type === "text");
-  const previewText = derivePreviewText(firstTextBlock ? firstTextBlock.value : "");
-  if (!previewText) {
-    blogStatus.textContent = "Add at least one text block so a preview can be generated.";
-    blogStatus.className = "msg error";
-    return;
-  }
-
-  const postData = { title, date, previewText, contentBlocks, buttons };
-
-  blogAddBtn.disabled = true;
-  blogStatus.textContent = editingId ? "Saving..." : "Adding...";
-  blogStatus.className = "msg";
-  try {
-    if (editingId) {
-      const previousSnapData = Array.from(blogPostList.querySelectorAll('input[type="checkbox"]')).find(
-        (cb) => cb.dataset.id === editingId
-      )?._blogData;
-      await updateDoc(doc(db, "blogPosts", editingId), postData);
-      clearBlogForm();
-      blogAddBtn.textContent = "Add Post";
-      delete blogAddBtn.dataset.editingId;
-      delete blogAddBtn.dataset.editingDate;
-      blogStatus.textContent = "Post updated.";
-      blogStatus.className = "msg success";
-      await renderBlogPosts();
-      showUndoToast("Post updated.", async () => {
-        if (previousSnapData) {
-          await updateDoc(doc(db, "blogPosts", editingId), previousSnapData);
-          await renderBlogPosts();
-        }
-      });
-    } else {
-      const existingSnap = await getDocs(BLOG_POSTS_COL);
-      let maxNum = 25; // continues after the 25 static legacy posts
-      existingSnap.forEach((d) => {
-        const n = parseInt(d.id, 10);
-        if (!isNaN(n) && n > maxNum) maxNum = n;
-      });
-      const newId = String(maxNum + 1);
-      await setDoc(doc(db, "blogPosts", newId), { ...postData, createdAt: serverTimestamp() });
-      clearBlogForm();
-      blogStatus.textContent = "Post added.";
-      blogStatus.className = "msg success";
-      await renderBlogPosts();
-      showUndoToast("Post added.", async () => {
-        await deleteDoc(doc(db, "blogPosts", newId));
-        await renderBlogPosts();
-      });
-    }
-  } catch (err) {
-    blogStatus.textContent = "Could not save: " + (err.code || err.message);
-    blogStatus.className = "msg error";
-    console.error(err);
-  } finally {
-    blogAddBtn.disabled = false;
-  }
-});
-
-// ---------- Results (terms + students) ----------
-const RESULT_TERMS_COL = collection(db, "resultTerms");
-
-const DEFAULT_RESULT_TERM = {
-  id: "2025-26-term-1",
-  order: 2025,
-  status: "active",
-  term: "Term - 1",
-  session: "2025-26",
-  setCode: "Set-A 3/22",
-  date: "27 July 2025",
-  maxMarks: 100,
-  students: [
-    { roll: 7, name: "Riya", marks: 88.5, percentage: 88.5, rank: 1 },
-    { roll: 1, name: "Anshika", marks: 82.5, percentage: 82.5, rank: 2 },
-    { roll: 2, name: "Aryan", marks: 57, percentage: 57, rank: 3 },
-  ],
-};
-
-let resultTermsCache = [];
-let selectedResultTermId = null;
-
-function populateResultTermSelect() {
-  resultTermSelect.innerHTML = "";
-  resultTermsCache.forEach((t) => {
-    const opt = document.createElement("option");
-    opt.value = t.id;
-    opt.textContent = t.term + " — " + t.session + (t.status === "active" ? " (Latest)" : "");
-    resultTermSelect.appendChild(opt);
-  });
-}
-
-function getSelectedResultTerm() {
-  return resultTermsCache.find((t) => t.id === selectedResultTermId);
-}
-
-async function saveResultTerm(term) {
-  await setDoc(doc(db, "resultTerms", term.id), {
-    order: term.order,
-    status: term.status,
-    term: term.term,
-    session: term.session,
-    setCode: term.setCode,
-    date: term.date,
-    maxMarks: term.maxMarks,
-    students: term.students,
-  });
-}
-
-function fillResultDetailsForm(term) {
-  resultTermNameInput.value = term.term || "";
-  resultSessionInput.value = term.session || "";
-  resultSetCodeInput.value = term.setCode || "";
-  resultDateInput.value = term.date || "";
-  resultMaxMarksInput.value = term.maxMarks || "";
-  resultTermStatusDisplay.textContent =
-    term.status === "active"
-      ? "This is the LATEST term — shown on the public Check Result search."
-      : "This term is ARCHIVED — visible in the Results Archive, still searchable by roll/name.";
-}
-
-function previewResultId(term, student) {
-  const parts = String(term.session || "").split("-");
-  const sessionShort = (parts[0] || "").slice(-2) + (parts[1] || "").padStart(2, "0");
-  const isTest = /test/i.test(term.term || "");
-  const typeCode = isTest ? "TS" : "TM";
-  const termNumMatch = String(term.term || "").match(/\d+/);
-  const termNum = termNumMatch ? termNumMatch[0] : "1";
-  const rollPadded = String(student.roll).padStart(2, "0");
-  return (sessionShort + typeCode + termNum + rollPadded).toUpperCase();
-}
-
-function renderResultStudents() {
-  resultStudentList.innerHTML = "";
-  resultDeleteSelectedBtn.style.display = "none";
-  resultSelectedCount.textContent = "";
-  const term = getSelectedResultTerm();
-  if (!term) return;
-
-  term.students.forEach((student, index) => {
-    const li = document.createElement("li");
-
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.dataset.index = index;
-    checkbox.addEventListener("change", () => {
-      const checked = resultStudentList.querySelectorAll('input[type="checkbox"]:checked');
-      resultDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
-      resultSelectedCount.textContent = checked.length ? checked.length + " selected" : "";
-    });
-    li.appendChild(checkbox);
-    makeRowTapSelectable(li, checkbox, resultStudentList);
-
-    const span = document.createElement("span");
-    span.textContent =
-      "Roll " + student.roll + " — " + student.name + " — " + student.marks + " marks (" + student.percentage + "%, Rank " + student.rank + ")" +
-      " [ID: " + (student.resultId || previewResultId(term, student)) + "]";
-    li.appendChild(span);
-
-    const editBtn = document.createElement("button");
-    editBtn.type = "button";
-    editBtn.className = "edit-btn";
-    editBtn.textContent = "Edit";
-    editBtn.addEventListener("click", async () => {
-      const previous = { ...student };
-      const roll = prompt("Roll No.:", student.roll);
-      if (roll === null) return;
-      const name = prompt("Name:", student.name);
-      if (name === null) return;
-      const marks = prompt("Marks:", student.marks);
-      if (marks === null) return;
-
-      const marksNum = parseFloat(marks);
-      const maxMarksNum = parseFloat(term.maxMarks);
-      const percentage =
-        !isNaN(marksNum) && maxMarksNum
-          ? Math.round(((marksNum / maxMarksNum) * 100) * 100) / 100
-          : student.percentage;
-
-      term.students[index] = {
-        roll: parseFloat(roll) || roll,
-        name: name.trim(),
-        marks: parseFloat(marks) || marks,
-        percentage,
-        rank: student.rank,
-      };
-      recalculateRanks(term);
-      try {
-        await saveResultTerm(term);
-        renderResultStudents();
-        showUndoToast("Student updated.", async () => {
-          term.students[index] = previous;
-          recalculateRanks(term);
-          await saveResultTerm(term);
-          renderResultStudents();
-        });
-      } catch (err) {
-        resultStudentStatus.textContent = "Save failed: " + (err.code || err.message);
-        resultStudentStatus.className = "msg error";
-        console.error(err);
-      }
-    });
-    li.appendChild(editBtn);
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.className = "delete-btn";
-    deleteBtn.textContent = "Delete";
-    deleteBtn.addEventListener("click", async () => {
-      if (!confirm("Delete this student's result?")) return;
-      const removed = term.students[index];
-      term.students.splice(index, 1);
-      recalculateRanks(term);
-      try {
-        await saveResultTerm(term);
-        renderResultStudents();
-        showUndoToast("Student deleted.", async () => {
-          term.students.splice(index, 0, removed);
-          recalculateRanks(term);
-          await saveResultTerm(term);
-          renderResultStudents();
-        });
-      } catch (err) {
-        resultStudentStatus.textContent = "Delete failed: " + (err.code || err.message);
-        resultStudentStatus.className = "msg error";
-        console.error(err);
-      }
-    });
-    li.appendChild(deleteBtn);
-
-    resultStudentList.appendChild(li);
-  });
-}
-
-resultSelectModeBtn.addEventListener("click", () => {
-  const enabling = !resultStudentList.classList.contains("bulk-mode");
-  resultStudentList.classList.toggle("bulk-mode", enabling);
-  resultSelectModeBtn.textContent = enabling ? "Cancel" : "Select";
-  if (!enabling) {
-    resultStudentList.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-    resultDeleteSelectedBtn.style.display = "none";
-    resultSelectedCount.textContent = "";
-  }
-});
-setupSelectAll(resultStudentList, resultSelectAllBtn, resultSelectModeBtn);
-
-resultDeleteSelectedBtn.addEventListener("click", async () => {
-  const checked = resultStudentList.querySelectorAll('input[type="checkbox"]:checked');
-  if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected student result(s)?")) return;
-
-  const term = getSelectedResultTerm();
-  const indexes = Array.from(checked).map((cb) => parseInt(cb.dataset.index, 10)).sort((a, b) => b - a);
-  const removed = indexes.map((i) => ({ index: i, student: term.students[i] }));
-  indexes.forEach((i) => term.students.splice(i, 1));
-  recalculateRanks(term);
-
-  try {
-    await saveResultTerm(term);
-    renderResultStudents();
-    showUndoToast(removed.length + " student(s) deleted.", async () => {
-      removed
-        .slice()
-        .reverse()
-        .forEach((r) => term.students.splice(r.index, 0, r.student));
-      recalculateRanks(term);
-      await saveResultTerm(term);
-      renderResultStudents();
-    });
-  } catch (err) {
-    resultStudentStatus.textContent = "Delete failed: " + (err.code || err.message);
-    resultStudentStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-function recalculateRanks(term) {
-  const sorted = term.students.slice().sort((a, b) => (parseFloat(b.marks) || 0) - (parseFloat(a.marks) || 0));
-  let rank = 0;
-  let prevMarks = null;
-  let seen = 0;
-  sorted.forEach((student) => {
-    seen++;
-    const marksVal = parseFloat(student.marks) || 0;
-    if (marksVal !== prevMarks) {
-      rank = seen;
-      prevMarks = marksVal;
-    }
-    student.rank = rank;
-  });
-}
-
-resultAddStudentBtn.addEventListener("click", async () => {
-  const term = getSelectedResultTerm();
-  const roll = resultRollInput.value.trim();
-  const name = resultNameInput.value.trim();
-  const marks = resultMarksInput.value.trim();
-
-  if (!roll || !name || !marks) {
-    resultStudentStatus.textContent = "Roll, Name, and Marks are required.";
-    resultStudentStatus.className = "msg error";
-    return;
-  }
-
-  const marksNum = parseFloat(marks);
-  const maxMarksNum = parseFloat(term.maxMarks);
-  const percentage =
-    !isNaN(marksNum) && maxMarksNum
-      ? Math.round(((marksNum / maxMarksNum) * 100) * 100) / 100
-      : "";
-
-  const newStudent = {
-    roll: parseFloat(roll) || roll,
-    name,
-    marks: parseFloat(marks) || marks,
-    percentage,
-    rank: 0,
-  };
-  term.students.push(newStudent);
-  recalculateRanks(term);
-
-  try {
-    await saveResultTerm(term);
-    resultRollInput.value = "";
-    resultNameInput.value = "";
-    resultMarksInput.value = "";
-    renderResultStudents();
-    resultStudentStatus.textContent = "Student added.";
-    resultStudentStatus.className = "msg success";
-    showUndoToast("Student added.", async () => {
-      term.students.pop();
-      recalculateRanks(term);
-      await saveResultTerm(term);
-      renderResultStudents();
-    });
-  } catch (err) {
-    term.students.pop();
-    recalculateRanks(term);
-    resultStudentStatus.textContent = "Could not add: " + (err.code || err.message);
-    resultStudentStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-async function loadResultTerms() {
-  try {
-    const q = query(RESULT_TERMS_COL, orderBy("order", "desc"));
-    const snap = await getDocs(q);
-    resultTermsCache = [];
-    snap.forEach((d) => {
-      const data = d.data();
-      resultTermsCache.push({
-        id: d.id,
-        order: data.order,
-        status: data.status,
-        term: data.term,
-        session: data.session,
-        setCode: data.setCode,
-        date: data.date,
-        maxMarks: data.maxMarks,
-        students: Array.isArray(data.students) ? data.students : [],
-      });
-    });
-    if (resultTermsCache.length === 0) {
-      resultTermsCache.push({ ...DEFAULT_RESULT_TERM, students: DEFAULT_RESULT_TERM.students.map((s) => ({ ...s })) });
-    }
-    populateResultTermSelect();
-    selectedResultTermId = resultTermsCache[0].id;
-    resultTermSelect.value = selectedResultTermId;
-    fillResultDetailsForm(getSelectedResultTerm());
-    renderResultStudents();
-  } catch (err) {
-    resultStatus.textContent = "Could not load results: " + (err.code || err.message);
-    resultStatus.className = "msg error";
-    console.error(err);
-  }
-}
-
-resultTermSelect.addEventListener("change", () => {
-  selectedResultTermId = resultTermSelect.value;
-  const term = getSelectedResultTerm();
-  fillResultDetailsForm(term);
-  renderResultStudents();
-});
-
-resultSaveDetailsBtn.addEventListener("click", async () => {
-  const term = getSelectedResultTerm();
-  if (!term) return;
-  const previous = {
-    term: term.term,
-    session: term.session,
-    setCode: term.setCode,
-    date: term.date,
-    maxMarks: term.maxMarks,
-    order: term.order,
-  };
-
-  term.term = resultTermNameInput.value.trim();
-  term.session = resultSessionInput.value.trim();
-  term.setCode = resultSetCodeInput.value.trim();
-  const manualResultDate = resultDateInput.value.trim();
-  if (manualResultDate) term.date = manualResultDate;
-  else if (!term.date) term.date = formatReadable(todayISO());
-  term.maxMarks = parseFloat(resultMaxMarksInput.value) || resultMaxMarksInput.value.trim();
-  const yearMatch = term.session.match(/\d{4}/);
-  if (yearMatch) term.order = parseInt(yearMatch[0], 10);
-
-  if (!term.term || !term.session) {
-    resultDetailsStatus.textContent = "Term Name and Session are required.";
-    resultDetailsStatus.className = "msg error";
-    Object.assign(term, previous);
-    return;
-  }
-
-  try {
-    await saveResultTerm(term);
-    populateResultTermSelect();
-    resultTermSelect.value = term.id;
-    resultDetailsStatus.textContent = "Term details saved.";
-    resultDetailsStatus.className = "msg success";
-    showUndoToast("Term details updated.", async () => {
-      Object.assign(term, previous);
-      await saveResultTerm(term);
-      populateResultTermSelect();
-      resultTermSelect.value = term.id;
-      fillResultDetailsForm(term);
-    });
-  } catch (err) {
-    Object.assign(term, previous);
-    resultDetailsStatus.textContent = "Save failed: " + (err.code || err.message);
-    resultDetailsStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-resultNewTermBtn.addEventListener("click", async () => {
-  const termName = prompt("Term name (e.g. Term - 2):", "");
-  if (!termName || !termName.trim()) return;
-  const session = prompt("Session (e.g. 2025-26):", "");
-  if (!session || !session.trim()) return;
-
-  const slug = (termName.trim() + "-" + session.trim()).toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  if (resultTermsCache.some((t) => t.id === slug)) {
-    resultStatus.textContent = "A term with that name/session already exists.";
-    resultStatus.className = "msg error";
-    return;
-  }
-  const yearMatch = session.match(/\d{4}/);
-  const order = yearMatch ? parseInt(yearMatch[0], 10) : Date.now();
-
-  const newTerm = {
-    id: slug,
-    order,
-    status: "archived",
-    term: termName.trim(),
-    session: session.trim(),
-    setCode: "",
-    date: "",
-    maxMarks: 100,
-    students: [],
-  };
-
-  try {
-    await saveResultTerm(newTerm);
-    resultTermsCache.push(newTerm);
-    resultTermsCache.sort((a, b) => b.order - a.order);
-    populateResultTermSelect();
-    selectedResultTermId = slug;
-    resultTermSelect.value = slug;
-    fillResultDetailsForm(newTerm);
-    renderResultStudents();
-    resultStatus.textContent = "Term created (archived — publish it when ready).";
-    resultStatus.className = "msg success";
-    showUndoToast('Term "' + termName + '" created.', async () => {
-      await deleteDoc(doc(db, "resultTerms", slug));
-      resultTermsCache = resultTermsCache.filter((t) => t.id !== slug);
-      if (resultTermsCache.length === 0) {
-        resultTermsCache.push({ ...DEFAULT_RESULT_TERM, students: DEFAULT_RESULT_TERM.students.map((s) => ({ ...s })) });
-      }
-      populateResultTermSelect();
-      selectedResultTermId = resultTermsCache[0].id;
-      resultTermSelect.value = selectedResultTermId;
-      fillResultDetailsForm(getSelectedResultTerm());
-      renderResultStudents();
-    });
-  } catch (err) {
-    resultStatus.textContent = "Could not create term: " + (err.code || err.message);
-    resultStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-resultDeleteTermBtn.addEventListener("click", async () => {
-  const term = getSelectedResultTerm();
-  if (!term) return;
-  if (!confirm('Delete "' + term.term + " — " + term.session + '"? This removes it entirely, including from the archive.')) return;
-  const deletedTerm = { ...term, students: term.students.map((s) => ({ ...s })) };
-
-  try {
-    await deleteDoc(doc(db, "resultTerms", term.id));
-    resultTermsCache = resultTermsCache.filter((t) => t.id !== term.id);
-    if (resultTermsCache.length === 0) {
-      resultTermsCache.push({ ...DEFAULT_RESULT_TERM, students: DEFAULT_RESULT_TERM.students.map((s) => ({ ...s })) });
-    }
-    populateResultTermSelect();
-    selectedResultTermId = resultTermsCache[0].id;
-    resultTermSelect.value = selectedResultTermId;
-    fillResultDetailsForm(getSelectedResultTerm());
-    renderResultStudents();
-    resultStatus.textContent = "Term deleted.";
-    resultStatus.className = "msg success";
-    showUndoToast('Term "' + deletedTerm.term + '" deleted.', async () => {
-      await saveResultTerm(deletedTerm);
-      await loadResultTerms();
-    });
-  } catch (err) {
-    resultStatus.textContent = "Delete failed: " + (err.code || err.message);
-    resultStatus.className = "msg error";
-    console.error(err);
-  }
-});
-
-resultPublishBtn.addEventListener("click", async () => {
-  const term = getSelectedResultTerm();
-  if (!term) return;
-  if (term.status === "active") {
-    resultStatus.textContent = "This term is already the latest.";
-    resultStatus.className = "msg";
-    return;
-  }
-  const previouslyActive = resultTermsCache.find((t) => t.status === "active");
-
-  try {
-    term.status = "active";
-    await saveResultTerm(term);
-    if (previouslyActive) {
-      previouslyActive.status = "archived";
-      await saveResultTerm(previouslyActive);
-    }
-    populateResultTermSelect();
-    resultTermSelect.value = term.id;
-    fillResultDetailsForm(term);
-    resultStatus.textContent = '"' + term.term + " — " + term.session + '" is now the latest published result.';
-    resultStatus.className = "msg success";
-    showUndoToast("Published as latest.", async () => {
-      term.status = "archived";
-      await saveResultTerm(term);
-      if (previouslyActive) {
-        previouslyActive.status = "active";
-        await saveResultTerm(previouslyActive);
-      }
-      populateResultTermSelect();
-      resultTermSelect.value = selectedResultTermId;
-      fillResultDetailsForm(getSelectedResultTerm());
-    });
-  } catch (err) {
-    resultStatus.textContent = "Publish failed: " + (err.code || err.message);
-    resultStatus.className = "msg error";
-    console.error(err);
-  }
-});
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Babita Classes - Blog</title>
+
+    <meta name="description" content="Read the latest news, event updates, and student success stories from Babita Classes, a free coaching organization in Kanpur.">
+    <meta name="keywords" content="Babita Classes blog, free education stories, student success Kanpur, NGO updates, cultural activities, free coaching experiences, underprivileged children education, Kanpur community support">
+
+    <meta name="theme-color" content="#ffd919">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="Babita Classes - Blog">
+    <meta property="og:description" content="Babita Classes is an NPO founded by Babita Soni in 2020, in Kanpur. We teach them for free, give them free stationery items, along with extra-curricular activities.">
+    <meta property="og:image" content="https://babitaclasses.vercel.app/images/logo.jpg">
+    <meta property="og:url" content="https://babitaclasses.vercel.app/blog">
+    <meta property="og:type" content="website">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.2e8f61.css">
+</head>
+  <body>
+
+    <!-- ===== HEADER ===== -->
+    <header>
+      <div id="headerlogo">
+        <img src="/images/logo.jpg" alt="Logo" width="60px" height="60px">
+      </div>
+      <h1>Babita Classes</h1>
+      <button id="menuToggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav id="mainNav" class="nav" aria-label="Main navigation">
+        <a href="https://babitaclasses.vercel.app/">Home</a>
+        <a href="https://babitaclasses.vercel.app/blog">Blog</a>
+        <a href="https://babitaclasses.vercel.app/result">Results</a>
+        <a href="https://babitaclasses.vercel.app/#syllabus">Syllabus</a>
+        <a href="https://babitaclasses.vercel.app/#noticeboard">Notice Board</a>
+        <a href="https://babitaclasses.vercel.app/#WhatsNew">What's New</a>
+        <a href="https://babitaclasses.vercel.app/#gallery">Gallery</a>
+        <a href="https://babitaclasses.vercel.app/#faq">FAQs</a>
+        <a href="https://babitaclasses.vercel.app/#mission">Our Mission</a>
+        <a href="https://babitaclasses.vercel.app/#fromdirectorsdesk">From Director's Desk</a>
+        <a href="https://babitaclasses.vercel.app/#videos">Function Videos</a>
+        <a href="https://babitaclasses.vercel.app/#faculty">Our Faculty</a>
+        <a href="https://babitaclasses.vercel.app/#allurls">All URLs</a>
+        <a href="#contact">Contact Us</a>
+      </nav>
+    </header>
+
+    <!-- Fixed Social Icons -->
+    <div class="social-fixed">
+    <a href="https://api.whatsapp.com/send?phone=919369914612&text=Hey!%20I%27m%20interested%20your%20work%20and%20your%20NPO.%20I%20got%20to%20know%20about%20it%20from%20Google%20please%20tell%20me%20more%20about%20it." class="fa fa-whatsapp" target="_blank" rel="noopener" title="WhatsApp"></a>
+    <a href="https://www.facebook.com/babitaclasses" class="fa fa-facebook" target="_blank" rel="noopener" title="Facebook"></a>
+    <a href="https://www.instagram.com/babitaclasses" class="fa fa-instagram" target="_blank" rel="noopener" title="Instagram"></a>
+    <a href="https://youtube.com/channel/UCHFpmflS9Fl-uu6lasO7tQQ" class="fa fa-youtube" target="_blank" rel="noopener" title="YouTube"></a>
+    <a href="https://www.google.com/search?q=%23babitaclasses" class="fa fa-google" target="_blank" rel="noopener" title="Google"></a>
+    </div>
+
+    <!-- Welcome Popup -->
+    <div id="popupOverlayUnique">
+      <div id="popupBoxUnique">
+        <button id="popupCloseUnique">×</button>
+        <h1>Welcome!</h1>
+        <h2>This is our newly launched website. You can download your marksheets from the result page.</h2>
+      </div>
+    </div>
+
+    <!-- Scroll to Top -->
+    <button id="topBtn" aria-label="Scroll to top" title="Scroll to top"><i class="fa fa-arrow-up" aria-hidden="true"></i></button>
+
+    <!-- Floral Quick Menu -->
+    <div id="floralMenu">
+      <button id="floralMain" aria-label="Quick actions" aria-expanded="false">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+      </button>
+      <a class="petal" id="floralCallBtn" href="tel:+917388311148" aria-label="Call Now" title="Call Now"><i class="fa fa-phone" aria-hidden="true"></i></a>
+      <button class="petal" id="shareBtn" aria-label="Share" title="Share"><i class="fa fa-share-alt" aria-hidden="true"></i></button>
+      <button class="petal" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode"><i class="fa fa-moon-o" aria-hidden="true"></i></button>
+      <button class="petal" id="floralNewBtn" aria-label="Translate to Hindi" title="Translate to Hindi"><i class="fa fa-language" aria-hidden="true"></i></button>
+    </div>
+
+    <!-- AI Assistant -->
+    <div id="assistantHint" class="assistant-hint hidden"></div>
+    <button id="assistantBtn" class="assistant-btn" onclick="toggleAssistant()" aria-label="Ask Babita Classes Assistant" title="Ask Babita Classes Assistant">
+      <i class="fa fa-magic" aria-hidden="true"></i>
+    </button>
+    <div id="assistantPanel" class="assistant-panel hidden">
+      <div class="assistant-header">
+        <span><i class="fa fa-magic" aria-hidden="true"></i> Babita Classes Assistant</span>
+        <div class="assistant-header-actions">
+          <button id="assistantReplayBtn" class="hidden" onclick="replayLastAssistantReply()" aria-label="Replay last reply" title="Replay last reply">
+            <i class="fa fa-repeat" aria-hidden="true"></i>
+          </button>
+          <button id="assistantSpeechToggle" class="hidden" onclick="toggleAssistantSpeech()" aria-label="Pause reading" title="Pause reading">
+            <i class="fa fa-pause" aria-hidden="true"></i>
+          </button>
+          <button class="modal-close" onclick="toggleAssistant()" aria-label="Close assistant" title="Close">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div class="assistant-messages" id="assistantMessages">
+        <div class="assistant-msg assistant-msg-bot">Hi! Ask me about admissions, fees, results, syllabus, or anything else about Babita Classes.</div>
+      </div>
+      <div class="assistant-input-row">
+        <input type="text" id="assistantInput" placeholder="Ask something…" autocomplete="off">
+        <button id="assistantMicBtn" class="hidden" onclick="toggleAssistantMic()" aria-label="Voice input" title="Speak your question">
+          <i class="fa fa-microphone" aria-hidden="true"></i>
+        </button>
+        <button id="assistantSendBtn" onclick="sendAssistantMessage()" aria-label="Send">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+<!-- Snowfall Effect -->
+<div aria-hidden="true" class="snowflakes">
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+</div>
+
+
+
+    <!-- SEARCH BAR -->
+    <div id="searchb" class="searchb">
+      <h1>Search in Blog</h1>
+      <input type="text" id="searchInput" class="search" placeholder="Type to search blog...">
+      <ul id="searchList">
+        <li><a href="#blog25">Babita Classes got highlighted in a recent news article in Swatantra Prabhat Kanpur</a></li>
+        <li><a href="#blog24">2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meeting</a></li>
+        <li><a href="#blog23">Diwali Celebration 2022</a></li>
+        <li><a href="#blog22">Celebrating 2 glorious years of Babita Classes</a></li>
+        <li><a href="#blog21">Teacher's Day 2022</a></li>
+        <li><a href="#blog20">2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association</a></li>
+        <li><a href="#blog19">Celebrating the success of Shivam with Babita Classes &amp; an interview with him</a></li>
+        <li><a href="#blog18">Drawings by the students of Babita Classes on Saturday</a></li>
+        <li><a href="#blog17">Summer Vacation Holiday Homework 2022</a></li>
+        <li><a href="#blog16">Vidya - A short film by Babita Classes</a></li>
+        <li><a href="#blog15">Success story of Savita</a></li>
+        <li><a href="#blog14">2022 Test 1 Results, Prize Distribution Day &amp; Parents Teachers Meeting</a></li>
+        <li><a href="#blog13">Guidelines, Important terms &amp; FAQs for students for test and exams</a></li>
+        <li><a href="#blog12">Download printable worksheets for children</a></li>
+        <li><a href="#blog11">Holi Celebration 2022</a></li>
+        <li><a href="#blog10">Homage to 'Swar Kokila' - The Legendary Singer Lata Mangeshkar</a></li>
+        <li><a href="#blog9">Babita Classes 2022 Basant Panchami</a></li>
+        <li><a href="#blog8">Test 2 Results</a></li>
+        <li><a href="#blog7">Republic Day Dance Event 2022</a></li>
+        <li><a href="#blog6">Babita Classes Gandhi Jayanti Function (2021)</a></li>
+        <li><a href="#blog5">Test 1 Syllabus and Datesheet released, check out from here.</a></li>
+        <li><a href="#blog4">Introducing Babita Classes Live Chat Support</a></li>
+        <li><a href="#blog3">Celebrating 1 successful year of Babita Classes</a></li>
+        <li><a href="#blog2">Why Choose Babita Classes and How Do We Work?</a></li>
+        <li><a href="#blog1">Babita Classes 2020 Independence Day Dance Function Videos</a></li>
+
+      </ul>
+    </div>
+
+    <!-- ===== BLOG FEED ===== -->
+    <div class="blog-feed">
+
+      <div class="blog-card" id="blog25">
+        <h3>Babita Classes got highlighted in a recent news article in Swatantra Prabhat Kanpur</h3>
+        <small>25 April 2024</small>
+        <p>A recent news article in Swatantra Prabhat Kanpur has highlighted the initiatives of Babita Classes which was written by Mr. Jintender Singh...</p>
+        <button class="read-more-btn" onclick="openModal('modal25')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog24">
+        <h3>2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meeting</h3>
+        <small>25 December 2022</small>
+        <p>We're very pleased to inform you that Test 2 results were announced on Saturday, December 17, 2022, and that many students once again received a score of more than 90%...</p>
+        <button class="read-more-btn" onclick="openModal('modal24')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog23">
+        <h3>Diwali Celebration 2022</h3>
+        <small>27 October 2022</small>
+        <p>We shared in the Diwali festivities with the Babita Classes students on October 24, 2022. We made rangolis, lit diyas...</p>
+        <button class="read-more-btn" onclick="openModal('modal23')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog22">
+        <h3>Celebrating 2 glorious years of Babita Classes</h3>
+        <small>10 September 2022</small>
+        <p>We had celebrated 2 glorious years of Babita Classes on 8th September 2022 (Thursday). In this journey, more than 75 children joined us...</p>
+        <button class="read-more-btn" onclick="openModal('modal22')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog21">
+        <h3>Teacher's Day 2022</h3>
+        <small>6 September 2022</small>
+        <p>On 5th of September 2022 (Monday), we'd celebrated Teacher's Day with students of Babita Classes. This year, students showed their affection...</p>
+        <button class="read-more-btn" onclick="openModal('modal21')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog20">
+        <h3>2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association</h3>
+        <small>15 August 2022</small>
+        <p>Today we have celebrated the 75 glorious years of freedom and 76th Independence Day of India...</p>
+        <button class="read-more-btn" onclick="openModal('modal20')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog19">
+        <h3>Celebrating the success of Shivam with Babita Classes &amp; an interview with him</h3>
+        <small>23 July 2022</small>
+        <p>As you all know, the Central Board of Secondary Education (CBSE) has declared the results of 12th and 10th on last Friday...</p>
+        <button class="read-more-btn" onclick="openModal('modal19')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog18">
+        <h3>Drawings by the students of Babita Classes on Saturday</h3>
+        <small>25 June 2022</small>
+        <p>As you all know, we do many different activities on every Saturday, so on this Saturday...</p>
+        <button class="read-more-btn" onclick="openModal('modal18')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog17">
+        <h3>Summer Vacation Holiday Homework 2022</h3>
+        <small>7 June 2022</small>
+        <p>As you'll already know, Summer Vacation 2022 has been announced from 8th of June 2022 to 4th of July 2022. Classes...</p>
+        <button class="read-more-btn" onclick="openModal('modal17')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog16">
+        <h3>Vidya - A short film by Babita Classes</h3>
+        <small>6 June 2022</small>
+        <p>After a long period of planning about our first short film, finally we've completed it. It is just because of the hard work...</p>
+        <button class="read-more-btn" onclick="openModal('modal16')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog15">
+        <h3>Success story of Savita</h3>
+        <small>14 May 2022</small>
+        <p>Success story of Savita with Babita Classes. The name of the girl in the photo is Savita. She had gone to school for only some months but after some months...</p>
+        <button class="read-more-btn" onclick="openModal('modal15')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog14">
+        <h3>2022 Test 1 Results, Prize Distribution Day &amp; Parents Teachers Meeting</h3>
+        <small>13 May 2022</small>
+        <p>As you all already know, Test 1 results have been announced. And today, we've distributed the prizes to children for their hard work...</p>
+        <button class="read-more-btn" onclick="openModal('modal14')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog13">
+        <h3>Guidelines, Important terms &amp; FAQs for students for test and exams</h3>
+        <small>7 May 2022</small>
+        <p>As you all know, test 1 is going to start from 9th of May and there are many students who have queries about the test. So, in this...</p>
+        <button class="read-more-btn" onclick="openModal('modal13')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog12">
+        <h3>Download printable worksheets for children</h3>
+        <small>4 May 2022</small>
+        <p>Download Worksheet 1<br>Download Worksheet 2<br>More worksheets coming soon.....</p>
+        <button class="read-more-btn" onclick="openModal('modal12')">Read More</button>
+      </div>
+
+      <div class="blog-card" id="blog11">
+        <h3>Holi Celebration 2022</h3>
+        <small>22 March 2022</small>
+        <p>This year, we've celebrated Holi by flowers and eco-friendly colours. After celebrating, we've also distributed biscuits and candies...</p>
+        <button class="read-more-btn" onclick="openModal('modal11')">Read More</button>
+      </div>
+      <div class="blog-card" id="blog10">
+        <h3>Homage to 'Swar Kokila' - The Legendary Singer Lata Mangeshkar</h3>
+        <small>7 February 2022</small>
+        <p>
+          #babitaclasses #learning_from_BC #Homage #LataMangeshkar Related Links: Facebook Post (All Videos) Instagram Post (All photos)...
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal10')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 17 -->
+      <div class="blog-card" id="blog9">
+        <h3>Babita Classes 2022 Basant Panchami</h3>
+        <small>5 February 2022</small>
+        <p>
+          Today, we've celebrated Basant Panchami and children have danced on their favourite songs. Also, I've distributed them pencils, biscuits and candies. #babitaclasses #learning_from_BC #basantpanchami Related Links: Facebook Post (All details about function available) Instagram Post...
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal9')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 18 -->
+      <div class="blog-card" id="blog8">
+        <h3>Test 2 Results</h3>
+        <small>31 January 2022</small>
+        <p>
+          Babita Classes session 2021-22 is running out and Test 2 had already held on 30​​​​th of January. And today the result is released. According to Babita Soni (Founder)...
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal8')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 19 -->
+      <div class="blog-card" id="blog7">
+        <h3>Republic Day Dance Event 2022</h3>
+        <small>8 January 2022</small>
+        <p>
+          This Republic Day, be ready for Republic Day Dance Event by Babita Classes students. Video Footage: Part 1 Part 2 Our event will be live on Facebook...
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal7')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 20 -->
+      <div class="blog-card" id="blog6">
+        <h3>Babita Classes Gandhi Jayanti Function (2021)</h3>
+        <small>2 October 2021</small>
+        <p>
+          To watch Function video footage, click here....
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal6')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 21 -->
+      <div class="blog-card" id="blog5">
+        <h3>Test 1 Syllabus and Datesheet released, check out from here.</h3>
+        <small>25 September 2021</small>
+        <p>
+          TEST 1 UPDATE After the COVID-19 holidays, we along with the students have prepared well for the next Test for this session 2021-22. And now we've released test 1 datesheet and syllabus....
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal5')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 22 -->
+      <div class="blog-card" id="blog4">
+        <h3>Introducing Babita Classes Live Chat Support</h3>
+        <small>19 September 2021</small>
+        <p>
+          For a long time, we've seen that there is a need for live chat support for our website. And today we've completed live chat support...
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal4')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 23 -->
+      <div class="blog-card" id="blog3">
+        <h3>Celebrating 1 successful year of Babita Classes</h3>
+        <small>8 September 2021</small>
+        <p>
+          We're celebrating our successful 1 year anniversary today. Thanks to everyone for supporting us. Thank you children for being attentive, and also thank you for the pens that you've gifted us today. (Pens were gifted by Khushi and Savita)....
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal3')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 24 -->
+      <div class="blog-card" id="blog2">
+        <h3>Why Choose Babita Classes and How Do We Work?</h3>
+        <small>14 August 2021</small>
+        <p>
+          • How does Babita Classes engage children to learn more? Babita Classes not only teaches children for free, but also teaches them through interesting and attractive videos and audios...
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal2')">
+          Read More
+        </button>
+      </div>
+      <!-- Blog Card 25 -->
+      <div class="blog-card" id="blog1">
+        <h3>Babita Classes 2020 Independence Day Dance Function Videos</h3>
+        <small>12 August 2021</small>
+        <p>
+         Independence Day Dance Function video footage is uploaded on our Facebook page and on Function Videos page. To watch videos now Click Here #babitaclasses...
+        </p>
+        <button class="read-more-btn" onclick="openModal('modal1')">
+          Read More
+        </button>
+      </div>
+
+
+
+    </div><!-- end .blog-feed -->
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- Modal 25 -->
+    <div id="modal25" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal25')">×</button>
+        <h2>Babita Classes got highlighted in a recent news article in Swatantra Prabhat Kanpur</h2>
+        <small>25 April 2024</small>
+        </div>
+<p>
+          A recent news article in Swatantra Prabhat Kanpur has highlighted the initiatives of Babita Classes which was written by Mr. Jintender Singh. The news article reads - "Babita Soni who lives in Kanpur is helping poor children by educating them for free of cost. She is currently teaching 35 students. All the students are very fond of her, they call her Babita Didi. If some rich people provide a little help to such poor people, they can change the situation of the society. The name of Babita ji's organization is Babita Classes and their website is https://babitaclasses.website2.me. Babita ji says that she gets great pleasure in doing all this. What can be better than if a child who is far away from education learns something? Society should take inspiration from such people. Life is not only for our own comfort, we can also do something for someone, this should be our effort. Babita ji told that she is very fond of writing, reading and teaching but was not able to find any such platform from anywhere on which she could perform all the tasks. And then she decided that she would collect all the poor children around her and in the city and try to educate them. Her efforts should be greatly appreciated. This news must reach the government department so that they could get some help to make their mission more successful."
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 24 -->
+    <div id="modal24" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal24')">×</button>
+        <h2>2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings</h2>
+        <small>25 December 2022</small>
+        </div>
+<p>
+          We're very pleased to inform you that Test 2 results were announced on Saturday, December 17, 2022, and that many students once again received a score of more than 90%. The aggregate average for the students is 66%. 90% or so of the students that took the test did well. Today, we saw the parent-teacher meeting and the distribution of test 2 prizes. In Test 2, Roli, Khushi, and Lovely came in first through third. Roli scored a perfect score of 100.<br>
+          <img src="https://i.imgur.com/8N635PA.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 1" loading="lazy"><br>
+          Picture showing Roli receiving her result and giving gift to Babita Ma'am.<br>
+          <img src="https://i.imgur.com/OiRDFVb.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 2" loading="lazy"><br>
+          We distributed the items shown in the image above and candies to the children. The children were overjoyed when they learned their results. We gave them candy, pens, notebooks, and other school supplies. Additionally, we observed Christmas. The best part of the enjoyment was when kids gave us pictures of Santa and the Christmas tree. Here are a few of today's pictures.<br>
+          <img src="https://i.imgur.com/xPdcQPh.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 3" loading="lazy"><br><img src="https://i.imgur.com/aCB5V6X.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 4" loading="lazy"><br><img src="https://i.imgur.com/iyMcetL.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 5" loading="lazy"><br><img src="https://i.imgur.com/8vmmsTB.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 6" loading="lazy"><br><img src="https://i.imgur.com/YRpzz7i.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 7" loading="lazy"><br><img src="https://i.imgur.com/lYxmCqr.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 8" loading="lazy"><br><img src="https://i.imgur.com/wsz8RPz.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 9" loading="lazy"><br><img src="https://i.imgur.com/F59L9Vm.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 10" loading="lazy"><br><img src="https://i.imgur.com/fZF3muQ.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 11" loading="lazy"><br><img src="https://i.imgur.com/lFLNq5m.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 12" loading="lazy"><br><img src="https://i.imgur.com/bGf6nZx.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 13" loading="lazy"><br><img src="https://i.imgur.com/Yt9Nxcd.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 14" loading="lazy"><br><img src="https://i.imgur.com/Hrnyv8Q.jpg" alt="2022 Christmas Celebration and Test - 2 Prize Distribution and Parents-teachers Meetings - photo 15" loading="lazy"><br>
+          These include pictures of Santa Claus and the Christmas tree, candies, chocolates and stickers. For videos of Christmas Celebration and more pictures, visit this website.<br>
+          <div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=pfbid02wJgzPwrY87mArtqBKJugHWhitabNVcefA5P7pYXeZxEt3xwUdezGxXbCZuxrHxLGl&id=100064110307436&mibextid=Nif5oz" target="_blank" rel="noopener">Link 1 (All photos)</a><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=pfbid02HgfyPstb94yJBWTyHv9aAkZqVFWx4HPzPmT2ZgTJHyLBDMefQzZ21EiysMcjPZtvl&id=100064110307436&mibextid=Nif5oz" target="_blank" rel="noopener">Link 2</a><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=pfbid09QuxCnEpF6SHxorhFgnZYKcYRmhs3G4x4TgUm3R2uqr7Ggwjw9WFT16xRNYtJnVdl&id=100064110307436&mibextid=Nif5oz" target="_blank" rel="noopener">Link 3</a><a class="btn-inline" href="https://www.instagram.com/p/CmjTtlQPbaW/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 5 (Instagram)</a><a class="btn-inline" href="https://www.instagram.com/p/CmjWlS0P-oh/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 6</a><a class="btn-inline" href="https://www.instagram.com/p/CmlWNfNvMhV/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 7</a><a class="btn-inline" href="https://www.instagram.com/p/CmlWalyPfMY/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 8</a></div></p>
+      </div>
+    </div>
+
+    <!-- Modal 23 -->
+    <div id="modal23" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal23')">×</button>
+        <h2>Diwali Celebration 2022</h2>
+        <small>27 October 2022</small>
+        </div>
+<p>
+          We shared in the Diwali festivities with the Babita Classes students on October 24, 2022. We made rangolis, lit diyas and candles, and celebrated Diwali in a very environmentally responsible manner. Additionally, Babita ma'am gave the students candy and sweets. They were overjoyed to join us in celebrating Diwali. Some of the photos are given below:<br>
+          <img src="https://i.imgur.com/kjGtLLz.jpg" alt="Diwali Celebration 2022 - photo 1" loading="lazy"><br><img src="https://i.imgur.com/tQr6rGH.jpg" alt="Diwali Celebration 2022 - photo 2" loading="lazy"><br><img src="https://i.imgur.com/DUKUasR.jpg" alt="Diwali Celebration 2022 - photo 3" loading="lazy"><br>
+          The rangolis shown here are created by <a href="https://shivams-world.vercel.app">Shivam</a>.<br>
+          <img src="https://i.imgur.com/fb4B24u.jpg" alt="Diwali Celebration 2022 - photo 4" loading="lazy"><br><img src="https://i.imgur.com/N6Ford4.jpg" alt="Diwali Celebration 2022 - photo 5" loading="lazy"><br><img src="https://i.imgur.com/sKPpnXn.jpg" alt="Diwali Celebration 2022 - photo 6" loading="lazy"><br><img src="https://i.imgur.com/GljdQAj.jpg" alt="Diwali Celebration 2022 - photo 7" loading="lazy"><br><img src="https://i.imgur.com/DmHbFV6.jpg" alt="Diwali Celebration 2022 - photo 8" loading="lazy"><br>
+          <div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=pfbid0Me6ECZbPb64eRS7woiSdfBuBTe88HH8CyzB9ftgCzEazKupgigPGj6WDrNGB9sVml&id=100064110307436" target="_blank" rel="noopener">Link 1 (Facebook post)</a><a class="btn-inline" href="https://www.instagram.com/p/CkHt9aMy3GO/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 2 (Instagram post)</a><a class="btn-inline" href="https://babitaclasses.vercel.app/" target="_blank" rel="noopener">Link 3 (New Website)</a></div></p>
+      </div>
+    </div>
+
+    <!-- Modal 22 -->
+    <div id="modal22" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal22')">×</button>
+        <h2>Celebrating 2 glorious years of Babita Classes</h2>
+        <small>10 September 2022</small>
+        </div>
+<p>
+          We had celebrated 2 glorious years of Babita Classes on 8th September 2022 (Thursday). In this journey, more than 75 children joined us, more than 1500 stationery items were distributed. Average marks have gone up to 93.34% in these 2 years. More than 12 new students joined us on our 2nd anniversary and made our day awesome. In these two years, apart from success, we have faced many social and economic problems too but we never compromised with the education of children because this is something more important than anything.<br>
+          Some of today's photos are given below:<br>
+          <iframe width="458" height="576" src="https://www.youtube.com/embed/dm_mXGeROZg" title="We're celebrating 2 glorious years of Babita Classes today." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><br>
+          <div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=pfbid02H8qEek4ybxxrxd6KeGHevFhkUR8xFFnwHUGs3hsVXsKHfh8qGMUessznMUbPc1F5l&id=100064110307436" target="_blank" rel="noopener">Link 1 (Facebook post)</a><a class="btn-inline" href="https://www.instagram.com/p/CiP0aRqvj2T/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 2 (Instagram post)</a><a class="btn-inline" href="https://babitaclasses.vercel.app/" target="_blank" rel="noopener">Link 3 (New Website)</a></div></p>
+      </div>
+    </div>
+
+    <!-- Modal 21 -->
+    <div id="modal21" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal21')">×</button>
+        <h2>Teacher's Day 2022</h2>
+        <small>6 September 2022</small>
+        </div>
+<p>
+          On 5th of September 2022 (Monday), we'd celebrated Teacher's Day with students of Babita Classes. This year, students showed their affection towards us, the faculty of Babita Classes by gifting us pens. Some of the students also gift-wrapped them. The students' names are as follows - Ragini, Dhani, Aryan, Savita, Khushi, Lovely and Manvi.<br>
+          #babitaclasses #learning_from_BC<br>
+          <div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=pfbid0of8P5WJYPb2otAHUszXLvLFE67f31Ukm9B8s2PmxaRZFVYSiXXihutv1DWRFobvtl&id=100064110307436" target="_blank" rel="noopener">Link 1 (Facebook post 1)</a><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=pfbid02TmRyfJPDfAj4reisPnvwfKGZpzvtoziXKa5aF4gRQySSMe4X5ZBNryAH3qWkzj7hl&id=100064110307436" target="_blank" rel="noopener">Link 2 (Facebook post 2)</a><a class="btn-inline" href="https://www.instagram.com/p/CiIKM3ghqPY/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 3 (Instagram post 1)</a><a class="btn-inline" href="https://www.instagram.com/p/CiKq4mYBIX7/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 4 (Instagram post 2)</a><a class="btn-inline" href="https://babitaclasses.vercel.app/" target="_blank" rel="noopener">Link 5 (New Website)</a></div></p>
+      </div>
+    </div>
+
+    <!-- Modal 20 -->
+    <div id="modal20" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal20')">×</button>
+        <h2>2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association</h2>
+        <small>15 August 2022</small>
+        </div>
+<p>
+          <img src="https://i.imgur.com/69uCwxl.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 1" loading="lazy"><br>
+          Today we have celebrated the 75 glorious years of freedom and 76th Independence Day of India. Today we hosted our national flag with the members of Uttar Pradesh Adarsh Vyapari Association.<br>
+          You can watch today's video from here:<br>
+          <iframe width="807" height="393" src="https://www.youtube.com/embed/1SEOlBnvr_E" title="2022 Babita Classes &amp; Uttar Pradesh Adarsh Vyapari Asso. Independence Day Flag hosting ceremony" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><br>
+          We also distributed food items to children and gave honor to the elderly members of our society. Some of today's photos are also given below:<br>
+          <img src="https://i.imgur.com/husWOad.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 2" loading="lazy"><br>Today's group photo.<br>
+          <img src="https://i.imgur.com/jq9raBQ.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 3" loading="lazy"><br>Another group photo.<br>
+          <img src="https://i.imgur.com/V6NDYmE.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 4" loading="lazy"><br>Group photo showing the biscuits distribution.<br>
+          <img src="https://i.imgur.com/QBXOwkB.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 5" loading="lazy"><br>Group photo showing Babita Soni, Dolly Barua and Beenu Tiwari together.<br>
+          <img src="https://i.imgur.com/lg1AOIH.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 6" loading="lazy"><br>Another group photo showing Babita Soni, Dolly Barua and Beenu Tiwari together.<br>
+          <img src="https://i.imgur.com/hpWwpWZ.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 7" loading="lazy"><br>Group photo showing Babita Soni, Dolly Barua and Beenu Tiwari together discussing about different social issues.<br>
+          <img src="https://i.imgur.com/XAWLlIq.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 8" loading="lazy"><br>Photo showing Beenu Tiwari giving honor to Babita Soni.<br>
+          <img src="https://i.imgur.com/sffGq0P.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 9" loading="lazy"><br>Photo showing Babita Soni giving honor to Dolly Barua.<br>
+          <img src="https://i.imgur.com/4xuUMmm.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 10" loading="lazy"><br>Photo showing Beenu Tiwari and Babita Soni distributing biscuits to children.<br>
+          <img src="https://i.imgur.com/Cd5zVDv.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 11" loading="lazy"><br>Photo showing Babita Soni giving speech on this occasion.<br>
+          <img src="https://i.imgur.com/2kythqA.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 12" loading="lazy"><br>Photo showing Babita Soni preparing for today's function.<br>
+          <img src="https://i.imgur.com/CPEByw6.jpg" alt="2022 Independence Day Flag Hosting Ceremony &amp; Food Distribution along with the respected members of Uttar Pradesh Adarsh Vyapari Association - photo 13" loading="lazy"><br>Group photo showing everyone together.<br>
+          <div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://fb.watch/eVUgnt2ku9/" target="_blank" rel="noopener">Link 1 (Facebook post with full video)</a><a class="btn-inline" href="https://www.instagram.com/p/ChQsJawPHKR/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 2 (Instagram post)</a><a class="btn-inline" href="https://youtu.be/1SEOlBnvr_E" target="_blank" rel="noopener">Link 3 (YouTube video)</a></div></p>
+      </div>
+    </div>
+
+    <!-- Modal 19 -->
+    <div id="modal19" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal19')">×</button>
+        <h2>Celebrating the success of Shivam with Babita Classes &amp; an interview with him</h2>
+        <small>23 July 2022</small>
+        </div>
+<p>
+          As you all know, the Central Board of Secondary Education (CBSE) has declared the results of 12th and 10th on last Friday i.e., 22nd of July 2022. And our co-founder Shivam Soni has scored 94% marks in high school.<br>
+          <img src="https://i.imgur.com/IFW8jXQ.jpg" alt="Celebrating the success of Shivam with Babita Classes &amp; an interview with him - photo 1" loading="lazy"><br>
+          We congratulate Shivam from the bottom of our heart.<br>
+          Now many people including students of junior classes (like 8th and 9th) and more people are asking Shivam about his schedule for studying, study plan and more things. So, here is an answer for all of them.<br>
+          According to the words of Shivam, his priority was always studies but this doesn't mean that you've to study all the time. You should study by your capacity, you can play, watch television and do whatever you want to do but don't forget to study. Also set your priority to study.<br>
+          Shivam had not studied from any coaching or from any tuition teacher. But he had studied by himself only. As according to him, "Self-study is the best mantra to get high marks."<br>
+          For those people, who were asking for Shivam's marksheet, his marksheet is given below:<br>
+          <img src="https://i.imgur.com/KJlHgob.jpg" alt="Celebrating the success of Shivam with Babita Classes &amp; an interview with him - photo 2" loading="lazy"><br>
+          Shivam had not studied for some specific hours per day, but he had studied according to how much time he had and his aim was always to utilise most of the time he had. He had focused on every subject equally because his thinking is that, "Studying any subject more than others will not give you additional marks."
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 18 -->
+    <div id="modal18" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal18')">×</button>
+        <h2>Drawings by the students of Babita Classes on Saturday</h2>
+        <small>25 June 2022</small>
+        </div>
+<p>
+          <img src="https://i.imgur.com/lbWit2D.jpg" alt="Drawings by the students of Babita Classes on Saturday - photo 1" loading="lazy"><br>
+          As you all know, we do many different activities on every Saturday, so on this Saturday i.e., 25 June 2022 students made a drawing of a puppy. Some of the images are given below:<br>
+          <img src="https://i.imgur.com/nDdysd4.jpg" alt="Drawings by the students of Babita Classes on Saturday - photo 2" loading="lazy"><br>
+          <img src="https://i.imgur.com/5lfGDtL.jpg" alt="Drawings by the students of Babita Classes on Saturday - photo 3" loading="lazy"><br>She is Ragini. She had drawn the best puppy.<br>
+          <img src="https://i.imgur.com/3BHAorx.jpg" alt="Drawings by the students of Babita Classes on Saturday - photo 4" loading="lazy"><br>She is Pari. She had also drawn a good puppy.<br>
+          <img src="https://i.imgur.com/sJL9xRf.jpg" alt="Drawings by the students of Babita Classes on Saturday - photo 5" loading="lazy"><br>She is Lovely. She had also created a good puppy.<br>
+          You can view more pictures on our Facebook or Instagram account.<br>
+          <div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=pfbid02BMQUYWTGRPHP8N7BnawYTwHxfF64mrve8Wpc68DeLWzqWRkCCh3xY9pY6XnqeNsil&id=100064110307436" target="_blank" rel="noopener">Link 1 (Facebook post)</a><a class="btn-inline" href="https://www.instagram.com/p/CfOnVcrvUXy/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Link 2 (Instagram post)</a></div></p>
+      </div>
+    </div>
+
+    <!-- Modal 17 -->
+    <div id="modal17" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal17')">×</button>
+        <h2>Summer Vacation Holiday Homework 2022</h2>
+        <small>7 June 2022</small>
+        </div>
+<p>
+          As you'll already know, Summer Vacation 2022 has been announced from 8th of June 2022 to 4th of July 2022. Classes will be reopened from 4th of July 2022 (Monday). Timing is 4 PM (IST). Term 1 is going to start in the mid of July.<br>
+          <img src="https://i.imgur.com/3ZelAAX.png" alt="Summer Vacation Holiday Homework 2022 - photo 1" loading="lazy"><br>
+          Now comes the holiday homework of summer vacations, so the holiday homework is given below (according to the subjects):<br>
+          <strong>• English:</strong> Learn the definition of noun and its kinds along with examples.<br>
+          <strong>• Hindi:</strong> संज्ञा और उसके भेदों की परिभाषा उदाहरण सहित याद करें।<br>
+          <strong>• Maths:</strong> Revise tables from 2 to 10. Learn the divisibility rules of 2 and 3.<br>
+          》Test the divisibility of 3 on the following numbers: 362, 264, 200 and 273.<br>
+          <strong>Note:</strong> You have to show the method used for testing the divisibility of 3. Don't just ✔ or ❌ against the numbers.<br>
+          》Solve the given equations and find the value of the variables: 1) a + 6 = 8, 2) a + 3 = 9<br>
+          <strong>• Drawing/Arts:</strong> Learn to draw a car, flower and butterfly.<br>
+          <strong>Important Note:</strong> The aim of giving holiday homework is to prepare you all for term 1. So, do the holiday homework very carefully.
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 16 -->
+    <div id="modal16" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal16')">×</button>
+        <h2>Vidya - A short film by Babita Classes</h2>
+        <small>6 June 2022</small>
+        </div>
+<p>
+          <img src="https://i.imgur.com/FgIsm6p.jpg" alt="Vidya - A short film by Babita Classes - photo 1" loading="lazy"><br>
+          After a long period of planning about our first short film, finally we've completed it. It is just because of the hard work of Babita ma'am, <a href="https://www.youtube.com/c/ShivamsWorld">Shivam</a> and all the students.<br>
+          Our first film's name is Vidya. This film revolves around the story of a girl whose parents didn't allow her to go to school; she does all the household work. Vidya has a friend named Renu; she always thinks that Renu helps her, but Renu's intentions towards Vidya are different.<br>
+          Watch the film to know how Vidya emerges as a winner despite many problems in her way.<br>
+          <iframe width="807" height="454" src="https://www.youtube.com/embed/s_aT2HMHW68" title="Vidya - A short film by Babita Classes" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><br>
+          Links to watch the film:<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://www.youtube.com/watch?v=s_aT2HMHW68" target="_blank" rel="noopener">YouTube</a><a class="btn-inline" href="https://fb.watch/dtFLr-5KWJ/" target="_blank" rel="noopener">Facebook</a><a class="btn-inline" href="https://www.instagram.com/tv/Cedogr2FhuV/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Instagram</a><a class="btn-inline" href="https://posts.gle/Yu8N9y" target="_blank" rel="noopener">Google</a></div>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 15 -->
+    <div id="modal15" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal15')">×</button>
+        <h2>Success story of Savita</h2>
+        <small>14 May 2022</small>
+        </div>
+<p>
+          <img src="https://i.imgur.com/9uLwa7r.png" alt="Success story of Savita - photo 1" loading="lazy"><br>
+          Success story of Savita with Babita Classes. The name of the girl in the photo is Savita. She had gone to school for only some months but after some months she discontinued going to school because of some reasons. She joined Babita Classes in September 2020. We taught her everything from the starting point and now she can do mathematical calculations, she can form sentences in English and Hindi and there are many more things that she can do.<br>
+          This is the outcome of the hard work of Babita Classes.<br>
+          #babitaclasses #learning_from_BC #success #successstory<br>
+          Related Links:<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=370934611720213&id=100064110307436" target="_blank" rel="noopener">Facebook Post</a><a class="btn-inline" href="https://www.instagram.com/p/CdidCETvsfV/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Instagram Post</a></div>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 14 -->
+    <div id="modal14" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal14')">×</button>
+        <h2>2022 Test 1 Results, Prize Distribution Day &amp; Parents Teachers Meeting</h2>
+        <small>13 May 2022</small>
+        </div>
+<p>
+          As you all already know, Test 1 results have been announced. And today, we've distributed the prizes to children for their hard work. Also, we've organized a Parents Teachers Meeting in which we've discussed their performance in test 1. And those who were absent for their test gave their test on 17 May 2022 (Tuesday), and we distributed the prizes on 18 May 2022 (Wednesday).<br>
+          The latest ranking chart is given below:<br>
+          <img src="https://i.imgur.com/8Fk89QR.png" alt="2022 Test 1 Results, Prize Distribution Day &amp; Parents Teachers Meeting - photo 1" loading="lazy"><br>
+          Prizes:<br><img src="https://i.imgur.com/ob4pkE0.jpg" alt="2022 Test 1 Results, Prize Distribution Day &amp; Parents Teachers Meeting - photo 2" loading="lazy"><br>
+          <div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://drive.google.com/uc?export=download&id=1tQa6QADM7L2_w1fudQudXp7nDKb3yCuB" target="_blank" rel="noopener">Download Answersheets PDF</a><a class="btn-inline" href="https://m.facebook.com/story.php?story_fbid=370240265122981&id=100064110307436" target="_blank" rel="noopener">Facebook Post</a><a class="btn-inline" href="https://www.instagram.com/p/CdfuBZmPO3G/?igshid=YmMyMTA2M2Y=" target="_blank" rel="noopener">Instagram Post</a></div></p>
+      </div>
+    </div>
+
+    <!-- Modal 13 -->
+    <div id="modal13" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal13')">×</button>
+        <h2>Guidelines, Important terms &amp; FAQs for students for test and exams</h2>
+        <small>7 May 2022</small>
+        </div>
+<p>
+          As you all know, test 1 is going to start from 9th of May and there are many students who have queries about the test. So, in this post, we'll clear all your doubts and queries. Also, there are some guidelines that you must follow amid test 1.<br>
+          <img src="https://i.imgur.com/EEw2MeY.png" alt="Guidelines, Important terms &amp; FAQs for students for test and exams - photo 1" loading="lazy"><br>
+          <strong>Firstly, read the guidelines listed below:</strong><br>
+          • You must report to the classes at sharp 3:30 PM. Test will start at 3:40 PM. Total time given to you is 1 hour 20 minutes, that means the test will get over at 5 PM. No reading time will be given.<br>
+          • You must bring your own stationery items. Using a pen (especially red and green) is strictly prohibited.<br>
+          • If you want to bring a water bottle, then you can and make sure that the bottle is transparent.<br>
+          • As we teach students of different classes, so this time we've framed the question papers with set numbers and code numbers. So, carefully write the set number and code number in the answersheet.<br>
+          <img src="https://i.imgur.com/cWBn1LT.png" alt="Guidelines, Important terms &amp; FAQs for students for test and exams - photo 2" loading="lazy"><br>
+          • As the question papers are framed in both English and Hindi, students can attempt the question paper in any of the two languages.<br>
+          <strong>• List of barred items in the classroom</strong> - any electronic item, digital watch, bits of paper, any book, etc.<br>
+          • If a child is not well, the parent/guardian must submit an application to us. If you provide an application, we'll award average marks, but without an application, no marks will be given.<br>
+          <strong>• Some important terms regarding the test:</strong><br>
+          • As we teach both English and Hindi medium students, so the questions are written in both English and Hindi.<br>
+          • This time, we'll organize a proper Parents Teachers Meeting to distribute prizes and results.<br>
+          <hr>
+          <strong>FAQs</strong><br>
+          <details><summary>Should I carry a mask with me?</summary><p>This is not compulsory as COVID-19 cases are decreasing but for your personal safety, you can wear it.</p></details><br>
+          <details><summary>What are the maximum marks of the test?</summary><p>The maximum marks of the test are 100.</p></details><br>
+          <hr>
+          If you have further queries, feel free to call us on <a href="tel:+917388311148">+91 7388311148</a> during the office hours.
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 12 -->
+    <div id="modal12" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal12')">×</button>
+        <h2>Download printable worksheets for children</h2>
+        <small>4 May 2022</small>
+        </div>
+<p>
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0MBFxXGU-GRxlAT6a74dDfdwabgU3qLotPA&s" alt="Download printable worksheets for children - photo 1" loading="lazy"><br><br>
+          <button onclick="window.location.href='https://drive.google.com/uc?export=download&id=1Cnu4x2JCkxbe0D5YOj4ZQQ1IQnrBvJPd';" class="worksheet-button"><strong>Click To Download Worksheet 1</strong></button><br><br>
+          <button onclick="window.location.href='https://drive.google.com/uc?export=download&id=1hP1Kt2yh158EN_yyV6rYxJPoMjKtbut2';" class="worksheet-button"><strong>Click To Download Worksheet 2</strong></button><br><br>
+          <strong>More worksheets coming soon..</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 15 (Holi Celebration 2022 - placeholder as original had generic content) -->
+    <div id="modal11" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal11')">×</button>
+        <h2>Holi Celebration 2022</h2>
+        <small>22 March 2022</small>
+        </div>
+<p>
+          This year, we've celebrated Holi by flowers and eco-friendly colours. After celebrating, we've also distributed biscuits and candies to the children. Children had danced on their favourite songs. You can watch their videos by the links provided below.<br>To watch Holi Celebration 2022 videos <a href="https://youtu.be/0bZcasFDPYU?si=7MjyDUwqNSNMttOS">click here.</a><br>Related Links:<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://www.facebook.com/105961147928732/posts/477988930725950/" target="_blank" rel="noopener">FaceBook Post</a><a class="btn-inline" href="https://www.instagram.com/tv/CbNMBkhlQJT/?utm_medium=copy_link" target="_blank" rel="noopener">Instagram Post</a><a class="btn-inline" href="https://youtu.be/0bZcasFDPYU?si=7MjyDUwqNSNMttOS" target="_blank" rel="noopener">Video Part - 1</a><a class="btn-inline" href="https://youtu.be/pGHQO3nadP0?si=5va64E1MHRK8wRz-" target="_blank" rel="noopener">Video Part - 2</a></div>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 10 -->
+    <div id="modal10" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal10')">×</button>
+        <h2>Homage to 'Swar Kokila' - The Legendary Singer Lata Mangeshkar</h2>
+        <small>7 February 2022</small>
+        </div>
+<p>
+          #babitaclasses #learning_from_BC #Homage #LataMangeshkar <br>Related Links:<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://www.facebook.com/105961147928732/posts/454059256452251/" target="_blank" rel="noopener">Facebook Post (All Videos)</a><a class="btn-inline" href="https://www.instagram.com/p/CZrF9BgPljq/?utm_medium=copy_link" target="_blank" rel="noopener">Instagram Post (All photos)</a></div>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 9 -->
+    <div id="modal9" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal9')">×</button>
+        <h2>Babita Classes 2022 Basant Panchami</h2>
+        <small>5 February 2022</small>
+        </div>
+<p>
+          Today, we've celebrated Basant Panchami and children have danced on their favourite songs. Also, I've distributed them pencils, biscuits and candies.<br>#babitaclasses #learning_from_BC #basantpanchami <br>Related Links:<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://www.facebook.com/105961147928732/posts/452833423241501/" target="_blank" rel="noopener">Facebook Post (All details about function available)</a><a class="btn-inline" href="https://www.instagram.com/p/CZmJyH_vUnD/?utm_medium=copy_link" target="_blank" rel="noopener">Instagram Post</a></div>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 8 -->
+    <div id="modal8" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal8')">×</button>
+        <h2>Test 2 Results</h2>
+        <small>31 January 2022</small>
+        </div>
+<p>
+          <table><thead><tr><th><strong>Rank</strong></th><th><strong>Students Name</strong></th><th><strong>Marks</strong></th></tr></thead><tr><td>1</td><td>Dhani</td><td>97/100</td></tr><tr><td>2</td><td>Roli</td><td>97/100</td></tr><tr><td>3</td><td>Khushi</td><td>95/100</td></tr><tr><td>4</td><td>Lovely</td><td>62/100</td></tr><tr><td>5</td><td>Nirbhay</td><td>59/100</td></tr></table><br>Babita Classes session 2021-22 is running out and Test 2 was already held on 30​​​​th of January. And today the result is released. According to Babita Soni (Founder), written test is only for 5 years + aged children and those who're in KG, their oral test had been taken. The performance is wonderful as the highest score is 97%, which was scored by Dhani and Roli. Others have also performed well. I'm sure that children will improve their score.<br><img src="https://www.facebook.com/photo/?fbid=345666047580403&set=a.345666010913740" alt="Test 2 Results - photo 1" loading="lazy"><br>As Basant Panchami is coming, we'll do a simple function on that day (5 February 2022, Saturday) so be ready for that. <br>Term 2 is also going to be held around March-April. You all will be notified about that. Till then, be safe and be happy.<br><a href="https://www.google.com/search?q=%23babitaclasses">#babitaclasses</a> <br>Related Links:<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://www.facebook.com/105961147928732/posts/449712353553608/" target="_blank" rel="noopener">Facebook Post</a><a class="btn-inline" href="https://www.instagram.com/p/CZZCDjRP1DW/?utm_medium=copy_link" target="_blank" rel="noopener">Instagram Post</a></div>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 7 -->
+    <div id="modal7" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal7')">×</button>
+        <h2>Republic Day Dance Event 2022</h2>
+        <small>8 January 2022</small>
+        </div>
+<p>
+          This Republic Day, be ready for Republic Day Dance Event by Babita Classes students.<br>Video Footage: <a href="https://youtu.be/8YI4KK7o3h0">Part 1</a> <a href="https://youtu.be/50dCL3ZyoWs">Part 2</a><br>Our event will be live on Facebook.<a href="https://fb.me/e/4pPiBJHPm?ti=wa">Click here</a> to see the event on Facebook. <br>Timing: 2 PM to 3 PM (IST) <br>Chief Guest: A.S. Verma Padmesh (Vice Chairman, Jail Ministry) <br>We'll take every possible precaution for the safety of the public. Most of us are vaccinated and we will maintain social distance at our event. You all are invited to our event. Hope that you'll enjoy and feel proud to be an Indian. 😊 🇮🇳<br><div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://fb.me/e/4pPiBJHPm" target="_blank" rel="noopener">Facebook Event</a><a class="btn-inline" href="https://youtu.be/8YI4KK7o3h0" target="_blank" rel="noopener">Event Video Part 1</a><a class="btn-inline" href="https://youtu.be/50dCL3ZyoWs" target="_blank" rel="noopener">Event Video Part 2</a></div></p>
+      </div>
+    </div>
+
+    <!-- Modal 6 -->
+    <div id="modal6" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal6')">×</button>
+        <h2>Babita Classes Gandhi Jayanti Function (2021)</h2>
+        <small>2 October 2021</small>
+        </div>
+<p>
+          To watch Function video footage:<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://youtu.be/lcC3UaOZRkE?si=TeWqjHzEkYTg5htb" target="_blank" rel="noopener">Click Here</a></div>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 5 -->
+    <div id="modal5" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal5')">×</button>
+        <h2>Test 1 Syllabus and Datesheet released, check out from here.</h2>
+        <small>25 September 2021</small>
+        </div>
+<p>
+          TEST 1 UPDATE <br>After the COVID-19 holidays, we along with the students have prepared well for the next Test for this session 2021-22. And now we've released test 1 datesheet and syllabus. You can access them by the syllabus and datesheet pages. And if you want to directly access datesheet, <a href="https://babitaclasses.vercel.app/#syllabus">click here </a>and for syllabus <a href="https://drive.google.com/file/d/1TLGhjCGKiEscikoScx88tJjozgHRYYDz/view?usp=drivesdk">click here.</a> After checking the answersheets, we'll upload their results on the result page and also on this blog post.
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 4 -->
+    <div id="modal4" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal4')">×</button>
+        <h2>Introducing Babita Classes Live Chat Support</h2>
+        <small>19 September 2021</small>
+        </div>
+<p>
+          For a long time, we've seen that there is a need for live chat support for our website. And today we've completed the live chat support system, which is 100% working. We've added an AI assistant right on the website that you can chat with anytime — it can answer your questions about admissions, syllabus, results, and other details about Babita Classes instantly, even when our team is offline.<br>Hope you all like this new feature and support us.<br>Feature added on 19 September 2021
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal 3 -->
+    <div id="modal3" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal3')">×</button>
+        <h2>Celebrating 1 successful year of Babita Classes</h2>
+        <small>8 September 2021</small>
+        </div>
+<p>
+          We're celebrating our successful 1 year anniversary today. Thanks to everyone for supporting us. Thank you children for being attentive, and also thank you for the pens that you've gifted us today. (Pens were gifted by Khushi and Savita).<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://www.facebook.com/105961147928732/posts/357080556150122/" target="_blank" rel="noopener">See Facebook Post</a></div>
+        </p>
+      </div>
+     </div>
+
+    <!-- Modal 2 -->
+    <div id="modal2" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal2')">×</button>
+        <h2>Why Choose Babita Classes and How Do We Work?</h2>
+        <small>14 August 2021</small>
+        </div>
+<p>
+          • How does Babita Classes engage children to learn more?<br>Babita Classes not only teaches children for free, but also teaches them through interesting and attractive videos and audios, which is why children are engaged to learn more.<br>• Why choose Babita Classes for poor children?<br>Babita Classes is an NPO (free of cost), so there is no need to worry about fees and schooling. We also don't take any type of admission fees or any other fees. Refer to Terms & Conditions for more information.<br>• Does Babita Classes give children any type of physical education?<br>Yes, Babita Classes gives physical education to children. On every Saturday, children do PT and other physical exercises along with faculty. Besides all this, children also do mental exercises in their regular tests.<br><a href="https://www.google.com/search?q=%23babitaclasses">#babitaclasses</a>
+        </p>
+      </div>
+     </div>
+
+    <!-- Modal 1 -->
+    <div id="modal1" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+        <button class="modal-close" onclick="closeModal('modal1')">×</button>
+        <h2>Babita Classes 2020 Independence Day Dance Function Videos</h2>
+        <small>12 August 2021</small>
+        </div>
+<p>
+          Independence Day Dance Function video footage is uploaded on our Facebook page, YouTube Channel and on Function Videos section.<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;"><a class="btn-inline" href="https://youtu.be/8G8jTxFs7Ek?si=CUr1XfQgAGSCpgNb" target="_blank" rel="noopener">Watch Videos</a></div><a href="https://www.google.com/search?q=%23babitaclasses">#babitaclasses</a> 
+        </p>
+      </div>
+     </div>
+
+
+      <img src="/images/bc-qr-code.png" class="qrcode" alt="Babita Classes 2020 Independence Day Dance Function Videos - photo 1" loading="lazy"> <a class="btn-qr" href="https://drive.google.com/uc?export=download&id=1_y1cuZw3p1bnncBEU9ZiUwRUpJlLtYVF" target="_blank" rel="noopener">Download QR Code</a>
+
+
+    <footer>
+      <section id="contact" class="">
+        <h1>Contact &amp; Social</h1>
+        <p class="ftsmall">
+          <strong>Email</strong>: <a href="mailto:babitaclasses7@gmail.com"><span style="color:#ffffff;">babitaclasses7@gmail.com</span></a><br>
+          <strong>WhatsApp</strong>: <a href="https://wa.link/oqxekr" target="_blank" rel="noopener"><span style="color:#ffffff;">Chat on WhatsApp</span></a><br>
+          <strong>Call</strong>: <a href="tel:917388311148"><span style="color:#ffffff;">+91 73883 11148</span></a><br>
+          <strong>Contact Form</strong>: <a href="https://forms.gle/wL59oarRVWdysP9u8" target="_blank" rel="noopener"><span style="color:#ffffff;">Open form</span></a><br>
+          <strong>Admission Form</strong>: <a href="https://forms.gle/S234T8QQgLCSvd5GA" target="_blank" rel="noopener"><span style="color:#ffffff;">Open form</span></a>
+        </p>
+        <p class="ftsmall">
+          <strong>Facebook</strong>: <a href="https://www.facebook.com/babitaclasses" target="_blank" rel="noopener"><span style="color:#ffffff;">facebook.com/babitaclasses</span></a><br>
+          <strong>Instagram</strong>: <a href="https://www.instagram.com/babitaclasses" target="_blank" rel="noopener"><span style="color:#ffffff;">instagram.com/babitaclasses</span></a><br>
+          <strong>YouTube</strong>: <a href="https://youtube.com/channel/UCHFpmflS9Fl-uu6lasO7tQQ" target="_blank" rel="noopener"><span style="color:#ffffff;">youtube.com/babita_classes</span></a><br>
+          <strong>Google Maps</strong>: <a href="https://www.google.com/maps?q=Babita+Classes,+Bamburahiya+Colony,+Juhi,+Kanpur,+Uttar+Pradesh,+India&z=16&output=embed" target="_blank" rel="noopener"><span style="color:#ffffff;">Get directions</span></a><br>
+          <strong>Terms and Conditions</strong>: <a href="https://drive.google.com/uc?export=download&id=1fJxtiwyud6oNEQ4xecHO3fUf0GvcOnQw" target="_blank" rel="noopener"><span style="color:#ffffff;">Click to download</span></a>
+        </p>
+        <p class="ftsmall">
+          <strong>Address</strong>:<br>
+          Babita Classes<br>1/2, Juhi Bamburahiya Colony,<br>Kanpur, Uttar Pradesh - 208014<br>
+          <strong>Open Hours</strong>:<br>
+          Monday - Friday: 9 AM to 6 PM<br>
+          Saturday: 9 AM to 5 PM<br>
+          Sunday: Closed<br>
+          (Public holiday hours may vary.)
+        </p>
+      </section>
+      <br>
+       Total visits since 30 June 2026:<br>
+<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1582513/t/5"></script>
+      <br><br>
+            Copyright 2020-26 https://babitaclasses.vercel.app/ All Rights Reserved. Last updated on <span id="lastUpdatedDate">25 July 2026</span> © Babita Classes 2020-26 — Since 8 September 2020.<br>Designed &amp; Developed by Shivam Soni. · <a href="https://wa.me/919005325544?text=Hi%20Shivam%2C%20I%20found%20an%20issue%20in%20Babita%20Classes%3A%20" target="_blank" rel="noopener">Report a bug</a><br><br><br><br><br><br><br><br>
+    </footer>
+
+    <!-- Image Lightbox -->
+    <div id="imgLightboxOverlay" class="lightbox-overlay">
+      <div class="lightbox-box">
+        <button id="lightboxClose" class="lightbox-close" aria-label="Close">×</button>
+        <img id="lightboxImg" src="" alt="Preview" loading="lazy">
+      </div>
+    </div>
+
+    <script src="script.9a3d47.js"></script>
+  </body>
+</html>
