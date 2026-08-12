@@ -3277,6 +3277,7 @@ resultPublishBtn.addEventListener("click", async () => {
       await saveResultTerm(previouslyActive);
     }
     populateResultTermSelect();
+    resultTermSelect.value = term.id;
     fillResultDetailsForm(term);
     resultStatus.textContent = '"' + term.term + " — " + term.session + '" is now the latest published result.';
     resultStatus.className = "msg success";
@@ -3288,6 +3289,7 @@ resultPublishBtn.addEventListener("click", async () => {
         await saveResultTerm(previouslyActive);
       }
       populateResultTermSelect();
+      resultTermSelect.value = selectedResultTermId;
       fillResultDetailsForm(getSelectedResultTerm());
     });
   } catch (err) {
