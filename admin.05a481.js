@@ -2224,11 +2224,10 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           groupDates.forEach(({ data }) => {
             if (!data.holiday) {
               pdf.rect(x, rowY, dateColW, rowH);
-              const status = (data.records || {})[student.id];
-              const cellText = status === "present" ? "Present" : status === "absent" ? "Absent" : "-";
+              const status = (data.records || {})[student.id] || "absent";
+              const cellText = status === "present" ? "Present" : "Absent";
               if (status === "present") pdf.setTextColor(30, 140, 40);
-              else if (status === "absent") pdf.setTextColor(192, 57, 43);
-              else pdf.setTextColor(0, 0, 0);
+              else pdf.setTextColor(192, 57, 43);
               pdf.text(cellText, x + dateColW / 2, rowY + rowH / 2 + 3, { align: "center" });
               pdf.setTextColor(0, 0, 0);
             }
