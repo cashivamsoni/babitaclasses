@@ -935,11 +935,20 @@ if (slideshow) {
                     '<img src="' + b.value + '" alt="' + (p.title || "") + '" style="max-width:100%; border-radius:8px; display:block; margin:10px auto;" loading="lazy">'
                   );
                 }
+                if (b.type === "button") {
+                  return (
+                    '<div style="margin:10px 0; text-align:center;"><a class="btn-inline" href="' + b.url + '" target="_blank" rel="noopener">' + b.text + "</a></div>"
+                  );
+                }
                 return '<p style="text-align:justify;">' + (b.value || "").replace(/\n/g, "<br>") + "</p>";
               })
               .join("");
 
-            const buttonsHtml = buttons.length
+            // Newer posts place buttons inline within contentBlocks (above), preserving the
+            // order set in the editor. Older posts saved before that only have the flat
+            // `buttons` field, so render those at the end as before.
+            const hasInlineButtons = blocks.some((b) => b.type === "button");
+            const buttonsHtml = !hasInlineButtons && buttons.length
               ? '<div class="flex" style="margin-top:10px; flex-wrap:wrap; gap:8px;">' +
                 buttons
                   .map(
