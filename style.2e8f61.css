@@ -1641,6 +1641,15 @@ hr {
 #resultsArchiveList a:hover {
   color: #660000;
 }
+#resultsArchiveList hr {
+  height: 1px;
+  border: none;
+  margin: 12px 0;
+  background: linear-gradient(90deg, rgba(153,0,0,0) 0%, rgba(153,0,0,0.35) 50%, rgba(153,0,0,0) 100%);
+}
+[data-theme="dark"] #resultsArchiveList hr {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+}
 [data-theme="dark"] #resultsArchiveList a {
   color: #ffffff;
 }
