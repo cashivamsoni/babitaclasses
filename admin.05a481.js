@@ -168,6 +168,7 @@ const attendanceFromInput = document.getElementById("attendanceFromInput");
 const attendanceToInput = document.getElementById("attendanceToInput");
 const attendanceLoadRangeBtn = document.getElementById("attendanceLoadRangeBtn");
 const attendanceRangeStatus = document.getElementById("attendanceRangeStatus");
+const attendanceRangeResults = document.getElementById("attendanceRangeResults");
 const attendanceSelectModeBtn = document.getElementById("attendanceSelectModeBtn");
 const attendanceSelectAllBtn = document.getElementById("attendanceSelectAllBtn");
 const attendanceRangeList = document.getElementById("attendanceRangeList");
@@ -2080,6 +2081,7 @@ function summarizeAttendanceDoc(data, totalStudents) {
 async function renderAttendanceRange(fromDate, toDate) {
   attendanceRangeList.innerHTML = "";
   attendanceDeleteSelectedBtn.style.display = "none";
+  attendanceRangeResults.style.display = "none";
   try {
     const q = query(
       ATTENDANCE_COL,
@@ -2114,6 +2116,7 @@ async function renderAttendanceRange(fromDate, toDate) {
       return;
     }
     attendanceRangeStatus.textContent = "";
+    attendanceRangeResults.style.display = "block";
 
     docs.forEach(({ id, data }) => {
       const li = document.createElement("li");
