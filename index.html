@@ -1,752 +1,1146 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Babita Classes - Home</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediHome — Family Medicine Inventory</title>
 
-    <meta name="description" content="Babita Classes is a free Non-Profit Organization founded by Babita Soni in 2020 in Kanpur, providing free education, stationery, and activities for underprivileged children.">
-    <meta name="keywords" content="Babita Classes blog, free education stories, student success Kanpur, NGO updates, cultural activities, free coaching experiences, underprivileged children education, Kanpur community support">
+    <!-- Favicons -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/images/logo.png" />
 
-    <meta name="theme-color" content="#ffd919">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#0F766E" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)" />
+
+    <meta
+      name="description"
+      content="MediHome is a simple, cloud-based project created by Shivam Soni to store and update information about medicines available at our home, keeping them organised and providing information about their availability."
+    />
+    <link rel="canonical" href="https://medihomeapp.vercel.app/" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.b6f218.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
 
     <!-- Open Graph tags -->
-    <meta property="og:title" content="Babita Classes - Home">
-    <meta property="og:description" content="Babita Classes is an NPO founded by Babita Soni in 2020, in Kanpur. We teach them for free, give them free stationery items, along with extra-curricular activities.">
-    <meta property="og:image" content="https://babitaclasses.vercel.app/images/logo.jpg">
-    <meta property="og:url" content="https://babitaclasses.vercel.app/">
-    <meta property="og:type" content="website">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="style.2e8f61.css">
-</head>
+    <meta property="og:title" content="MediHome - Family Medicine Inventory" />
+    <meta
+      property="og:description"
+      content="MediHome is a simple, cloud-based project created by Shivam Soni to store and update information about medicines available at our home, keeping them organised and providing information about their availability."
+    />
+    <meta property="og:image" content="https://medihomeapp.vercel.app/images/logo.png" />
+    <meta property="og:url" content="https://medihomeapp.vercel.app/" />
+    <meta property="og:type" content="website" />
+  </head>
   <body>
-
-    <!-- ===== HEADER ===== -->
-    <header>
-      <div id="headerlogo">
-        <img src="/images/logo.jpg" alt="Logo" width="60px" height="60px" style="border: 2px solid #ffffff;box-shadow: 0 0 15px #ffffff;">
+    <!-- ── Login Screen ─────────────────────────────────────── -->
+    <div id="loginScreen">
+      <div class="login-box">
+        <div class="login-logo">💊 MediHome</div>
+        <div class="login-sub">Family Medicine Inventory</div>
+        <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="on">
+          <div class="form-group full">
+            <label class="form-label" for="loginEmail">Email</label>
+            <input
+              class="form-input"
+              type="email"
+              id="loginEmail"
+              autocomplete="username"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="loginPassword">Password</label>
+            <input
+              class="form-input"
+              type="password"
+              id="loginPassword"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          <label class="check-label login-remember" for="loginRemember">
+            <input type="checkbox" id="loginRemember" checked />
+            <span>Remember me on this device</span>
+          </label>
+          <span class="field-error hidden" id="loginError"></span>
+          <button type="submit" class="btn-save login-submit" id="loginSubmitBtn">
+            <i class="fa-solid fa-right-to-bracket"></i> <span>Log In</span>
+          </button>
+        </form>
       </div>
-      <h1>Babita Classes</h1>
-      <button id="menuToggle" aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <nav id="mainNav" class="nav" aria-label="Main navigation">
-        <a href="#home">Home</a>
-        <a href="https://babitaclasses.vercel.app/blog">Blog</a>
-        <a href="https://babitaclasses.vercel.app/result">Results</a>
-        <a href="#syllabus">Syllabus</a>
-        <a href="#noticeboard">Notice Board</a>
-        <a href="#WhatsNew">What's New</a>
-        <a href="#gallery">Gallery</a>
-        <a href="#faq">FAQs</a>
-        <a href="#mission">Our Mission</a>
-        <a href="#fromdirectorsdesk">From Director's Desk</a>
-        <a href="#videos">Function Videos</a>
-        <a href="#faculty">Our Faculty</a>
-        <a href="#allurls">All URLs</a>
-        <a href="#contact">Contact Us</a>
-      </nav>
+    </div>
+
+    <!-- ── Header ─────────────────────────────────────────── -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="logo-block">
+          <div class="logo-title">💊 MediHome</div>
+          <div class="logo-sub">Family Medicine Inventory</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-ghost" onclick="resetToDefault()"><i class="fa-solid fa-arrows-rotate"></i> Reset</button>
+          <button class="btn-primary" onclick="openAdd()">
+            + Add Medicine
+          </button>
+          <button
+            class="btn-menu-toggle"
+            id="menuToggleBtn"
+            onclick="toggleAppMenu()"
+            aria-label="Menu"
+            title="More options"
+          >
+            <span class="hamburger-box">
+              <span class="hb-bar hb-top"></span>
+              <span class="hb-bar hb-mid"></span>
+              <span class="hb-bar hb-bot"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Collapsible App Menu ──────────────────────── -->
+      <div class="app-menu hidden" id="appMenu">
+        <div class="app-menu-inner">
+          <div class="menu-section menu-actions-row">
+            <button
+              class="menu-action-btn"
+              onclick="
+                toggleTheme();
+                updateMenuThemeLabel();
+              "
+              id="menuThemeBtn"
+            >
+              <i class="fa-solid fa-moon" id="menuThemeIcon"></i> <span id="menuThemeLabel">Dark Mode</span>
+            </button>
+            <button class="menu-action-btn" onclick="exportToPDF()">
+              <i class="fa-solid fa-file-pdf"></i> Export PDF
+            </button>
+            <button
+              class="menu-action-btn"
+              id="menuBulkBtn"
+              onclick="toggleBulkMode()"
+            >
+              <i class="fa-solid fa-square-check" id="menuBulkIcon"></i> <span id="menuBulkLabel">Select</span>
+            </button>
+            <button
+              class="menu-action-btn"
+              id="menuViewBtn"
+              onclick="toggleCompactView()"
+            >
+              <i class="fa-solid fa-list" id="menuViewIcon"></i> <span id="menuViewLabel">Compact View</span>
+            </button>
+            <div class="menu-sort-wrap">
+              <button
+                type="button"
+                class="menu-action-btn menu-sort-btn"
+                id="menuSortBtn"
+                onclick="toggleSortDropdown()"
+              >
+                <i class="fa-solid fa-hourglass-half" id="menuSortIcon"></i>
+                <span id="menuSortLabel">Sort by: Expiry (Soonest→Latest)</span>
+                <i class="fa-solid fa-caret-down menu-sort-caret"></i>
+              </button>
+              <div class="menu-sort-dropdown hidden" id="menuSortDropdown">
+                <button type="button" class="menu-sort-option" onclick="selectSortOption('expiry')">
+                  <i class="fa-solid fa-hourglass-half"></i> Sort by: Expiry (Soonest→Latest)
+                </button>
+                <button type="button" class="menu-sort-option" onclick="selectSortOption('name')">
+                  <i class="fa-solid fa-font"></i> Sort by: Name (A→Z)
+                </button>
+                <button type="button" class="menu-sort-option" onclick="selectSortOption('quantity')">
+                  <i class="fa-solid fa-box"></i> Sort by: Quantity (High→Low)
+                </button>
+                <button type="button" class="menu-sort-option" onclick="selectSortOption('added')">
+                  <i class="fa-solid fa-clock"></i> Sort by: Recently Added
+                </button>
+              </div>
+            </div>
+            <button
+              class="menu-action-btn"
+              onclick="closeAppMenu(); manageField('owner');"
+            >
+              <i class="fa-solid fa-gear"></i> Manage
+            </button>
+            <button
+              class="menu-action-btn"
+              onclick="closeAppMenu(); openHealthDiary();"
+            >
+              <i class="fa-solid fa-book-medical"></i> Health Diary
+            </button>
+            <button
+              class="menu-action-btn"
+              onclick="closeAppMenu(); openOwnerProfile();"
+            >
+              <i class="fa-solid fa-heart-pulse"></i> Owner Health Profile
+            </button>
+            <button
+              class="menu-action-btn"
+              onclick="closeAppMenu(); openQuantityLog();"
+            >
+              <i class="fa-solid fa-clipboard-list"></i> Quantity Log
+            </button>
+            <button
+              class="menu-action-btn"
+              id="menuBranchBtn"
+              onclick="closeAppMenu(); openBranchModal();"
+            >
+              <i class="fa-solid fa-house"></i> <span id="menuBranchLabel">Home</span>
+            </button>
+            <button
+              class="menu-action-btn menu-action-danger"
+              id="menuLogoutBtn"
+              onclick="closeAppMenu(); confirmLogout();"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i> Log Out
+            </button>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <!-- Fixed Social Icons -->
-    <div class="social-fixed">
-    <a href="https://api.whatsapp.com/send?phone=919369914612&text=Hey!%20I%27m%20interested%20your%20work%20and%20your%20NPO.%20I%20got%20to%20know%20about%20it%20from%20Google%20please%20tell%20me%20more%20about%20it." class="fa fa-whatsapp" target="_blank" rel="noopener" title="WhatsApp"></a>
-    <a href="https://www.facebook.com/babitaclasses" class="fa fa-facebook" target="_blank" rel="noopener" title="Facebook"></a>
-    <a href="https://www.instagram.com/babitaclasses" class="fa fa-instagram" target="_blank" rel="noopener" title="Instagram"></a>
-    <a href="https://youtube.com/channel/UCHFpmflS9Fl-uu6lasO7tQQ" class="fa fa-youtube" target="_blank" rel="noopener" title="YouTube"></a>
-    <a href="https://www.google.com/search?q=%23babitaclasses" class="fa fa-google" target="_blank" rel="noopener" title="Google"></a>
-    </div>
+    <!-- ── Stats & Nav Bar ───────────────────────────────── -->
+    <div class="stats-bar">
+      <div class="stats-inner">
+        <!-- Filter chips only -->
+        <div class="chip-group chip-group--filters">
+          <button
+            class="stat-chip total active"
+            data-filter="all"
+            onclick="setFilter('all', this)"
+          >
+            <span>All</span><span class="stat-num" id="statTotal">—</span>
+          </button>
+          <button
+            class="stat-chip low"
+            data-filter="low"
+            onclick="setFilter('low', this)"
+          >
+            <span><i class="fa-solid fa-triangle-exclamation"></i> Low</span><span class="stat-num" id="statLow">—</span>
+          </button>
+          <button
+            class="stat-chip expiring"
+            data-filter="expiring"
+            onclick="setFilter('expiring', this)"
+          >
+            <span><i class="fa-solid fa-hourglass-half"></i> Expiring</span
+            ><span class="stat-num" id="statExpiring">—</span>
+          </button>
+          <button
+            class="stat-chip expired"
+            data-filter="expired"
+            onclick="setFilter('expired', this)"
+          >
+            <span><i class="fa-solid fa-ban"></i> Expired</span
+            ><span class="stat-num" id="statExpired">—</span>
+          </button>
+        </div>
 
-    <!-- Welcome Popup -->
-    <div id="popupOverlayUnique">
-      <div id="popupBoxUnique">
-        <button id="popupCloseUnique">×</button>
-        <h1>Welcome!</h1>
-        <h2>This is our newly launched website. You can download your marksheets from the result page.</h2>
+        <div class="chip-divider"></div>
+
+        <!-- Owner nav chips -->
+        <div class="chip-group chip-group--owners" id="ownerNavChips"></div>
       </div>
     </div>
 
-    <!-- Scroll to Top -->
-    <button id="topBtn" aria-label="Scroll to top" title="Scroll to top"><i class="fa fa-arrow-up" aria-hidden="true"></i></button>
-
-    <!-- Floral Quick Menu -->
-    <div id="floralMenu">
-      <button id="floralMain" aria-label="Quick actions" aria-expanded="false">
-        <i class="fa fa-plus" aria-hidden="true"></i>
-      </button>
-      <a class="petal" id="floralCallBtn" href="tel:+917388311148" aria-label="Call Now" title="Call Now"><i class="fa fa-phone" aria-hidden="true"></i></a>
-      <button class="petal" id="shareBtn" aria-label="Share" title="Share"><i class="fa fa-share-alt" aria-hidden="true"></i></button>
-      <button class="petal" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode"><i class="fa fa-moon-o" aria-hidden="true"></i></button>
-      <button class="petal" id="floralNewBtn" aria-label="Translate to Hindi" title="Translate to Hindi"><i class="fa fa-language" aria-hidden="true"></i></button>
+    <!-- ── Bulk Action Bar ───────────────────────────────── -->
+    <div class="bulk-action-bar hidden" id="bulkActionBar">
+      <div class="bulk-inner">
+        <!-- Top row on mobile: count left, cancel circle right -->
+        <div class="bulk-inner-top">
+          <span class="bulk-count" id="bulkCount">0 selected</span>
+          <button
+            class="bulk-cancel-circle"
+            onclick="toggleBulkMode()"
+            title="Exit selection"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <!-- Action buttons row (wraps to two rows on mobile) -->
+        <div class="bulk-btns">
+          <button class="bulk-btn bulk-select-all" onclick="bulkSelectAll()">
+            Select All
+          </button>
+          <button class="bulk-btn bulk-deselect" onclick="bulkDeselectAll()">
+            Deselect All
+          </button>
+          <select class="bulk-select-field" id="bulkOwnerSel">
+            <option value="">Change Owner…</option>
+          </select>
+          <select class="bulk-select-field" id="bulkCatSel">
+            <option value="">Change Category…</option>
+          </select>
+          <button class="bulk-btn bulk-delete" onclick="bulkDelete()">
+            <i class="fa-solid fa-trash"></i> Delete Selected
+          </button>
+          <button class="bulk-btn bulk-cancel" onclick="toggleBulkMode()">
+            <i class="fa-solid fa-xmark"></i> Cancel
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- AI Assistant -->
+    <!-- ── Main ───────────────────────────────────────────── -->
+    <main class="main">
+      <!-- Active filter label -->
+      <div class="active-filter-bar hidden" id="activeFilterBar">
+        <span><i id="activeFilterIcon" class="fa-solid fa-triangle-exclamation"></i> <span id="activeFilterLabel"></span></span>
+        <button
+          onclick="setFilter('all', document.querySelector('.stat-chip.total'))"
+        >
+          <i class="fa-solid fa-xmark"></i> Clear filter
+        </button>
+      </div>
+
+      <!-- Search -->
+      <section class="search-section">
+        <p class="intro">
+          MediHome is a simple, cloud-based project created by Shivam Soni to store
+          and update information about medicines available at our home, keeping
+          them organised and providing information about their availability.
+        </p>
+
+        <label class="search-label" for="searchInput">Search Medicines</label>
+        <div class="search-wrap">
+          <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder='Name, owner, category, type, form, "frequent" or keywords — e.g. "fever", "#05", "Papa Ji"'
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="clearSearch" class="hidden" title="Clear search">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <p class="search-hint">
+          Press <kbd>Enter</kbd> to jump through matches one by one
+        </p>
+      </section>
+
+      <!-- Reorder Alert -->
+      <section class="reorder-section hidden" id="reorderSection">
+        <div class="reorder-header">
+          <div class="reorder-title">
+            <i class="fa-solid fa-triangle-exclamation"></i> Reorder Needed
+            <span class="reorder-badge" id="reorderCount">0</span>
+          </div>
+          <span class="reorder-sub">Click any card to locate it</span>
+        </div>
+        <div class="reorder-grid" id="reorderGrid"></div>
+      </section>
+
+      <!-- Share Button -->
+      <button id="shareBtn" title="Share" aria-label="Share"><i class="fa-solid fa-share-nodes"></i></button>
+
+      <!-- Medicine List -->
+      <div id="medicineList"></div>
+    </main>
+
+    <p class="app-credit">
+      Built by Shivam Soni ·
+      <a
+        href="https://wa.me/919005325544?text=Hi%20Shivam%2C%20I%20found%20an%20issue%20in%20MediHome%3A%20"
+        target="_blank"
+        rel="noopener"
+        >Report a bug</a
+      >
+    </p>
+
+    <!-- ── Add / Edit Modal ───────────────────────────────── -->
+    <div id="modal" class="hidden">
+      <div
+        class="modal-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <div class="modal-header">
+          <h2 class="modal-title" id="modalTitle">Add Medicine</h2>
+          <button class="modal-close" onclick="closeModal()" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="medId" />
+          <div class="form-grid">
+            <div class="form-group full">
+              <div class="name-id-row">
+                <div class="form-group name-field">
+                  <label class="form-label" for="medName"
+                    >Medicine Name <span class="req">*</span></label
+                  >
+                  <input
+                    class="form-input"
+                    type="text"
+                    id="medName"
+                    placeholder="e.g. Cholerasol"
+                  />
+                </div>
+                <div class="form-group id-field">
+                  <label class="form-label" for="medSerialId"
+                    >ID
+                    <span
+                      style="font-weight: 400; color: var(--text-muted); font-size: 0.7rem"
+                      >(optional)</span
+                    ></label
+                  >
+                  <input
+                    class="form-input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    id="medSerialId"
+                    placeholder="Auto"
+                  />
+                  <span class="field-error hidden" id="medSerialIdError"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Medicine Image -->
+            <div class="form-group full" id="medImageGroup">
+              <label class="form-label"
+                >Medicine Image
+                <span
+                  style="
+                    font-weight: 400;
+                    color: var(--text-muted);
+                    font-size: 0.7rem;
+                  "
+                  >(optional)</span
+                ></label
+              >
+              <div class="img-upload-tabs">
+                <button
+                  type="button"
+                  class="img-tab active"
+                  id="imgTabUpload"
+                  onclick="switchImgTab('upload')"
+                >
+                  <i class="fa-solid fa-upload"></i> Upload File
+                </button>
+                <button
+                  type="button"
+                  class="img-tab"
+                  id="imgTabUrl"
+                  onclick="switchImgTab('url')"
+                >
+                  <i class="fa-solid fa-link"></i> Image URL
+                </button>
+              </div>
+              <div id="imgPanelUpload" class="img-panel">
+                <label
+                  class="img-drop-zone"
+                  id="imgDropZone"
+                  for="medImageFile"
+                >
+                  <div id="imgDropContent">
+                    <span class="img-drop-icon"><i class="fa-solid fa-image"></i></span>
+                    <span class="img-drop-text"
+                      >Click to upload or drag & drop</span
+                    >
+                    <span class="img-drop-sub">PNG, JPG, WEBP (max 1 MB)</span>
+                  </div>
+                  <img
+                    id="imgPreviewUpload"
+                    class="img-preview hidden"
+                    alt="Preview"
+                  />
+                </label>
+                <input
+                  type="file"
+                  id="medImageFile"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  class="hidden"
+                  onchange="handleImageFile(event)"
+                />
+                <button
+                  type="button"
+                  class="img-clear-btn hidden"
+                  id="imgClearUpload"
+                  onclick="clearImage()"
+                >
+                  <i class="fa-solid fa-xmark"></i> Remove image
+                </button>
+              </div>
+              <div id="imgPanelUrl" class="img-panel hidden">
+                <input
+                  class="form-input"
+                  type="url"
+                  id="medImageUrl"
+                  placeholder="https://example.com/medicine.jpg"
+                  oninput="handleImageUrl()"
+                />
+                <img
+                  id="imgPreviewUrl"
+                  class="img-preview-url hidden"
+                  alt="Preview"
+                />
+                <button
+                  type="button"
+                  class="img-clear-btn hidden"
+                  id="imgClearUrl"
+                  onclick="clearImageUrl()"
+                >
+                  <i class="fa-solid fa-xmark"></i> Remove URL
+                </button>
+              </div>
+              <input type="hidden" id="medImageData" />
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label" for="medDesc"
+                >Description <span class="req">*</span></label
+              >
+              <textarea
+                class="form-input form-textarea"
+                id="medDesc"
+                placeholder="One-line description of what this medicine does"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="medType"
+                >Type <span class="req">*</span></label
+              >
+              <div class="select-mgmt-row">
+                <select class="form-select" id="medType">
+                  <option value="homeopathic">Homeopathic</option>
+                  <option value="allopathic">Allopathic</option>
+                  <option value="ayurvedic">Ayurvedic</option>
+                </select>
+                <button
+                  type="button"
+                  class="btn-manage-inline"
+                  onclick="manageField('type')"
+                  title="Add/Edit/Remove Types"
+                >
+                  <i class="fa-solid fa-gear"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="medFormField"
+                >Form <span class="req">*</span></label
+              >
+              <div class="select-mgmt-row">
+                <select
+                  class="form-select"
+                  id="medFormField"
+                  onchange="onFormSelectChange()"
+                >
+                  <option value="">— Select form —</option>
+                  <option value="Eye Drops">Eye Drops</option>
+                  <option value="Drops">Drops</option>
+                  <option value="Edible Drops">Edible Drops</option>
+                  <option value="Tablets">Tablets</option>
+                  <option value="Chewable Tablets">Chewable Tablets</option>
+                  <option value="Cream">Cream</option>
+                  <option value="Ointment">Ointment</option>
+                  <option value="Gel/Liquid">Gel/Liquid</option>
+                  <option value="Tonic">Tonic</option>
+                  <option value="Bandage">Bandage</option>
+                  <option value="Rehydration Pouch">Rehydration Pouch</option>
+                  <option value="Candy/Lozenges">Candy/Lozenges</option>
+                  <option value="Hair Oil">Hair Oil</option>
+                </select>
+                <button
+                  type="button"
+                  class="btn-manage-inline"
+                  onclick="manageField('form')"
+                  title="Add/Edit/Remove Forms"
+                >
+                  <i class="fa-solid fa-gear"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="medOwner"
+                >Used By <span class="req">*</span></label
+              >
+              <div class="select-mgmt-row">
+                <select class="form-select" id="medOwner">
+                  <option value="shared">👨‍👩‍👧 Shared by All</option>
+                  <option value="babita">👩 Mumma (Babita)</option>
+                  <option value="shivam">👦 Shivam</option>
+                </select>
+                <button
+                  type="button"
+                  class="btn-manage-inline"
+                  onclick="manageField('owner')"
+                  title="Add/Edit/Remove Owners"
+                >
+                  <i class="fa-solid fa-gear"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="medCategory"
+                >Category <span class="req">*</span></label
+              >
+              <div class="select-mgmt-row">
+                <select
+                  class="form-select"
+                  id="medCategory"
+                  onchange="onCategoryChange()"
+                >
+                  <option value="">— Select category —</option>
+                  <option value="Fever, Cold & Cough Care">
+                    🌡️ Fever, Cold & Cough Care
+                  </option>
+                  <option value="Mouth Ulcer Care">🦷 Mouth Ulcer Care</option>
+                  <option value="Pain Relief & Injury Care">
+                    🤕 Pain Relief & Injury Care
+                  </option>
+                  <option value="Digestion, Gut Health & Hydration">
+                    🤢 Digestion, Gut Health & Hydration
+                  </option>
+                  <option value="Allergies & Infections">
+                    🛡️ Allergies & Infections
+                  </option>
+                  <option value="Uterus & Women's Health">
+                    🩺 Uterus & Women's Health
+                  </option>
+                  <option value="Eye Care">👁️ Eye Care</option>
+                  <option value="Jaw Pain Care">🦴 Jaw Pain Care</option>
+                  <option value="Hair & Nail Health">
+                    💇‍♀️ Hair & Nail Health
+                  </option>
+                  <option value="Cold & Cough Care">
+                    🌡️ Cold & Cough Care
+                  </option>
+                  <option value="Gut & Appetite Care">
+                    🤢 Gut & Appetite Care
+                  </option>
+                  <option value="Hair Care">💇‍♂️ Hair Care</option>
+                  <option value="Debility & Wellness">
+                    💪 Debility & Wellness
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  class="btn-manage-inline"
+                  onclick="manageField('category')"
+                  title="Add/Edit/Remove Categories"
+                >
+                  <i class="fa-solid fa-gear"></i>
+                </button>
+              </div>
+              <!-- shown when "Create new category" is chosen -->
+              <input
+                class="form-input hidden"
+                type="text"
+                id="medCategoryCustom"
+                placeholder="Type your new category name…"
+                style="margin-top: 6px"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="medQuantity"
+                >Quantity <span class="req">*</span></label
+              >
+              <div class="form-row">
+                <input
+                  class="form-input"
+                  type="number"
+                  id="medQuantity"
+                  min="0"
+                  step="1"
+                  placeholder="e.g. 1"
+                  oninput="onQuantityChange()"
+                />
+                <input
+                  class="form-input"
+                  type="text"
+                  id="medQuantityUnit"
+                  placeholder="bottle / tablets…"
+                  style="flex: 1.5"
+                  oninput="onQuantityChange()"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="medExpiry">Expiry Date</label>
+              <input class="form-input" type="month" id="medExpiry" />
+            </div>
+
+            <div class="form-group full">
+              <div class="form-checkrow">
+                <label class="check-label">
+                  <input type="checkbox" id="medFrequent" />
+                  <i class="fa-solid fa-star"></i> Frequently Used
+                </label>
+                <!-- Low stock: shown for bottles/tubes (manual), hidden for countables (auto) -->
+                <label class="check-label" id="lowStockRow">
+                  <input type="checkbox" id="medLowStock" />
+                  <i class="fa-solid fa-triangle-exclamation"></i> Mark as Low Stock
+                </label>
+                <span class="auto-low-label hidden" id="autoLowLabel"
+                  ><i class="fa-solid fa-triangle-exclamation"></i> <span id="autoLowLabelText">Low stock auto-detected by quantity</span></span
+                >
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label" for="medNotes"
+                >Notes / Storage Info</label
+              >
+              <input
+                class="form-input"
+                type="text"
+                id="medNotes"
+                placeholder="e.g. Stored in almirah, check expiry, used for…"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button class="btn-save" id="saveBtn">Save Medicine</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Manage Categories / Owners / Forms Modal ───────── -->
+    <div id="mgmtModal" class="hidden mgmt-modal-overlay">
+      <div class="mgmt-modal-box">
+       <div class="mgmt-modal-header">
+          <h3 id="mgmtModalTitle">Manage Items</h3>
+          <div class="mgmt-modal-header-actions">
+            <button id="mgmtSelectBtn" class="qty-log-select-btn" onclick="toggleMgmtSelectMode()">Select</button>
+            <button
+              class="modal-close"
+              onclick="closeMgmtModal()"
+              aria-label="Close"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mgmt-modal-body">
+          <div class="mgmt-tabs" id="mgmtTabs">
+            <button class="mgmt-tab-btn" onclick="manageField('owner')" data-field="owner"><i class="fa-solid fa-user"></i> Owners</button>
+            <button class="mgmt-tab-btn" onclick="manageField('category')" data-field="category"><i class="fa-solid fa-folder"></i> Categories</button>
+            <button class="mgmt-tab-btn" onclick="manageField('type')" data-field="type"><i class="fa-solid fa-dna"></i> Types</button>
+            <button class="mgmt-tab-btn" onclick="manageField('form')" data-field="form"><i class="fa-solid fa-pills"></i> Forms</button>
+          </div>
+          <div class="mgmt-add-row">
+            <input
+              type="text"
+              id="mgmtSearchInput"
+              class="form-input"
+              placeholder="Search…"
+              oninput="filterMgmtList()"
+            />
+          </div>
+          <div id="mgmtSelectBar" class="qty-log-select-bar hidden">
+            <button class="bulk-btn bulk-delete" onclick="deleteSelectedMgmtItems()"><i class="fa-solid fa-trash"></i> Delete selected</button>
+          </div>
+          <div class="mgmt-list" id="mgmtListContainer"></div>
+        </div>
+        <button class="mgmt-fab" onclick="promptAddMgmtItem()" title="Add new entry" aria-label="Add new entry">+</button>
+      </div>
+    </div>
+    <!-- ── Health Diary Modal ──────────────────────────────── -->
+    <div id="healthDiaryModal" class="hidden mgmt-modal-overlay">
+      <div class="mgmt-modal-box">
+       <div class="mgmt-modal-header">
+          <h3>Health Diary</h3>
+          <div class="mgmt-modal-header-actions">
+            <button id="healthMergeBtn" class="qty-log-select-btn" onclick="mergeDuplicateHealthEntries()" title="Merge duplicate entries"><i class="fa-solid fa-code-merge"></i></button>
+            <button id="healthSelectBtn" class="qty-log-select-btn" onclick="toggleHealthSelectMode()">Select</button>
+            <button id="healthDiaryExportBtn" class="qty-log-select-btn" onclick="exportHealthDiaryPDF()" title="Export PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+            <button
+              class="modal-close"
+              onclick="closeHealthDiary()"
+              aria-label="Close"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mgmt-modal-body">
+          <div class="mgmt-tabs" id="healthOwnerTabs"></div>
+          <div class="mgmt-add-row">
+            <input
+              type="text"
+              id="healthSearchInput"
+              class="form-input"
+              placeholder="Search entries…"
+              oninput="renderHealthDiaryList()"
+            />
+          </div>
+          <div id="healthSelectBar" class="qty-log-select-bar hidden">
+            <button class="bulk-btn bulk-delete" onclick="deleteSelectedHealthEntries()"><i class="fa-solid fa-trash"></i> Delete selected</button>
+          </div>
+          <div class="mgmt-list health-diary-list" id="healthDiaryListContainer"></div>
+        </div>
+        <button class="mgmt-fab" onclick="promptAddHealthEntry()" title="Add health entry" aria-label="Add health entry">+</button>
+      </div>
+    </div>
+    <!-- ── Owner Health Profile Modal ───────────────────────── -->
+    <div id="ownerProfileModal" class="hidden mgmt-modal-overlay">
+      <div class="mgmt-modal-box profile-modal-box">
+        <div class="mgmt-modal-header">
+          <h3>Owner Health Profile</h3>
+          <div class="mgmt-modal-header-actions">
+            <button
+              class="modal-close"
+              onclick="closeOwnerProfile()"
+              aria-label="Close"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mgmt-modal-body">
+          <div class="mgmt-tabs" id="profileOwnerTabs"></div>
+          <div id="profileContent"></div>
+        </div>
+      </div>
+    </div>
+    <!-- ── Quantity Log Modal ──────────────────────────────── -->
+    <div id="quantityLogModal" class="hidden mgmt-modal-overlay">
+      <div class="mgmt-modal-box">
+        <div class="mgmt-modal-header">
+          <h3>Quantity Log</h3>
+          <div class="mgmt-modal-header-actions">
+            <button id="qtyLogSelectBtn" class="qty-log-select-btn" onclick="toggleQtyLogSelectMode()">Select</button>
+            <button
+              class="modal-close"
+              onclick="closeQuantityLog()"
+              aria-label="Close"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mgmt-modal-body">
+          <p class="branch-modal-hint">Additions, deletions, and quantity changes from the last 6 months for this branch.</p>
+          <div id="qtyLogSelectBar" class="qty-log-select-bar hidden">
+            <button class="bulk-btn bulk-delete" onclick="deleteSelectedQtyLogEntries()"><i class="fa-solid fa-trash"></i> Delete selected</button>
+          </div>
+          <div class="mgmt-add-row">
+            <input
+              type="text"
+              id="quantityLogSearchInput"
+              class="form-input"
+              placeholder="Search log…"
+              oninput="renderQuantityLogList()"
+            />
+          </div>
+          <div class="mgmt-list health-diary-list" id="quantityLogListContainer"></div>
+        </div>
+      </div>
+    </div>
+    <!-- ── Branches Modal ──────────────────────────────────── -->
+    <div id="branchModal" class="hidden mgmt-modal-overlay">
+      <div class="mgmt-modal-box">
+        <div class="mgmt-modal-header">
+          <h3>Branches</h3>
+          <button
+            class="modal-close"
+            onclick="closeBranchModal()"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="mgmt-modal-body">
+          <p class="branch-modal-hint">Each branch has its own medicines, owners, categories, types and forms. Tap a branch to switch to it.</p>
+          <div class="mgmt-list" id="branchListContainer"></div>
+        </div>
+        <button class="mgmt-fab" onclick="promptAddBranch()" title="Add new branch" aria-label="Add new branch">+</button>
+      </div>
+    </div>
+    <div class="toast" id="toast">
+      <i class="fa-solid fa-check" id="toastIcon"></i>
+      <span id="toastMsg"></span>
+    </div>
+    <!-- ── Quantity History Modal ──────────────────────────── -->
+    <div id="histModal" class="hidden">
+      <div
+        class="hist-modal-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="histModalTitle"
+        onclick="event.stopPropagation()"
+      >
+        <div class="modal-header">
+          <h2 class="modal-title" id="histModalTitle">Quantity History</h2>
+          <button
+            class="modal-close"
+            onclick="closeHistoryModal()"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="histModalBody"></div>
+      </div>
+    </div>
+
+    <!-- ── Custom Dialog (replaces native prompt/confirm/alert) ── -->
+    <div id="dlgOverlay" class="hidden">
+      <div
+        class="dlg-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dlgTitle"
+        onclick="event.stopPropagation()"
+      >
+        <div class="modal-header">
+          <h2 class="modal-title" id="dlgTitle">Confirm</h2>
+          <button
+            class="modal-close"
+            onclick="_dlgResolveClick(null)"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="dlg-message" id="dlgMessage"></p>
+          <div class="dlg-field hidden" id="dlgFieldWrap">
+            <input class="form-input" id="dlgInput" />
+          </div>
+          <div class="dlg-choices hidden" id="dlgChoices"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" id="dlgCancelBtn" onclick="_dlgResolveClick(null)">Cancel</button>
+          <button class="btn-save" id="dlgOkBtn" onclick="_dlgResolveClick(true)">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Health Diary Entry Form (replaces chained prompts) ──── -->
+    <div id="healthFormOverlay" class="hidden">
+      <div
+        class="dlg-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="healthFormTitle"
+        onclick="event.stopPropagation()"
+      >
+        <div class="modal-header">
+          <h2 class="modal-title" id="healthFormTitle">Health Diary Entry</h2>
+          <button
+            class="modal-close"
+            onclick="_healthFormResolve(null)"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="hfDate">Date</label>
+            <input class="form-input" type="date" id="hfDate" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="hfIssue"
+              >Health update / issue <span class="req">*</span></label
+            >
+            <input
+              class="form-input"
+              type="text"
+              id="hfIssue"
+              placeholder="e.g. Fever, sore throat…"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="hfMeds">Medicines taken (optional)</label>
+            <input
+              class="form-input"
+              type="text"
+              id="hfMeds"
+              placeholder="e.g. Paracetamol 500mg"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="hfDoseLabel">Doses taken</label>
+            <div class="dlg-dose-row" id="hfDoseRow"></div>
+          </div>
+          <span class="dlg-error hidden" id="healthFormError"></span>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="_healthFormResolve(null)">Cancel</button>
+          <button class="btn-save" onclick="_healthFormResolve(true)">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- hidden compat elements for JS references -->
+    <button id="themeToggleBtn" style="display: none">🌙</button>
+    <button id="bulkToggleBtn" style="display: none"></button>
+    <div class="undo-toast hidden" id="undoToast">
+      <i class="fa-solid fa-pen" id="undoToastIcon"></i>
+      <span id="undoToastMsg"></span>
+      <span class="undo-countdown" id="undoCountdown"></span>
+      <button class="undo-btn" id="undoBtn" onclick="commitUndo()">
+        <i class="fa-solid fa-rotate-left"></i> Undo
+      </button>
+    </div>
+
+    <!-- ── Go To Top (left side) ──────────────────────────── -->
+    <button
+      id="goTopBtn"
+      class="go-top-btn"
+      aria-label="Go to top"
+      title="Back to top"
+    >
+      <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <!-- ── AI Assistant ──────────────────────────────────── -->
     <div id="assistantHint" class="assistant-hint hidden"></div>
-    <button id="assistantBtn" class="assistant-btn" onclick="toggleAssistant()" aria-label="Ask Babita Classes Assistant" title="Ask Babita Classes Assistant">
-      <i class="fa fa-magic" aria-hidden="true"></i>
+    <button
+      id="assistantBtn"
+      class="assistant-btn"
+      onclick="toggleAssistant()"
+      aria-label="Ask MediHome Assistant"
+      title="Ask MediHome Assistant"
+    >
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
     </button>
     <div id="assistantPanel" class="assistant-panel hidden">
       <div class="assistant-header">
-        <span><i class="fa fa-magic" aria-hidden="true"></i> Babita Classes Assistant</span>
+        <span><i class="fa-solid fa-wand-magic-sparkles"></i> MediHome Assistant</span>
         <div class="assistant-header-actions">
           <button id="assistantReplayBtn" class="hidden" onclick="replayLastAssistantReply()" aria-label="Replay last reply" title="Replay last reply">
-            <i class="fa fa-repeat" aria-hidden="true"></i>
+            <i class="fa-solid fa-rotate-right"></i>
           </button>
-          <button id="assistantSpeechToggle" class="hidden" onclick="toggleAssistantSpeech()" aria-label="Pause reading" title="Pause reading">
-            <i class="fa fa-pause" aria-hidden="true"></i>
+          <button id="assistantSpeechToggle" class="hidden" onclick="toggleAssistantSpeech()" aria-label="Pause reading">
+            <i class="fa-solid fa-pause"></i>
           </button>
-          <button class="modal-close" onclick="toggleAssistant()" aria-label="Close assistant" title="Close">
-            <i class="fa fa-times" aria-hidden="true"></i>
+          <button class="modal-close" onclick="toggleAssistant()" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
       </div>
       <div class="assistant-messages" id="assistantMessages">
-        <div class="assistant-msg assistant-msg-bot">Hi! Ask me about admissions, fees, results, syllabus, or anything else about Babita Classes.</div>
+        <div class="assistant-msg assistant-msg-bot">Hi! Ask me about your medicines — stock, expiry, owners — or anything else.</div>
       </div>
       <div class="assistant-input-row">
-        <input type="text" id="assistantInput" placeholder="Ask something…" autocomplete="off">
+        <input
+          type="text"
+          id="assistantInput"
+          placeholder="Ask something…"
+          autocomplete="off"
+        />
         <button id="assistantMicBtn" class="hidden" onclick="toggleAssistantMic()" aria-label="Voice input" title="Speak your question">
-          <i class="fa fa-microphone" aria-hidden="true"></i>
+          <i class="fa-solid fa-microphone"></i>
         </button>
         <button id="assistantSendBtn" onclick="sendAssistantMessage()" aria-label="Send">
-          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+          <i class="fa-solid fa-paper-plane"></i>
         </button>
       </div>
     </div>
 
-
-<!-- Snowfall Effect -->
-<div aria-hidden="true" class="snowflakes">
-  <div class="snowflake">❅</div>
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
-</div>
-
-
-    <main class="container">
-
-      <!-- SEARCH BAR -->
-      <section id="search" class="section card">
-        <h1>Search</h1>
-        <input type="text" id="searchInput" class="search" placeholder="Type to search..." style="width:100%;padding:8px;">
-        <ul id="searchList">
-          <li><a href="#home">Home</a></li>
-          <li><a href="https://babitaclasses.vercel.app/blog">Blog</a></li>
-          <li><a href="https://babitaclasses.vercel.app/result">Results</a></li>
-          <li><a href="#syllabus">Syllabus</a></li>
-          <li><a href="#noticeboard">Notice Board</a></li>
-          <li><a href="#WhatsNew">What's New</a></li>
-          <li><a href="#gallery">Gallery</a></li>
-          <li><a href="#faq">FAQs</a></li>
-          <li><a href="#mission">Our Mission</a></li>
-          <li><a href="#fromdirectorsdesk">From Director's Desk</a></li>
-          <li><a href="#videos">Function Videos</a></li>
-          <li><a href="#faculty">Our Faculty</a></li>
-          <li><a href="#allurls">All URLs</a></li>
-          <li><a href="#contact">Contact Us</a></li>
-        </ul>
-      </section>
-
-      <!-- HOME -->
-      <section id="home" class="section card">
-        <div class="hero">
-          <div style="flex: 1">
-            <h1>Welcome to Babita Classes</h1>
-            <p class="small">
-              Babita Classes is a free of cost Non-Profit Organization founded by Babita Soni on 8 September 2020, situated in Kanpur. We not only teach them for free but also provide them with stationery items; along with this, we also give them many mental and physical activities. If you want to admit any poor child to Babita Classes, you can call us.
-            </p>
-            <p class="small" style="margin-top: 8px">
-              <strong>ATTENTION:</strong> You are viewing the new website of Babita Classes launched on 24 May 2026.
-            </p>
-          </div>
-          <div>
-            <div class="card">
-              <h3><strong>Quick actions</strong></h3>
-              <div style="margin-top: 8px" class="flex">
-                <a class="btn-inline" href="https://babitaclasses.vercel.app/">Official Home</a>
-                <a class="btn-inline" href="#allurls">All URLs</a>
-              </div>
-              <p class="small-note">Use the menu bar top buttons to jump to any section.</p>
-            </div>
-          </div>
+    <!-- ── Image Viewer Modal ─────────────────────────────────── -->
+    <div id="imgViewerModal" class="hidden">
+      <div class="img-viewer-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title" id="imgViewerTitle">Medicine Image</h2>
+          <button
+            class="modal-close"
+            onclick="closeImgViewer()"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
-      </section>
-
-      <!-- MARQUEE & NOTICE BOARD -->
-      <div id="noticeboard">
-
-        <!-- MARQUEE -->
-        <marquee id="topMarquee" class="GeneratedMarquee" direction="left" scrollamount="9" behavior="scroll">Welcome to our website! This is our new website which was launched on 24 May 2026. Classes are reopened from 1 July 2026 (Wednesday). You can check the latest results and download your marksheets from the result page. You can watch our videos from Facebook, YouTube, Functions Videos page and from blog. To be updated about us check out our website regularly. Call Now for any queries.</marquee>
-
-        <!-- NOTICE BOARD -->
-        <div class="notice-board">
-          <img src="https://i.imgur.com/qe28qkk.png" class="notice-bg" alt="Notice Board">
-          <p class="notice-heading"><strong>Notice Board (2026-27)</strong></p>
-          <marquee class="notice-marquee" direction="up" scrollamount="3" behavior="scroll">
-            <div id="noticeMarqueeList">
-            <a>Classes are reopened from 1 July 2026 (Wednesday). <img src="https://i.imgur.com/XUQBLw8.gif" style="height:17.5px;width:50px;" alt="New" loading="lazy"></a><br>
-            <a>Our new website launched on 24 May 2026. <img src="https://i.imgur.com/XUQBLw8.gif" style="height:17.5px;width:50px;" alt="New" loading="lazy"></a><br>
-            <a>Summer Vacations started from 15 May 2026 (Friday). <img src="https://i.imgur.com/XUQBLw8.gif" style="height:17.5px;width:50px;" alt="New" loading="lazy"></a><br>
-            <a>New session has started from 1st April 2026 (Wednesday), timing: 4 PM.</a>
-            </div>
-          </marquee>
+        <div class="img-viewer-body">
+          <img id="imgViewerImg" src="" alt="Medicine Image" />
         </div>
-
-      </div>
-
-      <!-- WHAT'S NEW -->
-      <section id="WhatsNew" class="section card">
-        <svg class="whatsnew-anim" viewBox="0 0 950 220" role="img" aria-label="What's New">
-          <symbol id="s-text-whatsnew">
-            <text text-anchor="middle" x="50%" y="50%" dy=".35em">WHAT'S NEW</text>
-          </symbol>
-          <use xlink:href="#s-text-whatsnew" class="wn-glow"></use>
-          <use xlink:href="#s-text-whatsnew" class="wn-crisp"></use>
-        </svg>
-        <p class="small" id="whatsNewText">The UP Board (UPMSP) has declared the results for class 10th and 12th and our student Vasu got 61.5% in class 10th with 73 marks in English.</p><br>
-        <img src="/images/newbanner.png" class="newbanner" id="whatsNewImage" alt="What's New banner" loading="lazy"><br>
-        <div style="margin-top: 8px" class="flex">
-          <a class="btn-inline" id="whatsNewBtn" href="https://www.facebook.com/share/p/1EHf5KEr9N/" target="_blank" rel="noopener">Open Facebook Post</a>
-        </div>
-      </section>
-
-      <!-- GALLERY -->
-      <section id="gallery" class="section card">
-        <h1>Gallery</h1>
-        <p class="small">Images and event photos (from official Facebook page)</p>
-        <div style="margin-top: 8px" class="flex">
-          <a class="btn-inline" href="https://www.facebook.com/babitaclasses/photos" target="_blank" rel="noopener">Open Gallery</a>
-        </div>
-        <br>
-
-        <div class="slideshow-container">
-
-          <div class="slide fade">
-           <img src="/images/image1.jpg" id="galleryImg1" alt="Babita Classes gallery photo 1">
-           <img src="/images/image2.jpg" id="galleryImg2" alt="Babita Classes gallery photo 2">
-         </div>
-
-         <div class="slide fade">
-           <img src="/images/image3.jpg" id="galleryImg3" alt="Babita Classes gallery photo 3">
-           <img src="/images/image4.jpg" id="galleryImg4" alt="Babita Classes gallery photo 4">
-         </div>
-
-         <div class="slide fade">
-           <img src="/images/image5.jpg" id="galleryImg5" alt="Babita Classes gallery photo 5">
-           <img src="/images/image6.jpg" id="galleryImg6" alt="Babita Classes gallery photo 6">
-         </div>
-
-         <div class="slide fade">
-           <img src="/images/image7.jpg" id="galleryImg7" alt="Babita Classes gallery photo 7">
-           <img src="/images/image8.jpg" id="galleryImg8" alt="Babita Classes gallery photo 8">
-         </div>
-
-<!-- Arrow buttons -->
-<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
-<a class="next" onclick="plusSlides(1)">&#10095;</a>
-        </div>
-         
-         <!-- Dots -->
-<div class="dots">
-  <span class="dot" onclick="currentSlide(1)"></span>
-  <span class="dot" onclick="currentSlide(2)"></span>
-  <span class="dot" onclick="currentSlide(3)"></span>
-  <span class="dot" onclick="currentSlide(4)"></span>
-</div>
-
-      </section>
-      
-
-      <!-- FAQ -->
-      <section id="faq" class="section card">
-        <h1>FAQs</h1>
-        <div class="muted">Tap a question to open answer.</div>
-        <details>
-          <summary><strong>What is Babita Classes?</strong></summary>
-          <div class="faq-answer"><p class="small">Babita Classes is a non-profit educational institute founded by Babita Soni in 2020, located in Kanpur. It provides free education and activities for underprivileged children.</p></div>
-        </details>
-        <hr>
-        <details>
-          <summary><strong>How can I contact Babita Classes?</strong></summary>
-          <div class="faq-answer"><p class="small">You can use the contact form, WhatsApp, or call directly at +91 7388311148.</p></div>
-        </details>
-        <hr>
-        <details>
-          <summary><strong>What services do you provide?</strong></summary>
-          <div class="faq-answer"><p class="small">We provide free coaching, stationery, and organize cultural, mental, and physical activities for students.</p></div>
-        </details>
-        <hr>
-        <details>
-          <summary><strong>Where are they located?</strong></summary>
-          <div class="faq-answer"><p class="small">Babita Classes is located at 1/2, Juhi Bamburahiya Colony, Kanpur, Uttar Pradesh - Pincode-208014, India.</p></div>
-        </details>
-        <hr>
-        <details>
-          <summary><strong>What are the fees and minimum age requirement for getting admission?</strong></summary>
-          <div class="faq-answer"><p class="small">Babita Classes is a free-of-cost philanthropic organization for underprivileged children. So, there is no fee. The minimum age required for admission is 5 years. You can admit your child by filling the Admission Form. You can navigate to the Admission Form by the All URLs Section from the menu.</p></div>
-        </details>
-        <hr>
-        <details>
-          <summary><strong>Does Babita Classes provide any online classes?</strong></summary>
-          <div class="faq-answer"><p class="small">Currently, we don't provide any online classes but we'll do that in future.</p></div>
-        </details>
-        <hr>
-        <details>
-          <summary><strong>Need more answers?</strong></summary>
-          <div class="faq-answer"><p class="small">Feel free to call us at <a href="tel:+917388311148">+91 7388311148</a> or mail us at <a href="mailto:babitaclasses7@gmail.com">babitaclasses7@gmail.com</a> for any query.</p></div>
-        </details>
-      </section>
-
-      <!-- OUR MISSION -->
-      <section id="mission" class="section card">
-        <h1>Our Mission</h1>
-        <p class="small"><ul>
-          <li><p class="small">At Babita Classes, a philanthropic educational institution, we have embarked on an initiative to provide free classes to underprivileged children, nurturing their academic growth and potential.</p></li>
-          <li><p class="small">Our long-term vision is to expand our reach and establish a network of NGOs across India, dedicated to providing educational support and opportunities to disadvantaged children nationwide.</p></li>
-          <li><p class="small">We are committed to fostering a supportive learning environment, providing not only quality education but also complimentary stationery items to facilitate their academic pursuits.</p></li>
-          <li><p class="small">We look forward to collaborating with like-minded individuals and organizations who share our passion for education and community development.</p></li>
-          <li><p class="small">With dedication and perseverance, we strive to make a meaningful impact in the lives of our students and contribute to the betterment of our community.</p></li>
-        </ul></p>
-        <p class="small">
-          <strong>Why Choose Babita Classes for Underprivileged Children & How Babita Classes Works?</strong><br><ul>
-          <li><p class="small"><strong>Engaging Young Minds at Babita Classes</strong> At Babita Classes, we employ a multifaceted approach to engage children in the learning process. Our educational methodology extends beyond traditional teaching methods, incorporating captivating videos and audio materials to convey complex concepts in an accessible and enjoyable manner. This innovative approach not only fosters a deeper understanding of the subject matter but also instills a sense of curiosity and enthusiasm for learning among our students.</p></li>
-          <li><p class="small"><strong>Why Choose Babita Classes for Underprivileged Children? </strong>Babita Classes stands out as an ideal choice for underprivileged children due to its commitment to providing high-quality education free of charge. As a non-profit organization (NPO), we eliminate the financial burden associated with education, refraining from levying admission fees or any other charges. Our aim is to create a stress-free learning environment, allowing our students to focus on their academic growth and development. For further details, please refer to our Terms and Conditions.</p></li>
-          <li><p class="small"><strong>Physical Education at Babita Classes</strong> At Babita Classes, we recognize the importance of physical education in a child's overall development. To this end, we have incorporated physical training (PT) and exercises into our schedule, which takes place every Saturday. Our faculty members guide the students through a range of physical activities designed to promote their physical well-being and teamwork skills. Additionally, our regular tests and assessments serve as mental exercises, helping our students develop their critical thinking and problem-solving abilities.</p></li>
-        </ul>
-        </p>
-        <div style="margin-top: 8px" class="flex">
-        </div>
-        <h1 style="margin-top:16px">Our Services</h1>
-        <p class="small"><ul>
-          <li><p class="small">Babita Classes is a philanthropic educational institution dedicated to providing academic support to underprivileged children. Our pedagogical approach encompasses a bilingual curriculum, utilizing both NCERT English and Hindi medium textbooks, as well as board-approved materials. Our educational programs cater to students in kindergarten through 10th grade, fostering a comprehensive learning environment that empowers young minds to achieve their full potential.</p></li>
-        </ul></p>
-        <div style="margin-top: 8px" class="flex">
-          <a class="btn-inline" href="https://wa.link/x6klar" target="_blank" rel="noopener">Book an Appointment</a>
-        </div>
-      </section>
-
-      <!-- FROM DIRECTOR'S DESK -->
-      <section id="fromdirectorsdesk" class="section card">
-        <h1>From Director's Desk</h1>
-        <p class="small"><ul>
-          <li><p class="small">According to Babita Classes founder Mrs. Babita Soni, every child must be educated whether he/she is rich or poor. At Babita Classes, we teach poor children for free. We also provide them with stationery items for absolutely no cost. This empowers their capability to study.</p></li>
-          <li><p class="small">Everyone must do something for these children. This doesn't mean that you must provide free education and stationery items to every poor child; rather, you should do so for some children, based on your own capabilities. This will do nothing but improve the future of our nation and society.</p></li>
-          <li><p class="small">At Babita Classes, we provide free education and stationery items to more than 35 students. We regularly do functions to improve children's interest in their studies. We also do physical activities to ensure that everyone is physically fit.</p></li>
-          <li><p class="small">My vision is that every child gets quality education without any compromise, as this will not only improve his/her future but also improve the future of our society and nation. I hope that you all will support me and do whatever is needed for the poor children.</p></li>
-          <p class="small">-Babita Soni, Founder - Babita Classes</p>
-        </ul></p>
-        <div style="margin-top: 8px" class="flex">
-          <a class="btn-inline" href="tel:+917388311148" target="_blank" rel="noopener">Call now for any queries</a>
-        </div>
-      </section>
-
-      <!-- FUNCTION VIDEOS -->
-      <section id="videos" class="section card">
-        <h1>Function Videos</h1>
-        <p class="small">Event and function videos are available here and also on our YouTube channel and Facebook page. Click the given button below to open our official YouTube channel and watch all our videos of regularly conducted events and functions or you can search from the list below. </p>
-        <div style="margin-top: 8px" class="flex">
-          <a class="btn-inline" href="https://www.youtube.com/@babita_classes" target="_blank" rel="noopener">Watch all Videos on YouTube</a>
-        </div><br>
-        <div class="search-wrapper">
-          <input type="text" id="videoSearch" class="search" placeholder="Type to search videos...">
-       </div>
-        <ul id="videoList">
-         <li><a href="https://youtu.be/3jbA9w8qDB4?si=O4SfTiI4m_yBn9hn" target="_blank">Christmas Celebration 2025</a></li>
-         <li><a href="https://youtu.be/aATQuuxqZtU?si=xo0HAblqO7diuAM7" target="_blank">Children's Day Celebration 2025</a></li>
-         <li><a href="https://youtu.be/iCJyCmi2fLk?si=IGViXcreWOKlJhoh" target="_blank">Halloween Celebration 2025</a></li>
-
-         <li><a href="https://youtu.be/qQeHVqT0PP4?si=IcSz-bkacTH2I9cR" target="_blank">Behind the Scenes and Fun of Gorgon 2024 (Must Watch)</a></li>
-         <li><a href="https://youtu.be/iSzXQCMCOsk?si=UHO6tTXp7PJvqmiG" target="_blank">Gorgon Movie 2024</a></li>
-         <li><a href="https://youtu.be/boyd7vV2b6Q?si=52hWZIYdoimmhAen" target="_blank">Annual Prize Distribution, House Ceremony & Frooti Party 2024</a></li>
-         <li><a href="https://youtu.be/Y2Xna-WK2xk?si=pjc-fnqdcQDYkUEV" target="_blank">Holi Celebration 2024</a></li>
-         <li><a href="https://youtu.be/2o3iKXkaqjo?si=p3Vw0kHXGlqz0eNA" target="_blank">Basant Panchami Celebration 2024</a></li>
-         <li><a href="https://youtu.be/8BOkDJU2AqE?si=_comKIiy7_FMvxPn" target="_blank">Republic Day Celebration 2024</a></li>
-
-
-         <li><a href="https://youtu.be/VdUmD7Z6uj0?si=IBrMjloNUcgcIPgQ" target="_blank">Christmas Celebration 2023</a></li>
-         <li><a href="https://youtu.be/lAysFAyldS0?si=qW4IMX8oFcNtyCqB" target="_blank">Yoga Exercises of Saturday 2023</a></li>
-         <li><a href="https://youtu.be/O7Um8PC7990?si=p-wPB5hzL0mVkYfk" target="_blank">Halloween Celebration 2023</a></li>
-         <li><a href="https://youtu.be/Lv8o4JY16Uw?si=FUxZiYpIQIsyjjxJ" target="_blank">3 Years of Babita Classes 2023</a></li>
-         <li><a href="https://youtu.be/0BWsukdcsro" target="_blank">Mysterious Thief 2023</a></li>
-         <li><a href="https://youtu.be/dIwv9NYl7ls?si=f_EgBMFKrLHQ8lDu" target="_blank">Annual Prize Distribution Day 2023</a></li>
-         <li><a href="https://youtu.be/blOAf9QXr54" target="_blank">Holi Celebration 2023</a></li>
-
-
-         <li><a href="https://m.facebook.com/story.php/?story_fbid=pfbid02wJgzPwrY87mArtqBKJugHWhitabNVcefA5P7pYXeZxEt3xwUdezGxXbCZuxrHxLGl&id=100064110307436" target="_blank">Christmas Celebration 2022</a></li>
-         <li><a href="https://fb.watch/6Wo4_b00UF/" target="_blank">PT Videos 2022</a></li>
-         <li><a href="https://youtu.be/1SEOlBnvr_E" target="_blank">Independence Day Flag Hosting Ceremony 2022</a></li>
-         <li><a href="https://youtu.be/s_aT2HMHW68" target="_blank">Vidya 2022</a></li>
-         <li><a href="https://youtu.be/pAMNHCOr9H0" target="_blank">Art Day Video 2022</a></li>
-         <li><a href="https://youtu.be/vAn8YJv4ceM?si=DHRVejj_Q59GJh34" target="_blank">Rhymes & PT on Saturday 2022</a></li>
-         <li><a href="https://www.facebook.com/105961147928732/posts/477988930725950/" target="_blank">Holi Celebration 2022</a></li>
-         <li><a href="https://www.facebook.com/105961147928732/posts/454059256452251/" target="_blank">Homage to Swar Kokila 2022</a></li>
-         <li><a href="https://www.facebook.com/105961147928732/posts/452833423241501/" target="_blank">Basant Panchami Celebration 2022</a></li>
-
-         <li><a href="https://youtu.be/lcC3UaOZRkE?si=SO7P5QqRsphB8P1d" target="_blank">Gandhi Jayanti Function 2021</a></li>
-         <li><a href="https://youtu.be/8G8jTxFs7Ek?si=R6ButT4DsjE029Ar" target="_blank">Independence Day Dance Function 2021</a></li>
-         <li><a href="https://youtu.be/QQo8Tg69bIU?si=s1sluCu9NrQdzVfe" target="_blank">Annual Prize & Result Distribution Day 2021</a></li>
-         <li><a href="https://youtube.com/shorts/pGHQO3nadP0?si=p7QINAT54j5hlnxL" target="_blank">Holi Celebration Part 2 2021</a></li>
-         <li><a href="https://youtu.be/0bZcasFDPYU?si=5ndgKcmBxnjWGWPS" target="_blank">Holi Celebration Part 1 2021</a></li>
-         <li><a href="https://youtu.be/IyFRjIGOt6U?si=yp9ZH20mc2JvEZ1E" target="_blank">Basant Panchami Cultural Programme Part 2 2021</a></li>
-         <li><a href="https://youtu.be/YiY3XMGF-XM?si=DR3-eeTZZYbol2PV" target="_blank">Basant Panchami Cultural Programme Part 1 2021</a></li>
-         <li><a href="https://youtu.be/50dCL3ZyoWs" target="_blank">Republic Day Dance Event Part 2 2021</a></li>
-         <li><a href="https://youtu.be/8YI4KK7o3h0?si=o0qg_328_vT0InCh" target="_blank">Republic Day Dance Event Part 1 2021</a></li>
-
-         <li><a href="https://youtu.be/otpzeLLmHkQ?si=lnrpKbgtvPTKJcUj" target="_blank">Christmas Celebration Part 1 2020</a></li>
-         <li><a href="https://youtu.be/WbJFXfgffAI?si=TOH4_jVKiuOdg0IN" target="_blank">Corona Awareness Programme 2020</a></li>
-         <li><a href="https://youtu.be/KswBVfbv8KA?si=cnJhReOozrGfekR_" target="_blank">Gandhi Jayanti Dance Performances 2020</a></li>
-         <li><a href="https://m.facebook.com/story.php?story_fbid=596201431257600&id=100026032453449" target="_blank">Independence Day Dance Videos 2020</a></li>
-        </ul>
-
-      </section>
-
-      <!-- SYLLABUS / DATESHEET / RESULTS -->
-      <section id="#" class="section card">
-        <div id="syllabus">
-          <h1>Syllabus, Datesheet &amp; Results</h1>
-          <div class="muted">Session-wise files and results</div>
-        </div>
-        <p class="small">To check latest announced results and download marksheets <a class="btn-inline1" href="https://babitaclasses.vercel.app/result" rel="noopener">Click here</a></p>
-        <p class="small">Click the Open buttons to view or download syllabus, datesheet and result files.</p>
-
-        <div id="syllabusDynamicSessions">
-        <h3 style="margin-top:12px">Session 2025-26</h3>
-        <div style="overflow:auto">
-          <table aria-label="Syllabus 2025-26">
-            <thead>
-              <tr><th>Test/Exam</th><th>Syllabus</th><th>Datesheet</th><th>Result</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Test - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1x4jFCTrxftFXBarUP9tbFCjtMXPR-Qn2/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-                <td>Part A - 3 May 2025 (Saturday), Part B - 13 May 2025 (Tuesday)</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1uxiqSSvlqzyRat2JHAMJBsNFsWbHshX0" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr><td>Test - 2</td><td>NA</td><td>NA</td><td>NA</td></tr>
-              <tr>
-                <td>Term - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1UDdI_iiWPK-rjmnpoQ5TRZpnzqJJlPpB" target="_blank" rel="noopener">Open</a></div></td>
-                <td>27 July 2025 (Sunday)</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1VMijTLYNzxrlDvZZfcyS5RsRwyBuCLZm" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr><td>Term - 2</td><td>NA</td><td>NA</td><td>NA</td></tr>
-            </tbody>
-          </table>
-        </div>
-        </div>
-          <br>
-          <p class="small"><strong>Note: </strong>No formal tests and exams were conducted in the academic session 2024-25.</p>
-
-        <div id="syllabusToggleWrap" class="flex" style="margin:14px 0;justify-content:center">
-          <button type="button" id="syllabusToggleBtn" class="btn-inline" aria-expanded="false" aria-controls="syllabusCollapse">Show More Sessions ▾</button>
-        </div>
-        <div id="syllabusToggleAnchor"></div>
-
-        <div id="syllabusCollapse" class="syllabus-collapse">
-
-        <h3 style="margin-top:12px">Session 2023-24</h3>
-        <div style="overflow:auto">
-          <table aria-label="Syllabus 2023-24">
-            <thead>
-              <tr><th>Test/Exam</th><th>Syllabus</th><th>Datesheet</th><th>Result</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Test - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1ad5ty3_NIRq67XgfMvzKDu3Bq28aPndG" target="_blank" rel="noopener">Open</a></div></td>
-                <td>2nd June 2023 (Friday)</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1b7YBBJWI27a8XZtXvIegmIMpn_IVKwfX" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Test - 2</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1CTrRWQMLPuf5zMpuMoZ77bBQ9sqSWIwV" target="_blank" rel="noopener">Open</a></div></td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1GEYReKrNrlSLZFSZxOn4Az7QH_kb5BC9" target="_blank" rel="noopener">Open</a></div></td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1GM0f_hs2m2qAYMyipV_-pw3iCPAw9AHl" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Term - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1UDdI_iiWPK-rjmnpoQ5TRZpnzqJJlPpB" target="_blank" rel="noopener">Open</a></div></td>
-                <td>27 November 2023 (Monday)</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1CNly1-KRX50GjAx315aCF5CjUJk8pHEJ" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Term - 2</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1bm0D0yrhynuxkecE7182EWzcrIMoi1cR" target="_blank" rel="noopener">Open</a></div></td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=11C-dCyBzijRRdmEP_ga4j7XiXDFZIYk5" target="_blank" rel="noopener">Open</a></div></td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=19jroyN2wNHCU7XyNvl1EXxbybpZ1xro0" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <h3 style="margin-top:12px">Session 2022-23</h3>
-        <div style="overflow:auto">
-          <table aria-label="Syllabus 2022-23">
-            <thead>
-              <tr><th>Test/Exam</th><th>Syllabus</th><th>Datesheet</th><th>Result</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Test - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1rOKvHYt0EZGSxiRnXrwBl-jkOjZtE97D" target="_blank" rel="noopener">Open</a></div></td>
-                <td>9 May 2022 (Monday)</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1tQa6QADM7L2_w1fudQudXp7nDKb3yCuB" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Test - 2</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1Gg87HzB77gaYA--oUQe6RSY2U4SQLuvO" target="_blank" rel="noopener">Open</a></div></td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1HHbttARuCnjqTtVRwGRw1jdZE04yCOCI" target="_blank" rel="noopener">Open</a></div></td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1Hmmr2PJU5h38MdOAJyH6bZBljPAXnxZc" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Term - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://firebasestorage.googleapis.com/v0/b/photo-to-link.appspot.com/o/14625854?alt=media&token=9f6d3a58-8f9e-4f0c-829a-92acc97a043f" target="_blank" rel="noopener">Open</a></div></td>
-                <td>3 September 2022 (Saturday)</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1BL7O7I1V6y6G8EGhCk1BNbNARyMLB2JV" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Term - 2</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1UDdI_iiWPK-rjmnpoQ5TRZpnzqJJlPpB" target="_blank" rel="noopener">Open</a></div></td>
-                <td>22 April 2023 (Saturday)</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1TomE7Gc-Ewh6IwqMhQxphrKVn2Vwe45a" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <h3 style="margin-top:12px">Session 2021-22</h3>
-        <div style="overflow:auto">
-          <table aria-label="Syllabus 2021-22">
-            <thead>
-              <tr><th>Test/Exam</th><th>Syllabus</th><th>Datesheet</th><th>Result</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Test - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1TLGhjCGKiEscikoScx88tJjozgHRYYDz/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-                <td>1 October 2021</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://firebasestorage.googleapis.com/v0/b/photo-to-link.appspot.com/o/388269298?alt=media&token=675c98b8-247a-4621-b4e6-b84d522983ea" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Test - 2</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1x4jFCTrxftFXBarUP9tbFCjtMXPR-Qn2/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-                <td>29 January 2022</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://firebasestorage.googleapis.com/v0/b/photo-to-link.appspot.com/o/388269298?alt=media&token=675c98b8-247a-4621-b4e6-b84d522983ea" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Term - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1x4jFCTrxftFXBarUP9tbFCjtMXPR-Qn2/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-                <td>NA</td>
-                <td>NA</td>
-              </tr>
-              <tr>
-                <td>Term - 2</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1hP1Kt2yh158EN_yyV6rYxJPoMjKtbut2/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-                <td>8 to 10 March 2022</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://firebasestorage.googleapis.com/v0/b/photo-to-link.appspot.com/o/664662275?alt=media&token=8605860e-1459-4d15-b406-d25952d0eafb" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <h3 style="margin-top:12px">Session 2020-21</h3>
-        <div style="overflow:auto">
-          <table aria-label="Syllabus 2020-21">
-            <thead>
-              <tr><th>Test/Exam</th><th>Syllabus</th><th>Datesheet</th><th>Result</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Test - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1auK690sdKjTf30FN3pIK-Zp_6BHfZnBa" target="_blank" rel="noopener">Open</a></div></td>
-                <td>21 September 2020</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1_gpQLye8BFXN1HldmuiI4waozSKC4MOw/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Test - 2</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1b2NGn77W9mMcbpC1eDZb92MljySBHP2N" target="_blank" rel="noopener">Open</a></div></td>
-                <td>12 October 2020</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1jutdkVnn5GTViGkDGTm2td0bt_47qKKc" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Term - 1</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1b2tDL371cogOvp_k5EffLejnZrhC8F5a" target="_blank" rel="noopener">Open</a></div></td>
-                <td>28 November to 18 December 2020</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1fwTJSLiIZA2LzRX0oDHIHSj3qGtXU7w1/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-              <tr>
-                <td>Term - 2</td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1x4jFCTrxftFXBarUP9tbFCjtMXPR-Qn2/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/uc?export=download&id=1TmsL7tpKNGdGaOS5oY6tjZwsNTY5P3rI" target="_blank" rel="noopener">Open</a></div></td>
-                <td><div class="flex"><a class="btn-inline1" href="https://drive.google.com/file/d/1-azjAooDBmmGU9stYYLKCYMwlJ61qwjr/view?usp=drivesdk" target="_blank" rel="noopener">Open</a></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        </div>
-      </section>
-
-      <!-- OUR FACULTY -->
-      <section id="faculty" class="section card">
-        <h1>Our Faculty</h1>
-        <div class="faculty-grid">
-          <div class="faculty-card">
-            <img src="/images/facultybabita.jpg" class="faculty-photo" alt="Babita Soni" loading="lazy">
-            <p class="facultyname"><strong>Babita Soni</strong></p><p  class="faculty-desc">Founder &amp; Director<br><em>Qualification:</em> M.A. (Literature) from Kanpur University (CSJMU)</p>
-          </div>
-          <div class="faculty-card">
-            <img src="/images/facultyshivam.jpg" class="faculty-photo" alt="Shivam Soni" loading="lazy">
-            <p class="facultyname"><strong>Shivam Soni</strong></p> 
-            <p class="faculty-desc">Co-Founder, Online Editor<br>
-            <em>Qualification:</em> CA Finalist, B.Com.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ALL URLS -->
-      <section id="allurls" class="section card">
-        <div class="section-title">
-          <h1>All Important URLs</h1>
-          <div class="muted">Navigation</div>
-        </div>
-        <input id="link-filter" class="search search-wrapper" placeholder="Type To Search Links...">
-        <div class="url-grid-scroll" style="margin-top:12px">
-          <div id="links-grid" class="buttons-grid"></div>
-        </div>
-      </section>
-
-
-    </main>
-
-      <img src="/images/bc-qr-code.png" class="qrcode" alt="Babita Classes QR Code" loading="lazy"> <a class="btn-qr" href="https://drive.google.com/uc?export=download&id=1_y1cuZw3p1bnncBEU9ZiUwRUpJlLtYVF" target="_blank" rel="noopener">Download QR Code</a>
-
-
-    <footer>
-      <section id="contact" class="contact">
-        <h1>Contact &amp; Social</h1>
-        <p class="ftsmall">
-          <strong>Email</strong>: <a href="mailto:babitaclasses7@gmail.com"><span style="color:#ffffff;">babitaclasses7@gmail.com</span></a><br>
-          <strong>WhatsApp</strong>: <a href="https://wa.link/oqxekr" target="_blank" rel="noopener"><span style="color:#ffffff;">Chat on WhatsApp</span></a><br>
-          <strong>Call</strong>: <a href="tel:917388311148"><span style="color:#ffffff;">+91 73883 11148</span></a><br>
-          <strong>Contact Form</strong>: <a href="https://forms.gle/wL59oarRVWdysP9u8" target="_blank" rel="noopener"><span style="color:#ffffff;">Open form</span></a><br>
-          <strong>Admission Form</strong>: <a href="https://forms.gle/S234T8QQgLCSvd5GA" target="_blank" rel="noopener"><span style="color:#ffffff;">Open form</span></a>
-        </p>
-        <p class="ftsmall">
-          <strong>Facebook</strong>: <a href="https://www.facebook.com/babitaclasses" target="_blank" rel="noopener"><span style="color:#ffffff;">facebook.com/babitaclasses</span></a><br>
-          <strong>Instagram</strong>: <a href="https://www.instagram.com/babitaclasses" target="_blank" rel="noopener"><span style="color:#ffffff;">instagram.com/babitaclasses</span></a><br>
-          <strong>YouTube</strong>: <a href="https://youtube.com/channel/UCHFpmflS9Fl-uu6lasO7tQQ" target="_blank" rel="noopener"><span style="color:#ffffff;">youtube.com/babita_classes</span></a><br>
-          <strong>Google Maps</strong>: <a href="https://www.google.com/maps?q=Babita+Classes,+Bamburahiya+Colony,+Juhi,+Kanpur,+Uttar+Pradesh,+India&z=16&output=embed" target="_blank" rel="noopener"><span style="color:#ffffff;">Get directions</span></a><br>
-          <strong>Terms and Conditions</strong>: <a href="https://drive.google.com/uc?export=download&id=1fJxtiwyud6oNEQ4xecHO3fUf0GvcOnQw" target="_blank" rel="noopener"><span style="color:#ffffff;">Click to download</span></a>
-        </p>
-        <p class="ftsmall">
-          <strong>Address</strong>:<br>
-          Babita Classes<br>1/2, Juhi Bamburahiya Colony,<br>Kanpur, Uttar Pradesh - 208014<br>
-          <strong>Open Hours</strong>:<br>
-          Monday - Friday: 9 AM to 6 PM<br>
-          Saturday: 9 AM to 5 PM<br>
-          Sunday: Closed<br>
-          (Public holiday hours may vary.)
-        </p>
-      </section>
-      <br>
-      Total visits since 30 June 2026:<br> 
-<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1582513/t/5"></script>
-      <br><br>
-      Copyright 2020-26 https://babitaclasses.vercel.app/ All Rights Reserved. Last updated on <span id="lastUpdatedDate">25 July 2026</span> © Babita Classes 2020-26 — Since 8 September 2020.<br>Designed &amp; Developed by Shivam Soni. · <a href="https://wa.me/919005325544?text=Hi%20Shivam%2C%20I%20found%20an%20issue%20in%20Babita%20Classes%3A%20" target="_blank" rel="noopener">Report a bug</a><br><br><br><br><br><br><br><br>
-    </footer>
-
-    <!-- Image Lightbox -->
-    <div id="imgLightboxOverlay" class="lightbox-overlay">
-      <div class="lightbox-box">
-        <button id="lightboxClose" class="lightbox-close" aria-label="Close">×</button>
-        <img id="lightboxImg" src="" alt="Preview" loading="lazy">
       </div>
     </div>
 
-    <script src="script.9a3d47.js"></script>
+    <!-- ── Scripts ────────────────────────────────────────── -->
+    <!-- Firebase SDK (CDN - no npm needed) -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        set,
+        onValue,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        setPersistence,
+        browserLocalPersistence,
+        browserSessionPersistence,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyANbbAw3w8L5uX-C0jRqYvhHaLZ4PWXDn0",
+        authDomain: "medihome-7fa66.firebaseapp.com",
+        databaseURL: "https://medihome-7fa66-default-rtdb.firebaseio.com",
+        projectId: "medihome-7fa66",
+        storageBucket: "medihome-7fa66.firebasestorage.app",
+        messagingSenderId: "359639452263",
+        appId: "1:359639452263:web:dafa12656433f50bd922c2",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      const dbRef = ref(db, "medicines");
+      const auth = getAuth(app);
+
+      // Expose to app.js (non-module)
+      window._fbSet = (data) => set(dbRef, data);
+      window._fbListen = (cb) => onValue(dbRef, (snap) => cb(snap.val()));
+
+      // ── Auth (single-user login) ──────────────────────────
+      window._fbAuth = {
+        login: (email, password, remember) =>
+          setPersistence(
+            auth,
+            remember ? browserLocalPersistence : browserSessionPersistence
+          ).then(() => signInWithEmailAndPassword(auth, email, password)),
+        logout: () => signOut(auth),
+        onChange: (cb) => onAuthStateChanged(auth, cb),
+      };
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="data.31d9c4.js"></script>
+    <script src="app.e47a92.js"></script>
+
+    <!-- Unregister any previously installed service worker / clear old PWA caches -->
     <script>
-      (function () {
-        function Accordion(el) {
-          this.el = el;
-          this.summary = el.querySelector('summary');
-          this.content = el.querySelector('.faq-answer');
-          this.animation = null;
-          this.isClosing = false;
-          this.isExpanding = false;
-          this.summary.addEventListener('click', this.onClick.bind(this));
-        }
-
-        Accordion.prototype.onClick = function (e) {
-          e.preventDefault();
-          this.el.style.overflow = 'hidden';
-          if (this.isClosing || !this.el.open) {
-            this.open();
-          } else if (this.isExpanding || this.el.open) {
-            this.shrink();
-          }
-        };
-
-        Accordion.prototype.shrink = function () {
-          this.isClosing = true;
-          var startHeight = this.el.offsetHeight + 'px';
-          var endHeight = this.summary.offsetHeight + 'px';
-          if (this.animation) this.animation.cancel();
-          this.animation = this.el.animate(
-            { height: [startHeight, endHeight] },
-            { duration: 350, easing: 'ease-out' }
-          );
-          this.animation.onfinish = this.onAnimationFinish.bind(this, false);
-          this.animation.oncancel = function () { this.isClosing = false; }.bind(this);
-        };
-
-        Accordion.prototype.open = function () {
-          this.el.style.height = this.el.offsetHeight + 'px';
-          this.el.open = true;
-          window.requestAnimationFrame(this.expand.bind(this));
-        };
-
-        Accordion.prototype.expand = function () {
-          this.isExpanding = true;
-          var startHeight = this.el.offsetHeight + 'px';
-          var endHeight = this.summary.offsetHeight + this.content.offsetHeight + 'px';
-          if (this.animation) this.animation.cancel();
-          this.animation = this.el.animate(
-            { height: [startHeight, endHeight] },
-            { duration: 350, easing: 'ease-out' }
-          );
-          this.animation.onfinish = this.onAnimationFinish.bind(this, true);
-          this.animation.oncancel = function () { this.isExpanding = false; }.bind(this);
-        };
-
-        Accordion.prototype.onAnimationFinish = function (open) {
-          this.el.open = open;
-          this.animation = null;
-          this.isClosing = false;
-          this.isExpanding = false;
-          this.el.style.height = '';
-          this.el.style.overflow = '';
-        };
-
-        document.querySelectorAll('#faq details').forEach(function (el) {
-          new Accordion(el);
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((reg) => reg.unregister());
         });
-      })();
+      }
+      if (window.caches) {
+        caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+      }
     </script>
   </body>
 </html>
