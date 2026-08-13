@@ -296,6 +296,16 @@ details {
   padding: 0 4px 10px 4px;
 }
 
+#faq .faq-answer a:not([class]) {
+  color: #990000;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+#faq .faq-answer a:not([class]):hover {
+  color: #660000;
+}
+
 #faq hr {
   height: 1px;
   border: none;
@@ -482,6 +492,7 @@ details {
 table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 th,
@@ -491,6 +502,8 @@ td {
   border: 1.5px solid #000000;
   text-align: left;
   font-size: 18px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 tr {
@@ -1554,6 +1567,10 @@ hr {
   color: #ffd919;
 }
 
+[data-theme="dark"] #faq .faq-answer a:not([class]):hover {
+  color: #ffd919;
+}
+
 /* ---------- Buttons (dark mode) ---------- */
 /* Menu toggle + collapsed nav pills: only the background is adapted for
    dark mode (border stays the original white from the base rule) */
@@ -1997,6 +2014,12 @@ hr {
   .assistant-panel {
     right: 12px;
     width: calc(100vw - 24px);
+  }
+
+  th,
+  td {
+    font-size: 13px;
+    padding: 6px 4px;
   }
 }
 
