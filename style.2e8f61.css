@@ -1231,6 +1231,12 @@ footer a,
   z-index: 10;
 }
 
+.icon-close {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
 .modal-close:hover {
   background-color: #ff0000;
 }
@@ -1298,6 +1304,11 @@ hr {
   font-size: 20px;
   line-height: 1;
   z-index: 10;
+}
+
+.lightbox-close .icon-close {
+  width: 16px;
+  height: 16px;
 }
 
 .lightbox-close:hover {
