@@ -963,7 +963,7 @@ if (slideshow) {
               '<div id="' + modalId + '" class="modal-overlay">' +
               '<div class="modal-box">' +
               '<div class="modal-header">' +
-              '<button class="modal-close" onclick="closeModal(\'' + modalId + '\')">×</button>' +
+              '<button class="modal-close" onclick="closeModal(\'' + modalId + '\')" aria-label="Close" title="Close"><svg class="icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>' +
               "<h2>" + (p.title || "") + "</h2>" +
               "<small>" + (p.date || "") + "</small>" +
               "</div>" +
