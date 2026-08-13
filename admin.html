@@ -707,13 +707,15 @@
         <input type="date" id="attendanceToInput">
         <button id="attendanceLoadRangeBtn" type="button">Load Records</button>
         <p id="attendanceRangeStatus" class="msg"></p>
-        <button id="attendanceSelectModeBtn" type="button" class="small-btn">Select</button>
-        <button id="attendanceSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
-        <span id="attendanceSelectedCount" class="selected-count"></span>
-        <ul id="attendanceRangeList" class="scroll-box"></ul>
-        <div style="display:flex; gap:8px; margin-top:18px;">
-          <button id="attendanceDeleteSelectedBtn" type="button" style="display:none; background:#c0392b; margin:0;">Delete Selected</button>
-          <button id="attendanceExportPdfBtn" type="button" style="margin:0;">Export PDF</button>
+        <div id="attendanceRangeResults" style="display:none;">
+          <button id="attendanceSelectModeBtn" type="button" class="small-btn">Select</button>
+          <button id="attendanceSelectAllBtn" type="button" class="small-btn" style="display:none;">Select All</button>
+          <span id="attendanceSelectedCount" class="selected-count"></span>
+          <ul id="attendanceRangeList" class="scroll-box"></ul>
+          <div style="display:flex; gap:8px; margin-top:18px;">
+            <button id="attendanceDeleteSelectedBtn" type="button" style="display:none; background:#c0392b; margin:0;">Delete Selected</button>
+            <button id="attendanceExportPdfBtn" type="button" style="margin:0;">Export PDF</button>
+          </div>
         </div>
       </div>
 
