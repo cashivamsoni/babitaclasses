@@ -26,6 +26,13 @@
   box-sizing: border-box;
 }
 
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -1567,6 +1574,10 @@ hr {
   color: #ffd919;
 }
 
+[data-theme="dark"] #faq .faq-answer a:not([class]) {
+  color: #ffffff;
+}
+
 [data-theme="dark"] #faq .faq-answer a:not([class]):hover {
   color: #ffd919;
 }
@@ -2014,12 +2025,6 @@ hr {
   .assistant-panel {
     right: 12px;
     width: calc(100vw - 24px);
-  }
-
-  th,
-  td {
-    font-size: 13px;
-    padding: 6px 4px;
   }
 }
 
