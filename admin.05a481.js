@@ -473,6 +473,132 @@ function showUndoToast(message, undoFn) {
   }, 6000);
 }
 
+// ---------- Modal (replaces prompt()/confirm() with a consistently styled dialog) ----------
+const modalOverlay = document.getElementById("modalOverlay");
+const modalTitleEl = document.getElementById("modalTitle");
+const modalBodyEl = document.getElementById("modalBody");
+const modalConfirmBtn = document.getElementById("modalConfirmBtn");
+const modalCancelBtn = document.getElementById("modalCancelBtn");
+
+// Low-level modal opener. Resolves with:
+//  - an object keyed by each field's `name` (when `fields` is given), or null if cancelled
+//  - a boolean (when `fields` is omitted — plain confirm dialog)
+function openModal({ title, message = null, fields = null, confirmText = "OK", cancelText = "Cancel", danger = false }) {
+  return new Promise((resolve) => {
+    modalTitleEl.textContent = title || "";
+    modalBodyEl.innerHTML = "";
+    modalConfirmBtn.textContent = confirmText;
+    modalCancelBtn.textContent = cancelText;
+    modalConfirmBtn.classList.toggle("danger", !!danger);
+
+    if (message) {
+      const p = document.createElement("p");
+      p.className = "modal-message";
+      p.textContent = message;
+      modalBodyEl.appendChild(p);
+    }
+
+    const inputs = [];
+    if (fields) {
+      fields.forEach((f, i) => {
+        const label = document.createElement("label");
+        label.textContent = f.label;
+        label.setAttribute("for", "modalField" + i);
+        modalBodyEl.appendChild(label);
+        const input = document.createElement("input");
+        input.type = f.type || "text";
+        input.id = "modalField" + i;
+        input.value = f.value ?? "";
+        if (f.placeholder) input.placeholder = f.placeholder;
+        modalBodyEl.appendChild(input);
+        inputs.push(input);
+      });
+    }
+
+    function finish(result) {
+      modalOverlay.classList.remove("show");
+      document.documentElement.classList.remove("modal-open");
+      document.body.classList.remove("modal-open");
+      modalOverlay.removeEventListener("mousedown", onOverlayMouseDown);
+      modalConfirmBtn.removeEventListener("click", onConfirm);
+      modalCancelBtn.removeEventListener("click", onCancel);
+      document.removeEventListener("keydown", onKeydown);
+      resolve(result);
+    }
+
+    function onConfirm() {
+      if (fields) {
+        const values = {};
+        fields.forEach((f, i) => { values[f.name] = inputs[i].value; });
+        finish(values);
+      } else {
+        finish(true);
+      }
+    }
+    function onCancel() {
+      finish(fields ? null : false);
+    }
+    function onOverlayMouseDown(e) {
+      if (e.target === modalOverlay) onCancel();
+    }
+    function onKeydown(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+      } else if (e.key === "Enter" && document.activeElement && document.activeElement.tagName === "INPUT") {
+        e.preventDefault();
+        onConfirm();
+      }
+    }
+
+    modalConfirmBtn.addEventListener("click", onConfirm);
+    modalCancelBtn.addEventListener("click", onCancel);
+    modalOverlay.addEventListener("mousedown", onOverlayMouseDown);
+    document.addEventListener("keydown", onKeydown);
+
+    modalOverlay.classList.add("show");
+    document.documentElement.classList.add("modal-open");
+    document.body.classList.add("modal-open");
+    requestAnimationFrame(() => {
+      if (inputs[0]) {
+        inputs[0].focus();
+        inputs[0].select();
+      } else {
+        modalConfirmBtn.focus();
+      }
+    });
+  });
+}
+
+// Drop-in replacement for confirm(message) — resolves true/false.
+function modalConfirm(message, opts = {}) {
+  return openModal({
+    title: message,
+    confirmText: opts.confirmText || "Delete",
+    cancelText: opts.cancelText || "Cancel",
+    danger: opts.danger !== false,
+  });
+}
+
+// Drop-in replacement for prompt(label, defaultValue) as well as a multi-field
+// version. Pass a single field descriptor for one input (resolves to the string
+// value, or null if cancelled — matching prompt()'s contract), or an array of
+// field descriptors for several inputs at once (resolves to a values object, or
+// null if cancelled).
+function modalPrompt(title, fieldOrFields, opts = {}) {
+  const isMulti = Array.isArray(fieldOrFields);
+  const fields = isMulti ? fieldOrFields : [{ name: "value", ...fieldOrFields }];
+  return openModal({
+    title,
+    fields,
+    confirmText: opts.confirmText || "Save",
+    cancelText: opts.cancelText || "Cancel",
+  }).then((result) => {
+    if (result === null) return null;
+    return isMulti ? result : result.value;
+  });
+}
+
 // ---------- Shared drag-handle / move-buttons row reordering (desktop drag, mobile ▲▼) ----------
 function createRowDragHandle() {
   const handle = document.createElement("span");
@@ -615,7 +741,7 @@ async function renderNotices() {
       editBtn.textContent = "Edit";
       editBtn.addEventListener("click", async () => {
         const previousText = data.text || "";
-        const updated = prompt("Edit notice:", previousText);
+        const updated = await modalPrompt("Edit Notice", { label: "Notice text", value: previousText });
         if (updated === null) return;
         const trimmed = updated.trim();
         if (!trimmed) return;
@@ -639,7 +765,7 @@ async function renderNotices() {
       deleteBtn.className = "delete-btn";
       deleteBtn.textContent = "Delete";
       deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete this notice?")) return;
+        if (!(await modalConfirm("Delete this notice?"))) return;
         try {
           await deleteDoc(doc(db, "notices", id));
           await renderNotices();
@@ -706,7 +832,7 @@ setupSelectAll(noticeList, noticeSelectAllBtn, noticeSelectModeBtn);
 noticeDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = noticeList.querySelectorAll('input[type="checkbox"]:checked');
   if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected notice(s)?")) return;
+  if (!(await modalConfirm("Delete " + checked.length + " selected notice(s)?"))) return;
 
   noticeDeleteSelectedBtn.disabled = true;
   noticeStatus.textContent = "Deleting...";
@@ -966,10 +1092,10 @@ gallerySelectModeBtn.addEventListener("click", () => {
 });
 setupSelectAll(galleryRowsContainer, gallerySelectAllBtn, gallerySelectModeBtn);
 
-galleryDeleteSelectedBtn.addEventListener("click", () => {
+galleryDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = galleryRowsContainer.querySelectorAll('input[type="checkbox"]:checked');
   if (!checked.length) return;
-  if (!confirm("Delete " + checked.length + " selected photo(s)?")) return;
+  if (!(await modalConfirm("Delete " + checked.length + " selected photo(s)?"))) return;
   const removed = [...checked].map((cb) => {
     const li = cb.closest("li");
     return { li, nextSibling: li.nextSibling, parent: li.parentNode };
@@ -1096,12 +1222,13 @@ async function renderVideos() {
       editBtn.addEventListener("click", async () => {
         const previousTitle = data.title || "";
         const previousUrl = data.url || "";
-        const updatedTitle = prompt("Edit title:", previousTitle);
-        if (updatedTitle === null) return;
-        const updatedUrl = prompt("Edit URL:", previousUrl);
-        if (updatedUrl === null) return;
-        const title = updatedTitle.trim();
-        const url = updatedUrl.trim();
+        const updated = await modalPrompt("Edit Video", [
+          { name: "title", label: "Title", value: previousTitle },
+          { name: "url", label: "Video/Post URL", value: previousUrl },
+        ]);
+        if (updated === null) return;
+        const title = updated.title.trim();
+        const url = updated.url.trim();
         if (!title || !url) return;
         try {
           await updateDoc(doc(db, "videos", id), { title, url });
@@ -1123,7 +1250,7 @@ async function renderVideos() {
       deleteBtn.className = "delete-btn";
       deleteBtn.textContent = "Delete";
       deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete this video?")) return;
+        if (!(await modalConfirm("Delete this video?"))) return;
         try {
           await deleteDoc(doc(db, "videos", id));
           await renderVideos();
@@ -1152,7 +1279,7 @@ async function renderVideos() {
 videoDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = videoAdminList.querySelectorAll('input[type="checkbox"]:checked');
   if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected video(s)?")) return;
+  if (!(await modalConfirm("Delete " + checked.length + " selected video(s)?"))) return;
 
   videoDeleteSelectedBtn.disabled = true;
   videoStatus.textContent = "Deleting...";
@@ -1370,20 +1497,19 @@ async function editSyllabusRow(index) {
   const row = session.rows[index];
   const previousRow = { ...row };
 
-  const exam = prompt("Exam name:", row.exam);
-  if (exam === null) return;
-  const syllabus = prompt("Syllabus (paste a link, or type text/NA):", row.syllabus);
-  if (syllabus === null) return;
-  const datesheet = prompt("Datesheet (paste a link, or type text/date):", row.datesheet);
-  if (datesheet === null) return;
-  const result = prompt("Result (paste a link, or type text/NA):", row.result);
-  if (result === null) return;
+  const updated = await modalPrompt("Edit Row", [
+    { name: "exam", label: "Exam name", value: row.exam },
+    { name: "syllabus", label: "Syllabus (paste a link, or type text/NA)", value: row.syllabus },
+    { name: "datesheet", label: "Datesheet (paste a link, or type text/date)", value: row.datesheet },
+    { name: "result", label: "Result (paste a link, or type text/NA)", value: row.result },
+  ]);
+  if (updated === null) return;
 
   session.rows[index] = {
-    exam: exam.trim(),
-    syllabus: syllabus.trim(),
-    datesheet: datesheet.trim(),
-    result: result.trim(),
+    exam: updated.exam.trim(),
+    syllabus: updated.syllabus.trim(),
+    datesheet: updated.datesheet.trim(),
+    result: updated.result.trim(),
   };
   syllabusStatus.textContent = "Saving...";
   syllabusStatus.className = "msg";
@@ -1406,7 +1532,7 @@ async function editSyllabusRow(index) {
 }
 
 async function deleteSyllabusRow(index) {
-  if (!confirm("Delete this row?")) return;
+  if (!(await modalConfirm("Delete this row?"))) return;
   const session = getSelectedSession();
   const removedRow = session.rows[index];
   session.rows.splice(index, 1);
@@ -1433,11 +1559,17 @@ async function deleteSyllabusRow(index) {
 syllabusAddRowBtn.addEventListener("click", async () => {
   const session = getSelectedSession();
   if (!session) return;
-  const exam = prompt("Exam name:", "");
-  if (exam === null || !exam.trim()) return;
-  const syllabus = prompt("Syllabus (paste a link, or type text/NA):", "NA") || "NA";
-  const datesheet = prompt("Datesheet (paste a link, or type text/date):", "NA") || "NA";
-  const result = prompt("Result (paste a link, or type text/NA):", "NA") || "NA";
+  const added = await modalPrompt("Add Row", [
+    { name: "exam", label: "Exam name", value: "" },
+    { name: "syllabus", label: "Syllabus (paste a link, or type text/NA)", value: "NA" },
+    { name: "datesheet", label: "Datesheet (paste a link, or type text/date)", value: "NA" },
+    { name: "result", label: "Result (paste a link, or type text/NA)", value: "NA" },
+  ]);
+  if (added === null || !added.exam.trim()) return;
+  const exam = added.exam;
+  const syllabus = added.syllabus.trim() ? added.syllabus : "NA";
+  const datesheet = added.datesheet.trim() ? added.datesheet : "NA";
+  const result = added.result.trim() ? added.result : "NA";
 
   session.rows.push({
     exam: exam.trim(),
@@ -1471,7 +1603,7 @@ syllabusSessionSelect.addEventListener("change", () => {
 });
 
 syllabusNewSessionBtn.addEventListener("click", async () => {
-  const label = prompt("New session label (e.g. 2026-27):", "");
+  const label = await modalPrompt("New Syllabus Session", { label: "Session label (e.g. 2026-27)", value: "" });
   if (!label || !label.trim()) return;
   const trimmed = label.trim();
   if (syllabusSessionsCache.some((s) => s.id === trimmed)) {
@@ -1518,7 +1650,7 @@ syllabusNewSessionBtn.addEventListener("click", async () => {
 syllabusDeleteSessionBtn.addEventListener("click", async () => {
   const session = getSelectedSession();
   if (!session) return;
-  if (!confirm('Delete session "' + session.id + '"? This removes it from the live site.')) return;
+  if (!(await modalConfirm('Delete session "' + session.id + '"? This removes it from the live site.'))) return;
   const deletedSession = { id: session.id, order: session.order, rows: session.rows.slice() };
   syllabusStatus.textContent = "Deleting...";
   syllabusStatus.className = "msg";
@@ -1598,13 +1730,14 @@ async function renderStudents() {
       editBtn.addEventListener("click", async () => {
         const previousName = data.name || "";
         const previousRoll = data.rollNumber || "";
-        const updatedName = prompt("Student name:", previousName);
-        if (updatedName === null) return;
-        const updatedRoll = prompt("Roll number (optional):", previousRoll);
-        if (updatedRoll === null) return;
-        const name = updatedName.trim();
+        const updated = await modalPrompt("Edit Student", [
+          { name: "name", label: "Student name", value: previousName },
+          { name: "roll", label: "Roll number (optional)", value: previousRoll },
+        ]);
+        if (updated === null) return;
+        const name = updated.name.trim();
         if (!name) return;
-        const rollNumber = updatedRoll.trim();
+        const rollNumber = updated.roll.trim();
         try {
           await updateDoc(doc(db, "students", docSnap.id), { name, rollNumber });
           await renderStudents();
@@ -1628,7 +1761,7 @@ async function renderStudents() {
       deleteBtn.className = "delete-btn";
       deleteBtn.textContent = "Delete";
       deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete this student?")) return;
+        if (!(await modalConfirm("Delete this student?"))) return;
         const deletedId = docSnap.id;
         try {
           await deleteDoc(doc(db, "students", deletedId));
@@ -1674,7 +1807,7 @@ async function loadStudents() {
 studentDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = studentList.querySelectorAll('input[type="checkbox"]:checked');
   if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected student(s)?")) return;
+  if (!(await modalConfirm("Delete " + checked.length + " selected student(s)?"))) return;
 
   studentDeleteSelectedBtn.disabled = true;
   studentStatus.textContent = "Deleting...";
@@ -1872,7 +2005,7 @@ attendanceDateInput.addEventListener("change", () => {
 });
 
 attendanceMarkHolidayBtn.addEventListener("click", async () => {
-  const name = prompt("Holiday name:", "");
+  const name = await modalPrompt("Mark as Holiday", { label: "Holiday name", value: "" });
   if (!name || !name.trim()) return;
   const trimmed = name.trim();
   try {
@@ -2002,7 +2135,7 @@ async function renderAttendanceRange(fromDate, toDate) {
       deleteBtn.className = "delete-btn";
       deleteBtn.textContent = "Delete";
       deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete attendance for " + id + "?")) return;
+        if (!(await modalConfirm("Delete attendance for " + id + "?"))) return;
         try {
           await deleteDoc(doc(db, "attendance", id));
           await renderAttendanceRange(fromDate, toDate);
@@ -2046,7 +2179,7 @@ attendanceLoadRangeBtn.addEventListener("click", () => {
 attendanceDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = attendanceRangeList.querySelectorAll('input[type="checkbox"]:checked');
   if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected date(s) of attendance?")) return;
+  if (!(await modalConfirm("Delete " + checked.length + " selected date(s) of attendance?"))) return;
 
   const from = attendanceFromInput.value;
   const to = attendanceToInput.value;
@@ -2637,7 +2770,7 @@ async function renderBlogPosts() {
       deleteBtn.className = "delete-btn";
       deleteBtn.textContent = "Delete";
       deleteBtn.addEventListener("click", async () => {
-        if (!confirm('Delete "' + (data.title || "this post") + '"?')) return;
+        if (!(await modalConfirm('Delete "' + (data.title || "this post") + '"?'))) return;
         const deletedId = docSnap.id;
         try {
           await deleteDoc(doc(db, "blogPosts", deletedId));
@@ -2666,7 +2799,7 @@ async function renderBlogPosts() {
 blogDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = blogPostList.querySelectorAll('input[type="checkbox"]:checked');
   if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected post(s)?")) return;
+  if (!(await modalConfirm("Delete " + checked.length + " selected post(s)?"))) return;
 
   blogDeleteSelectedBtn.disabled = true;
   blogStatus.textContent = "Deleting...";
@@ -2873,12 +3006,13 @@ function renderResultStudents() {
     editBtn.textContent = "Edit";
     editBtn.addEventListener("click", async () => {
       const previous = { ...student };
-      const roll = prompt("Roll No.:", student.roll);
-      if (roll === null) return;
-      const name = prompt("Name:", student.name);
-      if (name === null) return;
-      const marks = prompt("Marks:", student.marks);
-      if (marks === null) return;
+      const updated = await modalPrompt("Edit Student Result", [
+        { name: "roll", label: "Roll No.", value: student.roll },
+        { name: "name", label: "Name", value: student.name },
+        { name: "marks", label: "Marks", value: student.marks },
+      ]);
+      if (updated === null) return;
+      const { roll, name, marks } = updated;
 
       const marksNum = parseFloat(marks);
       const maxMarksNum = parseFloat(term.maxMarks);
@@ -2917,7 +3051,7 @@ function renderResultStudents() {
     deleteBtn.className = "delete-btn";
     deleteBtn.textContent = "Delete";
     deleteBtn.addEventListener("click", async () => {
-      if (!confirm("Delete this student's result?")) return;
+      if (!(await modalConfirm("Delete this student's result?"))) return;
       const removed = term.students[index];
       term.students.splice(index, 1);
       recalculateRanks(term);
@@ -2957,7 +3091,7 @@ setupSelectAll(resultStudentList, resultSelectAllBtn, resultSelectModeBtn);
 resultDeleteSelectedBtn.addEventListener("click", async () => {
   const checked = resultStudentList.querySelectorAll('input[type="checkbox"]:checked');
   if (checked.length === 0) return;
-  if (!confirm("Delete " + checked.length + " selected student result(s)?")) return;
+  if (!(await modalConfirm("Delete " + checked.length + " selected student result(s)?"))) return;
 
   const term = getSelectedResultTerm();
   const indexes = Array.from(checked).map((cb) => parseInt(cb.dataset.index, 10)).sort((a, b) => b - a);
@@ -3144,10 +3278,13 @@ resultSaveDetailsBtn.addEventListener("click", async () => {
 });
 
 resultNewTermBtn.addEventListener("click", async () => {
-  const termName = prompt("Term name (e.g. Term - 2):", "");
-  if (!termName || !termName.trim()) return;
-  const session = prompt("Session (e.g. 2025-26):", "");
-  if (!session || !session.trim()) return;
+  const newTermInfo = await modalPrompt("New Term", [
+    { name: "termName", label: "Term name (e.g. Term - 2)", value: "" },
+    { name: "session", label: "Session (e.g. 2025-26)", value: "" },
+  ]);
+  if (!newTermInfo || !newTermInfo.termName.trim() || !newTermInfo.session.trim()) return;
+  const termName = newTermInfo.termName;
+  const session = newTermInfo.session;
 
   const slug = (termName.trim() + "-" + session.trim()).toLowerCase().replace(/[^a-z0-9]+/g, "-");
   if (resultTermsCache.some((t) => t.id === slug)) {
@@ -3203,7 +3340,7 @@ resultNewTermBtn.addEventListener("click", async () => {
 resultDeleteTermBtn.addEventListener("click", async () => {
   const term = getSelectedResultTerm();
   if (!term) return;
-  if (!confirm('Delete "' + term.term + " — " + term.session + '"? This removes it entirely, including from the archive.')) return;
+  if (!(await modalConfirm('Delete "' + term.term + " — " + term.session + '"? This removes it entirely, including from the archive.'))) return;
   const deletedTerm = { ...term, students: term.students.map((s) => ({ ...s })) };
 
   try {
