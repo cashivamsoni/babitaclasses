@@ -926,9 +926,15 @@ tr {
   color: #FFF;
   border: 2px solid #FFFFFF;
   border-radius: 50%;
-  padding: 2.5px 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-size: 20px;
+  line-height: 1;
 }
 
 #popupCloseUnique:hover {
