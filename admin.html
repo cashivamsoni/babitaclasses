@@ -436,6 +436,92 @@
         font-size: 13px;
         box-shadow: none;
       }
+
+      /* Modal (replaces prompt()/confirm()) */
+      html.modal-open, body.modal-open {
+        overflow: hidden;
+      }
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(43, 35, 32, 0.55);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 300;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease;
+      }
+      .modal-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .modal-box {
+        position: relative;
+        width: 100%;
+        max-width: 380px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        background: #fffefb;
+        border-radius: 18px;
+        padding: 28px 24px 22px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 4px 14px rgba(0, 0, 0, 0.2);
+        transform: translateY(10px) scale(0.98);
+        transition: transform 0.18s ease;
+      }
+      .modal-overlay.show .modal-box {
+        transform: translateY(0) scale(1);
+      }
+      .modal-box::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        border-radius: 18px 18px 0 0;
+        background: linear-gradient(90deg, #ffcb3d, #990000 45%, #800000 100%);
+      }
+      .modal-title {
+        font-size: 17px;
+        font-weight: 800;
+        margin: 6px 0 2px;
+        color: #800000;
+        letter-spacing: -0.01em;
+      }
+      .modal-body label {
+        margin: 12px 0 5px;
+      }
+      .modal-body label:first-child {
+        margin-top: 6px;
+      }
+      .modal-message {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #4a4038;
+        margin: 6px 0 0;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 22px;
+      }
+      .modal-actions button {
+        width: auto;
+        flex: 1;
+        margin: 0;
+      }
+      .modal-btn-secondary {
+        background: #ece4d4 !important;
+        color: #6b5f52 !important;
+        box-shadow: none !important;
+      }
+      #modalConfirmBtn.danger {
+        background: linear-gradient(135deg, #c0392b, #922015) !important;
+        box-shadow: 0 3px 10px rgba(192, 57, 43, 0.3) !important;
+      }
     </style>
   </head>
   <body>
@@ -443,6 +529,17 @@
     <div id="undoToast">
       <span id="undoToastMsg"></span>
       <button id="undoToastBtn" type="button">Undo</button>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay">
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h2 id="modalTitle" class="modal-title"></h2>
+        <div id="modalBody" class="modal-body"></div>
+        <div class="modal-actions">
+          <button id="modalCancelBtn" type="button" class="modal-btn-secondary">Cancel</button>
+          <button id="modalConfirmBtn" type="button">OK</button>
+        </div>
+      </div>
     </div>
 
     <div id="loginView" class="card">
