@@ -1710,6 +1710,7 @@ async function renderStudents() {
     const snap = await getDocs(q);
     snap.forEach((docSnap) => {
       const data = docSnap.data();
+      if (data.deletedDate) return; // soft-deleted — kept for history, hidden from management
       const li = document.createElement("li");
 
       const checkbox = document.createElement("input");
@@ -1765,10 +1766,14 @@ async function renderStudents() {
         if (!(await modalConfirm("Delete this student?"))) return;
         const deletedId = docSnap.id;
         try {
-          await deleteDoc(doc(db, "students", deletedId));
+          // Soft delete: keep the student doc (with a deletedDate) so past
+          // attendance/PDF history stays intact, but stop them appearing in
+          // the Students list or in attendance marking from here on.
+          const deletedDate = todayISO();
+          await updateDoc(doc(db, "students", deletedId), { deletedDate });
           await renderStudents();
           showUndoToast("Student deleted.", async () => {
-            await setDoc(doc(db, "students", deletedId), data);
+            await updateDoc(doc(db, "students", deletedId), { deletedDate: deleteField() });
             await renderStudents();
           });
         } catch (err) {
@@ -1815,16 +1820,19 @@ studentDeleteSelectedBtn.addEventListener("click", async () => {
   studentStatus.className = "msg";
   try {
     const deleted = [];
+    const deletedDate = todayISO();
     for (const cb of checked) {
       deleted.push({ id: cb.dataset.id, data: cb._studentData });
-      await deleteDoc(doc(db, "students", cb.dataset.id));
+      // Soft delete: keep the doc (with deletedDate) so past attendance/PDF
+      // history stays intact; they just drop out of active lists from here.
+      await updateDoc(doc(db, "students", cb.dataset.id), { deletedDate });
     }
     studentStatus.textContent = "Selected students deleted.";
     studentStatus.className = "msg success";
     await renderStudents();
     showUndoToast(deleted.length + " student(s) deleted.", async () => {
       for (const item of deleted) {
-        await setDoc(doc(db, "students", item.id), item.data);
+        await updateDoc(doc(db, "students", item.id), { deletedDate: deleteField() });
       }
       await renderStudents();
     });
@@ -1849,23 +1857,18 @@ studentAddBtn.addEventListener("click", async () => {
   studentStatus.textContent = "Adding...";
   studentStatus.className = "msg";
   try {
-    const newDoc = await addDoc(STUDENTS_COL, { name, rollNumber, createdAt: serverTimestamp() });
+    // joinedDate marks the first day this student is counted for attendance.
+    // No retroactive records are written for dates before this — earlier
+    // attendance simply never included them.
+    const joinedDate = todayISO();
+    const newDoc = await addDoc(STUDENTS_COL, {
+      name,
+      rollNumber,
+      joinedDate,
+      createdAt: serverTimestamp(),
+    });
     studentNameInput.value = "";
     studentRollInput.value = "";
-
-    // Backfill "Absent" into every existing attendance date, so this student's
-    // history shows Absent rather than a blank for days before they joined.
-    const attendanceSnap = await getDocs(collection(db, "attendance"));
-    const backfillPromises = [];
-    attendanceSnap.forEach((d) => {
-      const data = d.data();
-      if (!data.holiday) {
-        backfillPromises.push(
-          setDoc(doc(db, "attendance", d.id), { records: { [newDoc.id]: "absent" } }, { merge: true })
-        );
-      }
-    });
-    await Promise.all(backfillPromises);
 
     studentStatus.textContent = "Student added.";
     studentStatus.className = "msg success";
@@ -1897,6 +1900,16 @@ const ATTENDANCE_COL = collection(db, "attendance");
 let currentAttendanceDate = null;
 let currentAttendanceDoc = { holiday: null, records: {} };
 let studentsCache = [];
+
+// A student counts for a given date only from their joinedDate onward, and
+// only up to (and including) their deletedDate if they've since been removed.
+// Missing joinedDate/deletedDate = always active (covers students created
+// before this system existed).
+function isStudentActiveOnDate(student, dateStr) {
+  if (student.joinedDate && dateStr < student.joinedDate) return false;
+  if (student.deletedDate && dateStr > student.deletedDate) return false;
+  return true;
+}
 
 async function loadAttendanceForDate(dateStr) {
   currentAttendanceDate = dateStr;
@@ -1935,7 +1948,9 @@ function renderAttendanceView() {
 
 function renderAttendanceStudentList() {
   attendanceStudentList.innerHTML = "";
-  studentsCache.forEach((student) => {
+  studentsCache
+    .filter((student) => isStudentActiveOnDate(student, currentAttendanceDate))
+    .forEach((student) => {
     const li = document.createElement("li");
 
     const span = document.createElement("span");
@@ -2330,8 +2345,35 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
       cursorY = titleTop + 34 + 26;
     }
 
+    // A student's cell for a given date is:
+    //  - "blank" ('_') if the date falls before they joined, or after they
+    //    were deleted — a transition period within a table that also covers
+    //    dates where they were active.
+    //  - their actual present/absent status otherwise.
+    function studentDateStatus(student, dateId, dayData) {
+      if (student.joinedDate && dateId < student.joinedDate) return "blank";
+      if (student.deletedDate && dateId > student.deletedDate) return "blank";
+      return (dayData.records || {})[student.id] || "absent";
+    }
+
+    // A student's row is only drawn in a table (weekly row) if at least one
+    // date in that table falls within their active span — so they simply
+    // don't appear in tables entirely before they joined or entirely after
+    // they were deleted.
+    function studentsForGroup(allStudents, groupDates) {
+      const groupMin = groupDates[0].id;
+      const groupMax = groupDates[groupDates.length - 1].id;
+      return allStudents.filter((s) => {
+        if (s.joinedDate && groupMax < s.joinedDate) return false;
+        if (s.deletedDate && groupMin > s.deletedDate) return false;
+        return true;
+      });
+    }
+
     dateGroups.forEach((groupDates) => {
       const dateColW = Math.max(minDateColW, (tableWidth - rollColW - nameColW) / groupDates.length);
+      const groupStudents = studentsForGroup(students, groupDates);
+      if (groupStudents.length === 0) return;
 
       // Not enough room for a header + at least one row? start a new page for this group's table
       if (cursorY + rowH * 2 > pageHeight - pageMargin - 10) {
@@ -2339,11 +2381,11 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
       }
 
       let idx = 0;
-      while (idx < students.length) {
+      while (idx < groupStudents.length) {
         // how many student rows fit below the header starting at cursorY
         let y = cursorY + rowH;
         let rowsThatFit = 0;
-        while (idx + rowsThatFit < students.length && y + rowH <= pageHeight - pageMargin - 10) {
+        while (idx + rowsThatFit < groupStudents.length && y + rowH <= pageHeight - pageMargin - 10) {
           y += rowH;
           rowsThatFit++;
         }
@@ -2361,7 +2403,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
         pdf.setFont("times", "normal");
         pdf.setFontSize(9);
         for (let i = idx; i < chunkEnd; i++) {
-          const student = students[i];
+          const student = groupStudents[i];
           const rowY = bodyTop + (i - idx) * rowH;
           let x = margin;
           pdf.rect(x, rowY, rollColW, rowH);
@@ -2372,13 +2414,14 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           pdf.text(nameLines[0] || "", x + 4, rowY + rowH / 2 + 3);
           x += nameColW;
 
-          groupDates.forEach(({ data }) => {
+          groupDates.forEach(({ id, data }) => {
             if (!data.holiday) {
               pdf.rect(x, rowY, dateColW, rowH);
-              const status = (data.records || {})[student.id] || "absent";
-              const cellText = status === "present" ? "Present" : "Absent";
+              const status = studentDateStatus(student, id, data);
+              const cellText = status === "present" ? "Present" : status === "absent" ? "Absent" : "_";
               if (status === "present") pdf.setTextColor(30, 140, 40);
-              else pdf.setTextColor(192, 57, 43);
+              else if (status === "absent") pdf.setTextColor(192, 57, 43);
+              else pdf.setTextColor(110, 110, 110);
               pdf.text(cellText, x + dateColW / 2, rowY + rowH / 2 + 3, { align: "center" });
               pdf.setTextColor(0, 0, 0);
             }
@@ -2413,7 +2456,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
         idx = chunkEnd;
         cursorY = bodyBottom;
 
-        if (idx < students.length) {
+        if (idx < groupStudents.length) {
           newPage();
         }
       }
