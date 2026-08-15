@@ -1684,6 +1684,76 @@ syllabusDeleteSessionBtn.addEventListener("click", async () => {
 // ---------- Students (add / edit / delete) ----------
 const STUDENTS_COL = collection(db, "students");
 
+// Roll numbers: `rollNumber` is whatever the admin typed (may be empty).
+// `autoRollNumber` is system-assigned and kept in sync by recomputeAutoRollNumbers()
+// for every active student who hasn't been given one manually. The admin's
+// number always wins when present; auto numbers just fill the gaps in A–Z
+// order and quietly shift out of the way if a manual number is later typed
+// into one of their slots.
+function effectiveRollNumber(student) {
+  const manual = (student.rollNumber || "").trim();
+  return manual || student.autoRollNumber || "";
+}
+
+function normalizeRollNumber(value) {
+  const n = parseInt(value, 10);
+  return isNaN(n) ? null : n;
+}
+
+// True if `rollNumber` (as a number) is already taken by another active
+// student's *manually* assigned roll number. Auto numbers don't block —
+// they yield instead (handled in recomputeAutoRollNumbers).
+async function isManualRollNumberTaken(rollNumber, excludeId) {
+  const n = normalizeRollNumber(rollNumber);
+  if (n === null) return false;
+  const snap = await getDocs(STUDENTS_COL);
+  let taken = false;
+  snap.forEach((d) => {
+    if (d.id === excludeId) return;
+    const data = d.data();
+    if (data.deletedDate) return;
+    if (normalizeRollNumber(data.rollNumber) === n) taken = true;
+  });
+  return taken;
+}
+
+// Re-derives autoRollNumber for every active student without a manual
+// rollNumber: sorted A–Z, filled into the lowest numbers not already taken
+// by a manual assignment. Run after any add/delete/roll-number edit so the
+// sequence stays gap-free and PDF exports stay consistent.
+async function recomputeAutoRollNumbers() {
+  const snap = await getDocs(STUDENTS_COL);
+  const active = [];
+  snap.forEach((d) => {
+    const data = d.data();
+    if (!data.deletedDate) active.push({ id: d.id, ...data });
+  });
+
+  const usedNumbers = new Set();
+  active.forEach((s) => {
+    const n = normalizeRollNumber(s.rollNumber);
+    if (n !== null) usedNumbers.add(n);
+  });
+
+  const needsAuto = active
+    .filter((s) => !(s.rollNumber || "").trim())
+    .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+  let next = 1;
+  const updates = [];
+  needsAuto.forEach((s) => {
+    while (usedNumbers.has(next)) next++;
+    const assigned = String(next).padStart(2, "0");
+    if (s.autoRollNumber !== assigned) {
+      updates.push(updateDoc(doc(db, "students", s.id), { autoRollNumber: assigned }));
+    }
+    usedNumbers.add(next);
+    next++;
+  });
+
+  await Promise.all(updates);
+}
+
 function updateStudentDeleteSelectedVisibility() {
   const checked = studentList.querySelectorAll('input[type="checkbox"]:checked');
   studentDeleteSelectedBtn.style.display = checked.length ? "block" : "none";
@@ -1706,6 +1776,7 @@ async function renderStudents() {
   studentList.innerHTML = "";
   studentDeleteSelectedBtn.style.display = "none";
   try {
+    await recomputeAutoRollNumbers();
     const q = query(STUDENTS_COL, orderBy("name", "asc"));
     const snap = await getDocs(q);
     snap.forEach((docSnap) => {
@@ -1721,8 +1792,10 @@ async function renderStudents() {
       li.appendChild(checkbox);
       makeRowTapSelectable(li, checkbox, studentList);
 
+      const roll = effectiveRollNumber(data);
       const span = document.createElement("span");
-      span.textContent = data.name + (data.rollNumber ? " (Roll " + data.rollNumber + ")" : "");
+      span.textContent =
+        data.name + (roll ? " (Roll " + roll + (data.rollNumber ? "" : ", auto") + ")" : "");
       li.appendChild(span);
 
       const editBtn = document.createElement("button");
@@ -1734,12 +1807,21 @@ async function renderStudents() {
         const previousRoll = data.rollNumber || "";
         const updated = await modalPrompt("Edit Student", [
           { name: "name", label: "Student name", value: previousName },
-          { name: "roll", label: "Roll number (optional)", value: previousRoll },
+          {
+            name: "roll",
+            label: "Roll number (optional — leave blank for automatic A–Z numbering)",
+            value: previousRoll,
+          },
         ]);
         if (updated === null) return;
         const name = updated.name.trim();
         if (!name) return;
         const rollNumber = updated.roll.trim();
+        if (rollNumber && (await isManualRollNumberTaken(rollNumber, docSnap.id))) {
+          studentStatus.textContent = "Roll number " + rollNumber + " is already assigned to another student.";
+          studentStatus.className = "msg error";
+          return;
+        }
         try {
           await updateDoc(doc(db, "students", docSnap.id), { name, rollNumber });
           await renderStudents();
@@ -1853,6 +1935,11 @@ studentAddBtn.addEventListener("click", async () => {
     studentStatus.className = "msg error";
     return;
   }
+  if (rollNumber && (await isManualRollNumberTaken(rollNumber, null))) {
+    studentStatus.textContent = "Roll number " + rollNumber + " is already assigned to another student.";
+    studentStatus.className = "msg error";
+    return;
+  }
   studentAddBtn.disabled = true;
   studentStatus.textContent = "Adding...";
   studentStatus.className = "msg";
@@ -1953,8 +2040,9 @@ function renderAttendanceStudentList() {
     .forEach((student) => {
     const li = document.createElement("li");
 
+    const roll = effectiveRollNumber(student);
     const span = document.createElement("span");
-    span.textContent = student.name + (student.rollNumber ? " (Roll " + student.rollNumber + ")" : "");
+    span.textContent = student.name + (roll ? " (Roll " + roll + ")" : "");
     li.appendChild(span);
 
     const status = currentAttendanceDoc.records[student.id] || "absent";
@@ -2255,12 +2343,13 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
       .map((cb) => ({ id: cb.dataset.id, data: cb._attendanceData }))
       .sort((a, b) => a.id.localeCompare(b.id));
 
+    await recomputeAutoRollNumbers();
     const studentsSnap = await getDocs(query(STUDENTS_COL, orderBy("name", "asc")));
     const students = [];
     studentsSnap.forEach((d) => students.push({ id: d.id, ...d.data() }));
     students.sort((a, b) => {
-      const rollA = parseInt(a.rollNumber, 10);
-      const rollB = parseInt(b.rollNumber, 10);
+      const rollA = parseInt(effectiveRollNumber(a), 10);
+      const rollB = parseInt(effectiveRollNumber(b), 10);
       if (!isNaN(rollA) && !isNaN(rollB)) return rollA - rollB;
       if (!isNaN(rollA)) return -1;
       if (!isNaN(rollB)) return 1;
@@ -2408,7 +2497,7 @@ attendanceExportPdfBtn.addEventListener("click", async () => {
           const rowY = bodyTop + (i - idx) * rowH;
           let x = margin;
           pdf.rect(x, rowY, rollColW, rowH);
-          pdf.text(student.rollNumber || "-", x + rollColW / 2, rowY + rowH / 2 + 3, { align: "center" });
+          pdf.text(effectiveRollNumber(student) || "-", x + rollColW / 2, rowY + rowH / 2 + 3, { align: "center" });
           x += rollColW;
           pdf.rect(x, rowY, nameColW, rowH);
           const nameLines = pdf.splitTextToSize(student.name || "", nameColW - 6);
