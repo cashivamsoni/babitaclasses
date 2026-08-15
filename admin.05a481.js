@@ -1717,10 +1717,14 @@ async function isManualRollNumberTaken(rollNumber, excludeId) {
   return taken;
 }
 
-// Re-derives autoRollNumber for every active student without a manual
-// rollNumber: sorted A–Z, filled into the lowest numbers not already taken
-// by a manual assignment. Run after any add/delete/roll-number edit so the
-// sequence stays gap-free and PDF exports stay consistent.
+// Gives an auto number to any active student who has never had one — sorted
+// A–Z among just those students — and otherwise leaves every existing
+// assignment untouched. An already-numbered active student's number is
+// permanent for as long as they're active: it's what appears in every past
+// weekly PDF table they're part of, so changing it after the fact would
+// retroactively collide with anyone (active or since-deleted) they've ever
+// shared a table with. Deletions free up nothing on purpose — the next new
+// student just gets the next never-used number instead.
 async function recomputeAutoRollNumbers() {
   const snap = await getDocs(STUDENTS_COL);
   const active = [];
@@ -1729,25 +1733,26 @@ async function recomputeAutoRollNumbers() {
     if (!data.deletedDate) active.push({ id: d.id, ...data });
   });
 
-  const usedNumbers = new Set();
+  // Numbers already held by a currently-active student (manual or auto) —
+  // off-limits to everyone else while that student is active.
+  const claimedByActive = new Set();
   active.forEach((s) => {
-    const n = normalizeRollNumber(s.rollNumber);
-    if (n !== null) usedNumbers.add(n);
+    const manual = normalizeRollNumber(s.rollNumber);
+    const n = manual !== null ? manual : normalizeRollNumber(s.autoRollNumber);
+    if (n !== null) claimedByActive.add(n);
   });
 
   const needsAuto = active
-    .filter((s) => !(s.rollNumber || "").trim())
+    .filter((s) => !(s.rollNumber || "").trim() && !s.autoRollNumber)
     .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
   let next = 1;
   const updates = [];
   needsAuto.forEach((s) => {
-    while (usedNumbers.has(next)) next++;
+    while (claimedByActive.has(next)) next++;
     const assigned = String(next).padStart(2, "0");
-    if (s.autoRollNumber !== assigned) {
-      updates.push(updateDoc(doc(db, "students", s.id), { autoRollNumber: assigned }));
-    }
-    usedNumbers.add(next);
+    updates.push(updateDoc(doc(db, "students", s.id), { autoRollNumber: assigned }));
+    claimedByActive.add(next);
     next++;
   });
 
@@ -1823,13 +1828,14 @@ async function renderStudents() {
           return;
         }
         try {
-          await updateDoc(doc(db, "students", docSnap.id), { name, rollNumber });
+          const update = { name, rollNumber };
+          if (rollNumber !== previousRoll) update.autoRollNumber = deleteField();
+          await updateDoc(doc(db, "students", docSnap.id), update);
           await renderStudents();
           showUndoToast("Student updated.", async () => {
-            await updateDoc(doc(db, "students", docSnap.id), {
-              name: previousName,
-              rollNumber: previousRoll,
-            });
+            const undo = { name: previousName, rollNumber: previousRoll };
+            if (rollNumber !== previousRoll) undo.autoRollNumber = deleteField();
+            await updateDoc(doc(db, "students", docSnap.id), undo);
             await renderStudents();
           });
         } catch (err) {
