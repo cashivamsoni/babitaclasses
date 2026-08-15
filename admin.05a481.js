@@ -2097,6 +2097,7 @@ async function renderAttendanceRange(fromDate, toDate) {
   attendanceRangeList.innerHTML = "";
   attendanceDeleteSelectedBtn.style.display = "none";
   attendanceRangeResults.style.display = "none";
+  attendanceSelectAllBtn.textContent = "Select All"; // fresh list is always fully unchecked
   try {
     const q = query(
       ATTENDANCE_COL,
