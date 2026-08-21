@@ -320,7 +320,9 @@ loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   loginError.textContent = "";
   const submitBtn = loginForm.querySelector("button");
+  const originalBtnHTML = submitBtn.innerHTML;
   submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="btn-spinner"></span>';
   try {
     await setPersistence(
       auth,
@@ -332,6 +334,7 @@ loginForm.addEventListener("submit", async (e) => {
     console.error(err);
   } finally {
     submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnHTML;
   }
 });
 
