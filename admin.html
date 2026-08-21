@@ -108,6 +108,20 @@
         box-shadow: none;
       }
 
+      .btn-spinner {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2.5px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #4da3ff;
+        display: inline-block;
+        vertical-align: -3px;
+        animation: btn-spin 0.7s linear infinite;
+      }
+      @keyframes btn-spin {
+        to { transform: rotate(360deg); }
+      }
+
       .msg {
         font-size: 12.5px;
         margin: 9px 0 0;
