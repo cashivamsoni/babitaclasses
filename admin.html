@@ -856,6 +856,24 @@
       </div>
     </div>
 
+    <div id="adminPopupView" class="card" style="display:none; max-width:480px; position:relative;">
+      <button id="popupBackBtn" type="button" style="position:absolute; top:16px; left:16px; width:auto; margin:0; padding:6px 14px; font-size:12px; box-shadow:none;">← Back</button>
+      <button id="popupLogoutBtn" type="button" style="position:absolute; top:16px; right:16px; width:auto; margin:0; padding:6px 14px; font-size:12px; box-shadow:none;">Logout</button>
+
+      <h1>Welcome Popup</h1>
+      <p class="hint" style="margin-top:0;">This is the popup that greets visitors when they open the site. Changes here update it live on the website.</p>
+
+      <div class="section-block">
+        <p class="eyebrow">Popup Text</p>
+        <label for="popupTitleInput">Title</label>
+        <input type="text" id="popupTitleInput" placeholder="e.g. Welcome!">
+        <label for="popupBodyInput">Message</label>
+        <textarea id="popupBodyInput" rows="4"></textarea>
+        <button id="popupSaveBtn" type="button">Save Popup Text</button>
+        <p id="popupStatus" class="msg"></p>
+      </div>
+    </div>
+
     <script type="module" src="admin.05a481.js"></script>
   </body>
 </html>
