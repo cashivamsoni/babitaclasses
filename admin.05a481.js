@@ -3315,7 +3315,7 @@ resultAddStudentBtn.addEventListener("click", async () => {
   const confirmLabel = maxMarksNum
     ? `Add ${name} — Roll ${roll} — ${marksNum}/${maxMarksNum} (${percentage}%)?`
     : `Add ${name} — Roll ${roll} — ${marksNum} marks?`;
-  if (!(await modalConfirm(confirmLabel))) return;
+  if (!(await modalConfirm(confirmLabel, { confirmText: "Add", danger: false }))) return;
 
   const newStudent = {
     roll: parseFloat(roll) || roll,
