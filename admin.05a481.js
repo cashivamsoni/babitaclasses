@@ -53,6 +53,7 @@ const adminView = document.getElementById("adminView");
 const hubHomeBtn = document.getElementById("hubHomeBtn");
 const backToHubBtn = document.getElementById("backToHubBtn");
 const hubAttendanceBtn = document.getElementById("hubAttendanceBtn");
+const hubWelcomePopupBtn = document.getElementById("hubWelcomePopupBtn");
 const adminAttendanceView = document.getElementById("adminAttendanceView");
 const attendanceBackBtn = document.getElementById("attendanceBackBtn");
 const attendanceLogoutBtn = document.getElementById("attendanceLogoutBtn");
@@ -289,6 +290,11 @@ attendanceBackBtn.addEventListener("click", () => {
 });
 
 attendanceLogoutBtn.addEventListener("click", () => signOut(auth));
+
+// Placeholder — Welcome Popup editor not built yet.
+hubWelcomePopupBtn.addEventListener("click", () => {
+  alert("Welcome Popup editor is coming soon.");
+});
 
 hubBlogBtn.addEventListener("click", async () => {
   adminHub.style.display = "none";
