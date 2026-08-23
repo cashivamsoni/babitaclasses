@@ -76,9 +76,16 @@
         <a href="https://babitaclasses.vercel.app/#home">Home</a>
         <a href="https://babitaclasses.vercel.app/blog">Blog</a>
         <a href="https://babitaclasses.vercel.app/result">Results</a>
+        <a href="https://babitaclasses.vercel.app/#syllabus">Syllabus</a>
+        <a href="https://babitaclasses.vercel.app/#noticeboard">Notice Board</a>
+        <a href="https://babitaclasses.vercel.app/#WhatsNew">What's New</a>
+        <a href="https://babitaclasses.vercel.app/#gallery">Gallery</a>
+        <a href="https://babitaclasses.vercel.app/#faq">FAQs</a>
+        <a href="https://babitaclasses.vercel.app/#mission">Our Mission</a>
+        <a href="https://babitaclasses.vercel.app/#fromdirectorsdesk">From Director's Desk</a>
+        <a href="https://babitaclasses.vercel.app/#videos">Function Videos</a>
+        <a href="https://babitaclasses.vercel.app/#faculty">Our Faculty</a>
         <a href="https://babitaclasses.vercel.app/#allurls">All URLs</a>
-        <a href="/disclosures/terms-and-conditions">Terms and Conditions</a>
-        <a href="/disclosures/privacy-policy">Privacy Policy</a>
         <a href="https://babitaclasses.vercel.app/#contact">Contact Us</a>
       </nav>
     </header>
@@ -103,7 +110,20 @@
       <a class="petal" id="floralCallBtn" href="tel:+917388311148" aria-label="Call Now" title="Call Now"><i class="fa fa-phone" aria-hidden="true"></i></a>
       <button class="petal" id="shareBtn" aria-label="Share" title="Share"><i class="fa fa-share-alt" aria-hidden="true"></i></button>
       <button class="petal" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode"><i class="fa fa-moon-o" aria-hidden="true"></i></button>
-      <button class="petal" id="printBtn" aria-label="Print or save as PDF" title="Print / Save as PDF"><i class="fa fa-print" aria-hidden="true"></i></button>
+      <button class="petal" id="floralNewBtn" aria-label="Translate to Hindi" title="Translate to Hindi"><i class="fa fa-language" aria-hidden="true"></i></button>
+    </div>
+
+    <!-- Snowfall Effect -->
+    <div aria-hidden="true" class="snowflakes">
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❅</div>
     </div>
 
     <main class="container">
@@ -210,6 +230,14 @@
     </footer>
 
     <script>
+      // ---------- Reveal the section content ----------
+      // The shared stylesheet starts every .section at opacity:0 and relies
+      // on the homepage's scroll-reveal script to add a "visible" class.
+      // This is a single-section static page, so just reveal it immediately.
+      document.querySelectorAll('.section').forEach(function (el) {
+        el.classList.add('visible');
+      });
+
       // ---------- Header nav toggle ----------
       (function () {
         var menuToggle = document.getElementById('menuToggle');
@@ -263,9 +291,9 @@
         }
       });
 
-      // ---------- Print / Save as PDF ----------
-      document.getElementById('printBtn').addEventListener('click', function () {
-        window.print();
+      // ---------- Translate to Hindi (via Google Translate) ----------
+      document.getElementById('floralNewBtn').addEventListener('click', function () {
+        window.open('https://translate.google.com/translate?sl=en&tl=hi&u=' + encodeURIComponent(window.location.href), '_blank');
       });
 
       // ---------- Dark mode toggle (matches main site's localStorage key) ----------
