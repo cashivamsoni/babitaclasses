@@ -54,6 +54,15 @@ const hubHomeBtn = document.getElementById("hubHomeBtn");
 const backToHubBtn = document.getElementById("backToHubBtn");
 const hubAttendanceBtn = document.getElementById("hubAttendanceBtn");
 const hubWelcomePopupBtn = document.getElementById("hubWelcomePopupBtn");
+const adminPopupView = document.getElementById("adminPopupView");
+const popupBackBtn = document.getElementById("popupBackBtn");
+const popupLogoutBtn = document.getElementById("popupLogoutBtn");
+const popupTitleInput = document.getElementById("popupTitleInput");
+const popupBodyInput = document.getElementById("popupBodyInput");
+const popupSaveBtn = document.getElementById("popupSaveBtn");
+const popupStatus = document.getElementById("popupStatus");
+let previousPopupTitle = "";
+let previousPopupBody = "";
 const adminAttendanceView = document.getElementById("adminAttendanceView");
 const attendanceBackBtn = document.getElementById("attendanceBackBtn");
 const attendanceLogoutBtn = document.getElementById("attendanceLogoutBtn");
@@ -291,9 +300,66 @@ attendanceBackBtn.addEventListener("click", () => {
 
 attendanceLogoutBtn.addEventListener("click", () => signOut(auth));
 
-// Placeholder — Welcome Popup editor not built yet.
-hubWelcomePopupBtn.addEventListener("click", () => {
-  alert("Welcome Popup editor is coming soon.");
+hubWelcomePopupBtn.addEventListener("click", async () => {
+  adminHub.style.display = "none";
+  adminPopupView.style.display = "block";
+  await loadWelcomePopup();
+});
+
+popupBackBtn.addEventListener("click", () => {
+  adminPopupView.style.display = "none";
+  adminHub.style.display = "block";
+});
+
+popupLogoutBtn.addEventListener("click", () => signOut(auth));
+
+async function loadWelcomePopup() {
+  try {
+    const snap = await getDoc(SITE_DOC);
+    const data = snap.exists() ? snap.data() : {};
+    popupTitleInput.value = data.welcomePopupTitle || "Welcome!";
+    popupBodyInput.value = data.welcomePopupText || "This is our newly launched website. You can download your marksheets from the result page.";
+    previousPopupTitle = popupTitleInput.value;
+    previousPopupBody = popupBodyInput.value;
+    popupStatus.textContent = "";
+  } catch (err) {
+    popupStatus.textContent = "Could not load popup text: " + (err.code || err.message);
+    popupStatus.className = "msg error";
+  }
+}
+
+popupSaveBtn.addEventListener("click", async () => {
+  const titleValue = popupTitleInput.value.trim();
+  const bodyValue = popupBodyInput.value.trim();
+  if (!titleValue || !bodyValue) {
+    popupStatus.textContent = "Title and message can't be empty.";
+    popupStatus.className = "msg error";
+    return;
+  }
+  const prevTitle = previousPopupTitle;
+  const prevBody = previousPopupBody;
+  popupSaveBtn.disabled = true;
+  popupStatus.textContent = "Saving...";
+  popupStatus.className = "msg";
+  try {
+    await setDoc(SITE_DOC, { welcomePopupTitle: titleValue, welcomePopupText: bodyValue }, { merge: true });
+    previousPopupTitle = titleValue;
+    previousPopupBody = bodyValue;
+    popupStatus.textContent = "Popup text updated.";
+    popupStatus.className = "msg success";
+    showUndoToast("Popup text updated.", async () => {
+      await setDoc(SITE_DOC, { welcomePopupTitle: prevTitle, welcomePopupText: prevBody }, { merge: true });
+      popupTitleInput.value = prevTitle;
+      popupBodyInput.value = prevBody;
+      previousPopupTitle = prevTitle;
+      previousPopupBody = prevBody;
+    });
+  } catch (err) {
+    popupStatus.textContent = "Save failed: " + (err.code || err.message);
+    popupStatus.className = "msg error";
+  } finally {
+    popupSaveBtn.disabled = false;
+  }
 });
 
 hubBlogBtn.addEventListener("click", async () => {
