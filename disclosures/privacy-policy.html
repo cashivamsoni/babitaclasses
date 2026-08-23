@@ -38,10 +38,13 @@
         padding-left: 22px;
         margin: 0 0 10px;
       }
+      .legal-doc p.small,
+      .legal-doc li {
+        font-size: 18px;
+      }
       .legal-doc li {
         margin-bottom: 10px;
         text-align: justify;
-        font-size: 17px;
         line-height: 1.5;
       }
       .legal-doc p.small { margin-bottom: 10px; }
@@ -99,6 +102,15 @@
     <a href="https://www.google.com/search?q=%23babitaclasses" class="fa fa-google" target="_blank" rel="noopener" title="Google"></a>
     </div>
 
+    <!-- Welcome Popup -->
+    <div id="popupOverlayUnique">
+      <div id="popupBoxUnique">
+        <button id="popupCloseUnique" aria-label="Close" title="Close"><svg class="icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>
+        <h1>Welcome!</h1>
+        <h2>This is our newly launched website. You can download your marksheets from the result page.</h2>
+      </div>
+    </div>
+
     <!-- Scroll to Top -->
     <button id="topBtn" aria-label="Scroll to top" title="Scroll to top"><i class="fa fa-arrow-up" aria-hidden="true"></i></button>
 
@@ -111,6 +123,40 @@
       <button class="petal" id="shareBtn" aria-label="Share" title="Share"><i class="fa fa-share-alt" aria-hidden="true"></i></button>
       <button class="petal" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode"><i class="fa fa-moon-o" aria-hidden="true"></i></button>
       <button class="petal" id="floralNewBtn" aria-label="Translate to Hindi" title="Translate to Hindi"><i class="fa fa-language" aria-hidden="true"></i></button>
+    </div>
+
+    <!-- AI Assistant -->
+    <div id="assistantHint" class="assistant-hint hidden"></div>
+    <button id="assistantBtn" class="assistant-btn" onclick="toggleAssistant()" aria-label="Ask Babita Classes Assistant" title="Ask Babita Classes Assistant">
+      <i class="fa fa-magic" aria-hidden="true"></i>
+    </button>
+    <div id="assistantPanel" class="assistant-panel hidden">
+      <div class="assistant-header">
+        <span><i class="fa fa-magic" aria-hidden="true"></i> Babita Classes Assistant</span>
+        <div class="assistant-header-actions">
+          <button id="assistantReplayBtn" class="hidden" onclick="replayLastAssistantReply()" aria-label="Replay last reply" title="Replay last reply">
+            <i class="fa fa-repeat" aria-hidden="true"></i>
+          </button>
+          <button id="assistantSpeechToggle" class="hidden" onclick="toggleAssistantSpeech()" aria-label="Pause reading" title="Pause reading">
+            <i class="fa fa-pause" aria-hidden="true"></i>
+          </button>
+          <button class="modal-close" onclick="toggleAssistant()" aria-label="Close assistant" title="Close">
+            <svg class="icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="assistant-messages" id="assistantMessages">
+        <div class="assistant-msg assistant-msg-bot">Hi! Ask me about admissions, fees, results, syllabus, or anything else about Babita Classes.</div>
+      </div>
+      <div class="assistant-input-row">
+        <input type="text" id="assistantInput" placeholder="Ask something…" autocomplete="off">
+        <button id="assistantMicBtn" class="hidden" onclick="toggleAssistantMic()" aria-label="Voice input" title="Speak your question">
+          <i class="fa fa-microphone" aria-hidden="true"></i>
+        </button>
+        <button id="assistantSendBtn" onclick="sendAssistantMessage()" aria-label="Send">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Snowfall Effect -->
@@ -230,6 +276,85 @@
     </footer>
 
     <script>
+      // ---------- Welcome popup (shows once per browser) ----------
+      (function () {
+        var overlay = document.getElementById('popupOverlayUnique');
+        var closeBtn = document.getElementById('popupCloseUnique');
+        if (localStorage.getItem('welcomePopupSeen') === 'true') {
+          overlay.style.display = 'none';
+        }
+        closeBtn.addEventListener('click', function () {
+          overlay.style.display = 'none';
+          localStorage.setItem('welcomePopupSeen', 'true');
+        });
+        overlay.addEventListener('click', function (e) {
+          if (e.target === overlay) {
+            overlay.style.display = 'none';
+            localStorage.setItem('welcomePopupSeen', 'true');
+          }
+        });
+      })();
+
+      // ---------- AI Assistant ----------
+      var assistantOpen = false;
+      function toggleAssistant() {
+        var panel = document.getElementById('assistantPanel');
+        assistantOpen = !assistantOpen;
+        panel.classList.toggle('hidden', !assistantOpen);
+        if (assistantOpen) document.getElementById('assistantInput').focus();
+      }
+      function renderAssistantEmphasis(text) {
+        var span = document.createElement('span');
+        var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<span class="assistant-emphasis">$1</span>');
+        escaped = escaped.replace(/\*(.+?)\*/g, '<span class="assistant-emphasis">$1</span>');
+        span.innerHTML = escaped;
+        return span;
+      }
+      function addAssistantMessage(text, sender) {
+        var messages = document.getElementById('assistantMessages');
+        var msg = document.createElement('div');
+        msg.className = 'assistant-msg ' + (sender === 'user' ? 'assistant-msg-user' : 'assistant-msg-bot');
+        if (sender === 'user') {
+          msg.textContent = text;
+        } else {
+          msg.appendChild(renderAssistantEmphasis(text));
+        }
+        messages.appendChild(msg);
+        messages.scrollTop = messages.scrollHeight;
+        return msg;
+      }
+      function sendAssistantMessage() {
+        var input = document.getElementById('assistantInput');
+        var text = input.value.trim();
+        if (!text) return;
+        addAssistantMessage(text, 'user');
+        input.value = '';
+        var messages = document.getElementById('assistantMessages');
+        var loading = document.createElement('div');
+        loading.className = 'assistant-msg assistant-msg-bot assistant-msg-loading';
+        loading.textContent = 'Thinking…';
+        messages.appendChild(loading);
+        messages.scrollTop = messages.scrollHeight;
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, context: 'Page: ' + document.title })
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            loading.remove();
+            addAssistantMessage(data.reply || data.error || "Sorry, I couldn't generate a response.", 'bot');
+          })
+          .catch(function () {
+            loading.remove();
+            addAssistantMessage('Sorry, something went wrong — please try again.', 'bot');
+          });
+      }
+      document.getElementById('assistantInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') sendAssistantMessage();
+      });
+
       // ---------- Reveal the section content ----------
       // The shared stylesheet starts every .section at opacity:0 and relies
       // on the homepage's scroll-reveal script to add a "visible" class.
@@ -242,9 +367,16 @@
       (function () {
         var menuToggle = document.getElementById('menuToggle');
         var mainNav = document.getElementById('mainNav');
-        menuToggle.addEventListener('click', function () {
+        menuToggle.addEventListener('click', function (e) {
+          e.stopPropagation();
           menuToggle.classList.toggle('open');
           mainNav.classList.toggle('show');
+        });
+        document.addEventListener('click', function (e) {
+          if (mainNav.classList.contains('show') && !mainNav.contains(e.target) && !menuToggle.contains(e.target)) {
+            menuToggle.classList.remove('open');
+            mainNav.classList.remove('show');
+          }
         });
       })();
 
