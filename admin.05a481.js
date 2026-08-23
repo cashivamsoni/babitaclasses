@@ -3295,10 +3295,27 @@ resultAddStudentBtn.addEventListener("click", async () => {
 
   const marksNum = parseFloat(marks);
   const maxMarksNum = parseFloat(term.maxMarks);
+
+  // Simple sanity check — catches typos like 730 instead of 73.
+  if (isNaN(marksNum) || marksNum < 0 || (maxMarksNum && marksNum > maxMarksNum)) {
+    resultStudentStatus.textContent = maxMarksNum
+      ? `Marks must be between 0 and ${maxMarksNum}.`
+      : "Marks must be a valid non-negative number.";
+    resultStudentStatus.className = "msg error";
+    return;
+  }
+
   const percentage =
     !isNaN(marksNum) && maxMarksNum
       ? Math.round(((marksNum / maxMarksNum) * 100) * 100) / 100
       : "";
+
+  // Quick visual double-check before it's saved, since there's no second
+  // person reviewing entered marks.
+  const confirmLabel = maxMarksNum
+    ? `Add ${name} — Roll ${roll} — ${marksNum}/${maxMarksNum} (${percentage}%)?`
+    : `Add ${name} — Roll ${roll} — ${marksNum} marks?`;
+  if (!(await modalConfirm(confirmLabel))) return;
 
   const newStudent = {
     roll: parseFloat(roll) || roll,
