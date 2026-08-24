@@ -56,6 +56,24 @@ if (window.caches) {
   });
 })();
 
+/* ---------- Shared anchor-scroll helper ---------- */
+/* Mobile applies `zoom: 0.9` to <html> (see style.css). CSS zoom is
+   non-standard, and WebKit-based mobile browsers (Safari, Chrome-on-iOS)
+   are known to miscalculate the native hash/scrollIntoView jump position
+   when zoom is active on the root element, even though scroll-margin-top
+   is set correctly — the anchor jump lands short or does nothing.
+   getBoundingClientRect()/window.scrollY stay accurate under zoom, so we
+   compute the target position ourselves instead of relying on the
+   browser's native anchor-jump math. This also respects each section's
+   own scroll-margin-top (read via getComputedStyle), so per-section
+   offsets defined in CSS keep working exactly as before. */
+function bcScrollToAnchor(target) {
+  if (!target) return;
+  const marginTop = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+  const y = target.getBoundingClientRect().top + window.scrollY - marginTop;
+  window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+}
+
 /* ---------- Menu Toggle ---------- */
 (function () {
   const toggleBtn = document.getElementById("menuToggle");
@@ -75,27 +93,21 @@ if (window.caches) {
       const isInPageAnchor = href && href.charAt(0) === "#" && href.length > 1;
 
       if (isInPageAnchor) {
-        // Collapsing the mobile menu changes the page's height. If the
-        // browser's native anchor-jump fires in the same tick as the
-        // collapse, it measures the target against the still-tall
-        // (menu-open) layout and lands short/mid-section. The native jump
-        // itself is correct (it already honours each section's own
-        // scroll-margin-top, same as it does on desktop) — the only problem
-        // is *when* it fires. So: close the menu, wait two frames for the
-        // collapse to reflow/paint, then re-trigger the browser's own
-        // anchor jump against the now-settled layout, instead of
-        // recalculating the scroll position ourselves.
+        // Collapsing the mobile menu changes the page's height, so we wait
+        // two frames for the collapse to reflow/paint before measuring the
+        // target — otherwise we'd measure it against the still-tall
+        // (menu-open) layout and land short/mid-section. We then scroll to
+        // it ourselves (bcScrollToAnchor) rather than relying on the
+        // browser's native hash-jump, since that native jump is unreliable
+        // on mobile where `zoom: 0.9` is applied to <html>.
         e.preventDefault();
         nav.classList.remove("show");
         toggleBtn.classList.remove("open");
+        const targetEl = document.getElementById(href.substring(1));
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
-            if (location.hash === href) {
-              // Same hash as current: clear it first so re-setting it below
-              // is treated as a fresh jump rather than a no-op.
-              history.replaceState(null, "", location.pathname + location.search);
-            }
-            location.hash = href;
+            bcScrollToAnchor(targetEl);
+            history.replaceState(null, "", href);
           });
         });
         return;
@@ -340,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", function () {
       const id = btn.getAttribute("data-target");
       const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (el) bcScrollToAnchor(el);
     });
   });
 })();
@@ -548,7 +560,7 @@ input.style.boxSizing = "border-box";
             const href = link.getAttribute("href");
             if (href && href.startsWith("#")) {
               const target = document.getElementById(href.substring(1));
-              if (target) target.scrollIntoView({ behavior: "smooth" });
+              if (target) bcScrollToAnchor(target);
             } else if (href) {
               window.open(href, link.target || "_self");
             }
@@ -572,7 +584,7 @@ input.style.boxSizing = "border-box";
       if (href && href.startsWith("#")) {
         e.preventDefault();
         const target = document.getElementById(href.substring(1));
-        if (target) target.scrollIntoView({ behavior: "smooth" });
+        if (target) bcScrollToAnchor(target);
       }
     });
   });
@@ -638,7 +650,7 @@ input.style.boxSizing = "border-box";
           const href = link.getAttribute("href");
           if (href && href.startsWith("#")) {
             const target = document.getElementById(href.substring(1));
-            if (target) target.scrollIntoView({ behavior: "smooth" });
+            if (target) bcScrollToAnchor(target);
           } else if (href) {
             window.open(href, link.target || "_self");
           }
