@@ -327,7 +327,7 @@ window.addEventListener("click", function (event) {
 /* ----- Lifted Animation For Babita Classes Website ----- */
 // Animate sections, faculty cards, and QR codes every time they scroll into view
 document.addEventListener("DOMContentLoaded", () => {
-  const elements = document.querySelectorAll(".section, .faculty-card, .qrcode, .blog-card, .GeneratedMarquee, .notice-board, .slide fade");
+  const elements = document.querySelectorAll(".section:not(.legal-section), .faculty-card, .qrcode, .blog-card, .GeneratedMarquee, .notice-board, .slide fade");
 
   const observer = new IntersectionObserver(
     (entries) => {
@@ -343,6 +343,27 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   elements.forEach((el) => observer.observe(el));
+
+  // Long single-section legal pages (Privacy Policy, T&C): the section is far
+  // taller than the viewport, so requiring 20% of ITS OWN height to be visible
+  // can never be satisfied and the page would stay blank. Reveal these as soon
+  // as any part of the section enters the viewport instead.
+  const legalElements = document.querySelectorAll(".legal-section");
+  if (legalElements.length) {
+    const legalObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          } else {
+            entry.target.classList.remove("visible");
+          }
+        });
+      },
+      { threshold: 0 } // reveal as soon as even a sliver is on screen
+    );
+    legalElements.forEach((el) => legalObserver.observe(el));
+  }
 });
 
 
