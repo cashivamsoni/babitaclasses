@@ -75,26 +75,27 @@ if (window.caches) {
       const isInPageAnchor = href && href.charAt(0) === "#" && href.length > 1;
 
       if (isInPageAnchor) {
-        // Collapsing the mobile menu changes the page's height. If we let the
-        // browser jump to the anchor natively right now, it measures the
-        // target against the still-tall (menu-open) layout and lands short
-        // (e.g. #contact landing mid-footer instead of at its top). So we
-        // close the menu first, wait for it to reflow/paint, then scroll
-        // ourselves — reading each target's own scroll-margin-top from CSS
-        // (already set per-section: #syllabus, #contact, #noticeboard, etc.)
-        // rather than a single hardcoded offset, so every section keeps its
-        // own correct header clearance.
+        // Collapsing the mobile menu changes the page's height. If the
+        // browser's native anchor-jump fires in the same tick as the
+        // collapse, it measures the target against the still-tall
+        // (menu-open) layout and lands short/mid-section. The native jump
+        // itself is correct (it already honours each section's own
+        // scroll-margin-top, same as it does on desktop) — the only problem
+        // is *when* it fires. So: close the menu, wait two frames for the
+        // collapse to reflow/paint, then re-trigger the browser's own
+        // anchor jump against the now-settled layout, instead of
+        // recalculating the scroll position ourselves.
         e.preventDefault();
-        const target = document.getElementById(href.slice(1));
         nav.classList.remove("show");
         toggleBtn.classList.remove("open");
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
-            if (!target) return;
-            const marginTop = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
-            const rect = target.getBoundingClientRect();
-            const scrollTarget = window.pageYOffset + rect.top - marginTop;
-            window.scrollTo({ top: scrollTarget, behavior: "smooth" });
+            if (location.hash === href) {
+              // Same hash as current: clear it first so re-setting it below
+              // is treated as a fresh jump rather than a no-op.
+              history.replaceState(null, "", location.pathname + location.search);
+            }
+            location.hash = href;
           });
         });
         return;
