@@ -1001,11 +1001,6 @@ tr {
   text-decoration: none;
 }
 
-/* ---------- Syllabus Section offset ---------- */
-#syllabus {
-  scroll-margin-top: 40px;
-}
-
 #contact {
   scroll-margin-top: 120px;
 }
