@@ -1079,17 +1079,7 @@ footer.ft::before {
   padding-bottom: 34px;
   border-bottom: 1px solid rgba(255,255,255,.22);
 }
-.ft-brand { display: flex; align-items: center; gap: 14px; }
-.ft-logo {
-  width: 54px; height: 54px; border-radius: 50%;
-  background: #FFD919;
-  display: flex; align-items: center; justify-content: center;
-  font-family: "DM Serif Display", Georgia, serif;
-  font-size: 26px; color: #800000;
-  border: 2px solid #fff;
-  box-shadow: 0 0 15px rgba(255,255,255,.5);
-  flex-shrink: 0;
-}
+.ft-brand { display: flex; flex-direction: column; gap: 3px; }
 .ft-brand h2 {
   font-family: "DM Serif Display", Georgia, serif;
   font-weight: 400;
@@ -1156,8 +1146,9 @@ footer.ft::before {
   gap: 8px;
   transition: color .2s ease, padding-left .2s ease;
 }
-.ft-col ul li a i { width: 14px; font-size: 12px; color: rgba(255,255,255,.7); flex-shrink: 0; }
-.ft-col ul li a:hover { color: #FFFFFF; padding-left: 3px; text-decoration: underline; }
+.ft-col ul li a i { width: 14px; font-size: 12px; color: rgba(255,255,255,.7); flex-shrink: 0; text-decoration: none; }
+.ft-col ul li a:hover { color: #FFFFFF; padding-left: 3px; }
+.ft-col ul li a:hover span { text-decoration: underline; }
 .ft-col address {
   font-style: normal;
   font-size: 13.3px;
@@ -1183,7 +1174,7 @@ footer.ft::before {
 }
 .ft-legal-row a { color: rgba(255,255,255,.9); text-decoration: none; }
 .ft-legal-row a:hover { color: #FFFFFF; text-decoration: underline; }
-.ft-legal-row .dot { color: rgba(255,255,255,.5); }
+.ft-legal-row .ft-dot { color: rgba(255,255,255,.45); font-size: 11px; }
 
 .ft-bottom {
   border-top: 1px solid rgba(255,255,255,.22);
