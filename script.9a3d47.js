@@ -359,11 +359,11 @@ const allLinks = [
   // --- Videos & Media ---
   { label: "Films by Babita Classes", url: "https://www.youtube.com/watch?v=s_aT2HMHW68&list=PLMTBETejRGZf72ts_UC53rO1wVm88TAKd" },
   { label: "GORGON (2024)", url: "https://youtu.be/iSzXQCMCOsk?si=UHO6tTXp7PJvqmiG" },
-  { label: "VIDYA (2022)", url: "https://youtu.be/s_aT2HMHW68" },
   { label: "MYSTERIOUS THIEF (2023)", url: "https://youtu.be/0BWsukdcsro" },
+  { label: "VIDYA (2022)", url: "https://youtu.be/s_aT2HMHW68" },
   { label: "YouTube: Behind The Scenes of Gorgon", url: "https://youtu.be/qQeHVqT0PP4?si=iiidejJBVEgnNgec" },
   { label: "PT Videos (Facebook)", url: "https://fb.watch/6Wo4_b00UF/" },
-  { label: "News Article in Swatantra Prabhat Kanpur", url: "https://babitaclasses.vercel.app/blog" },
+  { label: "News Article in Swatantra Prabhat Kanpur", url: "https://babitaclasses.vercel.app/blog#blog25" },
 
   // --- Legal & Misc ---
   { label: "Terms & Conditions", url: "https://babitaclasses.vercel.app/legal/terms-and-conditions" },
