@@ -360,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       },
-      { threshold: 0 } // reveal as soon as even a sliver is on screen
+      { threshold: 0.05 } // small but non-zero, so the fade is still perceptible
     );
     legalElements.forEach((el) => legalObserver.observe(el));
   }
