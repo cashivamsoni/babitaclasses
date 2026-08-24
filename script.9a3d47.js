@@ -343,7 +343,7 @@ const allLinks = [
   { label: "Call", url: "tel:91 7388311148" },
   { label: "WhatsApp", url: "https://wa.link/oqxekr" },
   { label: "Email", url: "mailto:babitaclasses7@gmail.com" },
-  { label: "Live Chat (Tawk.to)", url: "https://tawk.to/chat/61443488d326717cb681ea86/1ffp6qehd" },
+  { label: "Live Chat (AI Assistant)", url: "#assistant" },
   { label: "Get Directions (Google Maps)", url: "https://www.google.com/maps/dir//Babita+Classes/data=!4m8!4m7!1m0!1m5!1m1!1s0x399c47f6a85c1aa7:0x29a8f94a3ea949a1!2m2!1d80.32515819999999!2d26.445072999999997" },
 
   // --- Social Media & Reviews ---
@@ -409,6 +409,12 @@ const allLinks = [
       if (!isInternal) {
         a.target = "_blank";
         a.rel = "noopener";
+      }
+      if (l.url === "#assistant") {
+        a.addEventListener("click", function (e) {
+          e.preventDefault();
+          toggleAssistant();
+        });
       }
       a.textContent = l.label;
       linksGrid.appendChild(a);
