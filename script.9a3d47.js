@@ -335,6 +335,7 @@ const allLinks = [
   { label: "Our Faculty", url: "#faculty" },
   { label: "Function Videos", url: "#videos" },
   { label: "From Director's Desk", url: "#fromdirectorsdesk" },
+  { label: "QR Code (Download)", url: "https://drive.google.com/uc?export=download&id=16FkbkFryh3mgBVIDRv2NgTDARwgFEVOk" },
 
   // --- Admissions & Contact ---
   { label: "Admission Form", url: "https://forms.gle/S234T8QQgLCSvd5GA" },
@@ -367,7 +368,6 @@ const allLinks = [
   // --- Legal & Misc ---
   { label: "Terms & Conditions", url: "https://babitaclasses.vercel.app/legal/terms-and-conditions" },
   { label: "Privacy Policy", url: "https://babitaclasses.vercel.app/legal/privacy-policy" },
-  { label: "QR Code (Download)", url: "https://drive.google.com/uc?export=download&id=16FkbkFryh3mgBVIDRv2NgTDARwgFEVOk" },
 ];
 
   // Wrap the link-filter input so the clear button positions correctly
