@@ -1155,8 +1155,8 @@ footer.ft::before {
   line-height: 1.65;
   color: rgba(255,255,255,.88);
 }
-.ft-col address a { color: rgba(255,255,255,.95); text-decoration: none; }
-.ft-col address a:hover { text-decoration: underline; }
+.ft-col address a { color: rgba(255,255,255,.95); text-decoration: none; display: inline-block; transition: transform .2s ease; }
+.ft-col address a:hover { text-decoration: underline; transform: translateX(3px); }
 .ft-hours-row { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: rgba(255,255,255,.88); }
 .ft-hours-row + .ft-hours-row { margin-top: 4px; }
 .ft-hours-row span:last-child { color: #FFFFFF; font-weight: 600; }
@@ -1172,8 +1172,8 @@ footer.ft::before {
   font-size: 12.5px;
   text-align: center;
 }
-.ft-legal-row a { color: rgba(255,255,255,.9); text-decoration: none; }
-.ft-legal-row a:hover { color: #FFFFFF; text-decoration: underline; }
+.ft-legal-row a { color: rgba(255,255,255,.9); text-decoration: none; display: inline-block; transition: transform .2s ease, color .2s ease; }
+.ft-legal-row a:hover { color: #FFFFFF; text-decoration: underline; transform: translateY(-2px); }
 .ft-legal-row .ft-dot { color: rgba(255,255,255,.45); font-size: 11px; }
 
 .ft-bottom {
