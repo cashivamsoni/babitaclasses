@@ -346,6 +346,24 @@ details {
   transform: translateY(0);
 }
 
+/* ---------- Long single-section legal pages (Privacy Policy, T&C) ---------- */
+/* These pages contain only ONE .section, and it is much taller than the viewport
+   (it holds the whole document). The site-wide rule reveals elements once 20% of
+   THEIR OWN height is on screen - for a page-length section that 20% can exceed a
+   full viewport, so it may never be satisfied and the page would stay invisible.
+   .legal-section uses its own, more forgiving observer (see script.js) that
+   reveals the section as soon as any part of it scrolls into view instead. */
+.legal-section {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.5s ease, background 0.4s ease;
+}
+
+.legal-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* Optional hover polish for faculty cards & QR codes */
 .faculty-card:hover, .qrcode:hover {
   transform: translateY(-5px) scale(1.035);
