@@ -1078,6 +1078,16 @@ function toggleAssistant() {
 
 document.addEventListener('DOMContentLoaded', startAssistantHints);
 
+// Open the assistant automatically if the page is loaded with #assistant in the URL
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.hash === '#assistant') {
+    const panel = document.getElementById('assistantPanel');
+    if (panel && panel.classList.contains('hidden')) {
+      toggleAssistant();
+    }
+  }
+});
+
 // Close the assistant panel when clicking outside it
 document.addEventListener('click', (e) => {
   const panel = document.getElementById('assistantPanel');
