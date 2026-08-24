@@ -86,7 +86,15 @@ if (window.caches) {
         toggleBtn.classList.remove("open");
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
-            if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+            if (!target) return;
+            // Compute the landing spot ourselves instead of relying on the
+            // browser to honour the target's scroll-margin-top (the sticky
+            // header is otherwise left overlapping/hiding the top of the
+            // section — e.g. the footer's heading getting hidden behind it).
+            const headerOffset = 120;
+            const rect = target.getBoundingClientRect();
+            const scrollTarget = window.pageYOffset + rect.top - headerOffset;
+            window.scrollTo({ top: scrollTarget, behavior: "smooth" });
           });
         });
         return;
