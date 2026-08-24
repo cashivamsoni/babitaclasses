@@ -413,6 +413,7 @@ const allLinks = [
       if (l.url === "#assistant") {
         a.addEventListener("click", function (e) {
           e.preventDefault();
+          e.stopPropagation();
           toggleAssistant();
         });
       }
