@@ -1038,19 +1038,186 @@ tr {
 
 
 /* ---------- Footer ---------- */
-footer {
-  padding: 18px;
-  text-align: center;
+footer.ft {
+  position: relative;
+  text-align: left;
   color: #FFFFFF;
-  font-size: 13px;
-  background: linear-gradient(90deg, #990000, #800000);
+  background: linear-gradient(160deg, #990000 0%, #800000 100%);
   transition: background 0.4s ease;
+  padding-top: 56px;
+  overflow: hidden;
+}
+/* faint ledger-line texture, a quiet nod to marksheets/report cards */
+footer.ft::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,.035) 0px,
+    rgba(255,255,255,.035) 1px,
+    transparent 1px,
+    transparent 34px
+  );
+  pointer-events: none;
 }
 
-footer a,
-.contact a {
-  color: #ffffff;
-  text-decoration: underline;
+.ft-inner {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  /* generous left/right clearance so the fixed side buttons never sit over footer text */
+  padding: 0 96px;
+}
+
+.ft-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding-bottom: 34px;
+  border-bottom: 1px solid rgba(255,255,255,.22);
+}
+.ft-brand { display: flex; align-items: center; gap: 14px; }
+.ft-logo {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: #FFD919;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: 26px; color: #800000;
+  border: 2px solid #fff;
+  box-shadow: 0 0 15px rgba(255,255,255,.5);
+  flex-shrink: 0;
+}
+.ft-brand h2 {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.55em;
+  margin: 0 0 3px;
+  color: #FFFFFF;
+}
+.ft-brand p {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgba(255,255,255,.85);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.ft-social-inline { display: flex; gap: 10px; }
+.ft-social-inline a {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.22);
+  color: #FFFFFF;
+  font-size: 17px;
+  text-decoration: none;
+  transition: background .25s ease, transform .25s ease;
+}
+.ft-social-inline a:hover { background: rgba(255,255,255,.9); color: #800000; transform: translateY(-3px); }
+
+.ft-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1.15fr 1.15fr;
+  gap: 28px;
+  padding: 38px 0 30px;
+}
+.ft-col h3 {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.05em;
+  margin: 0 0 16px;
+  color: #FFFFFF;
+  position: relative;
+  padding-bottom: 9px;
+}
+.ft-col h3::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 30px; height: 2px;
+  background: rgba(255,255,255,.55);
+}
+.ft-col p.about {
+  font-size: 13.3px;
+  line-height: 1.65;
+  color: rgba(255,255,255,.88);
+  margin: 0;
+  text-align: left;
+}
+.ft-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ft-col ul li a {
+  color: rgba(255,255,255,.88);
+  text-decoration: none;
+  font-size: 13.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color .2s ease, padding-left .2s ease;
+}
+.ft-col ul li a i { width: 14px; font-size: 12px; color: rgba(255,255,255,.7); flex-shrink: 0; }
+.ft-col ul li a:hover { color: #FFFFFF; padding-left: 3px; text-decoration: underline; }
+.ft-col address {
+  font-style: normal;
+  font-size: 13.3px;
+  line-height: 1.65;
+  color: rgba(255,255,255,.88);
+}
+.ft-col address a { color: rgba(255,255,255,.95); text-decoration: none; }
+.ft-col address a:hover { text-decoration: underline; }
+.ft-hours-row { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: rgba(255,255,255,.88); }
+.ft-hours-row + .ft-hours-row { margin-top: 4px; }
+.ft-hours-row span:last-child { color: #FFFFFF; font-weight: 600; }
+
+.ft-legal-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 0;
+  border-top: 1px solid rgba(255,255,255,.22);
+  font-size: 12.5px;
+  text-align: center;
+}
+.ft-legal-row a { color: rgba(255,255,255,.9); text-decoration: none; }
+.ft-legal-row a:hover { color: #FFFFFF; text-decoration: underline; }
+.ft-legal-row .dot { color: rgba(255,255,255,.5); }
+
+.ft-bottom {
+  border-top: 1px solid rgba(255,255,255,.22);
+  padding: 18px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(255,255,255,.8);
+}
+.ft-bottom .visits { color: rgba(255,255,255,.8); }
+.ft-bottom .visits b { color: #FFFFFF; font-weight: 600; }
+.ft-bottom .copy a { color: rgba(255,255,255,.9); text-decoration: underline; }
+.ft-bottom .copy a:hover { color: #FFFFFF; }
+
+/* extra breathing room at the very bottom so the fixed scroll-to-top /
+   assistant buttons never sit on top of the last line of footer text */
+.ft-safe-bottom { height: 96px; }
+
+@media (max-width: 980px) {
+  .ft-grid { grid-template-columns: 1fr 1fr; gap: 26px 20px; }
+}
+
+@media (max-width: 768px) {
+  .ft-inner { padding: 0 22px; }
+}
+
+@media (max-width: 560px) {
+  .ft-grid { grid-template-columns: 1fr; gap: 26px; }
+  .ft-top { flex-direction: column; align-items: flex-start; }
+  .ft-bottom { flex-direction: column; align-items: flex-start; text-align: left; }
+  .ft-safe-bottom { height: 150px; } /* scroll-to-top + assistant buttons sit closer together on narrow screens */
 }
 
 /* ---------- Blog-specific styles ---------- */
@@ -1657,14 +1824,8 @@ hr {
 }
 
 /* ---------- Footer (dark mode) ---------- */
-[data-theme="dark"] footer {
-  background: linear-gradient(90deg, #661a1a, #4d1414);
-}
-
-[data-theme="dark"] footer a,
-[data-theme="dark"] .contact a {
-  color: #ffffff;
-  text-decoration: underline;
+[data-theme="dark"] footer.ft {
+  background: linear-gradient(160deg, #661a1a 0%, #4d1414 100%);
 }
 
 /* =========================================================
