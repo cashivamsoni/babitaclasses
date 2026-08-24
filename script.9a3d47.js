@@ -70,7 +70,36 @@ if (window.caches) {
 
   // Close when any nav link or the theme toggle is clicked
   document.querySelectorAll("#mainNav a, #mainNav button").forEach(function (link) {
-    link.addEventListener("click", function () {
+    link.addEventListener("click", function (e) {
+      const href = link.getAttribute("href");
+      const isInPageAnchor = href && href.charAt(0) === "#" && href.length > 1;
+
+      if (isInPageAnchor) {
+        // Collapsing the mobile menu changes the page's height. If we let the
+        // browser jump to the anchor natively right now, it measures the
+        // target against the still-tall (menu-open) layout and lands short
+        // (e.g. #contact landing mid-footer instead of at its top). So we
+        // close the menu first, wait for it to reflow/paint, then scroll
+        // ourselves — reading each target's own scroll-margin-top from CSS
+        // (already set per-section: #syllabus, #contact, #noticeboard, etc.)
+        // rather than a single hardcoded offset, so every section keeps its
+        // own correct header clearance.
+        e.preventDefault();
+        const target = document.getElementById(href.slice(1));
+        nav.classList.remove("show");
+        toggleBtn.classList.remove("open");
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            if (!target) return;
+            const marginTop = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+            const rect = target.getBoundingClientRect();
+            const scrollTarget = window.pageYOffset + rect.top - marginTop;
+            window.scrollTo({ top: scrollTarget, behavior: "smooth" });
+          });
+        });
+        return;
+      }
+
       nav.classList.remove("show");
       toggleBtn.classList.remove("open");
     });
