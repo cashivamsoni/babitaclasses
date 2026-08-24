@@ -1201,7 +1201,9 @@ footer.ft::before {
 }
 
 @media (max-width: 768px) {
-  .ft-inner { padding: 0 22px; }
+  /* keep footer content clear of the fixed side buttons (social icons on
+     the left; scroll-to-top / quick-menu / assistant on the right) */
+  .ft-inner { padding: 0 78px; }
 }
 
 @media (max-width: 560px) {
