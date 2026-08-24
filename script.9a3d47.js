@@ -320,44 +320,55 @@ document.addEventListener("DOMContentLoaded", () => {
   const linksGrid = document.getElementById("links-grid");
   if (!linksGrid) return;
 
-  const allLinks = [
-    { label: "Home", url: "#home" },
-    { label: "Blog", url: "https://babitaclasses.vercel.app/blog" },
-    { label: "Results", url: "https://babitaclasses.vercel.app/result" },
-    { label: "Function Videos", url: "#videos" },
-    { label: "Our Faculty", url: "#faculty" },
-    { label: "Write a Review", url: "https://g.page/r/CaFJqT5K-agpEAI/review" },
-    { label: "What's New", url: "#WhatsNew" },
-    { label: "Notice Board", url: "#noticeboard" },
-    { label: "FAQs", url: "#faq" },
-    { label: "Films by Babita Classes", url: "https://www.youtube.com/watch?v=s_aT2HMHW68&list=PLMTBETejRGZf72ts_UC53rO1wVm88TAKd" },
-    { label: "All URLs", url: "#allurls" },
-    { label: "Syllabus, Datesheet & Results", url: "#syllabus" },
-    { label: "Terms & Conditions", url: "https://babitaclasses.vercel.app/legal/terms-and-conditions" },
-    { label: "Privacy Policy", url: "https://babitaclasses.vercel.app/legal/privacy-policy" },
-    { label: "From Director's Desk", url: "#fromdirectorsdesk" },
-    { label: "News Article in Swatantra Prabhat Kanpur", url: "https://babitaclasses.vercel.app/blog" },
-    { label: "Book Appointment (WhatsApp)", url: "https://wa.link/x6klar" },
-    { label: "Contact Form", url: "https://forms.gle/wL59oarRVWdysP9u8" },
-    { label: "Admission Form", url: "https://forms.gle/S234T8QQgLCSvd5GA" },
-    { label: "Live Chat (Tawk.to)", url: "https://tawk.to/chat/61443488d326717cb681ea86/1ffp6qehd" },
-    { label: "Email", url: "mailto:babitaclasses7@gmail.com" },
-    { label: "WhatsApp", url: "https://wa.link/oqxekr" },
-    { label: "WhatsApp Share", url: "https://api.whatsapp.com/send?text=https://babitaclasses.website2.me/" },
-    { label: "Call", url: "tel:91 7388311148" },
-    { label: "GORGON (2024)", url: "https://youtu.be/iSzXQCMCOsk?si=UHO6tTXp7PJvqmiG" },
-    { label: "VIDYA (2022)", url: "https://youtu.be/s_aT2HMHW68" },
-    { label: "PT Videos (Facebook)", url: "https://fb.watch/6Wo4_b00UF/" },
-    { label: "MYSTERIOUS THIEF (2023)", url: "https://youtu.be/0BWsukdcsro" },
-    { label: "YouTube: Behind The Scenes of Gorgon", url: "https://youtu.be/qQeHVqT0PP4?si=iiidejJBVEgnNgec" },
-    { label: "Facebook Page", url: "https://www.facebook.com/babitaclasses" },
-    { label: "Instagram", url: "https://www.instagram.com/babitaclasses" },
-    { label: "YouTube Channel", url: "https://youtube.com/channel/UCHFpmflS9Fl-uu6lasO7tQQ" },
-    { label: "Google Search", url: "https://www.google.com/search?q=%23babitaclasses" },
-    { label: "Justdial", url: "https://jsdl.in/DT-35XUCII7NPA" },
-    { label: "QR Code (Download)", url: "https://drive.google.com/uc?export=download&id=16FkbkFryh3mgBVIDRv2NgTDARwgFEVOk" },
-    { label: "Get Directions (Google Maps)", url: "https://www.google.com/maps/dir//Babita+Classes/data=!4m8!4m7!1m0!1m5!1m1!1s0x399c47f6a85c1aa7:0x29a8f94a3ea949a1!2m2!1d80.32515819999999!2d26.445072999999997" },
-  ];
+const allLinks = [
+  // --- Main Pages ---
+  { label: "Home", url: "#home" },
+  { label: "Blog", url: "https://babitaclasses.vercel.app/blog" },
+  { label: "Results", url: "https://babitaclasses.vercel.app/result" },
+  { label: "Syllabus, Datesheet & Results", url: "#syllabus" },
+  { label: "All URLs", url: "#allurls" },
+
+  // --- On-Page Sections ---
+  { label: "What's New", url: "#WhatsNew" },
+  { label: "Notice Board", url: "#noticeboard" },
+  { label: "FAQs", url: "#faq" },
+  { label: "Our Faculty", url: "#faculty" },
+  { label: "Function Videos", url: "#videos" },
+  { label: "From Director's Desk", url: "#fromdirectorsdesk" },
+
+  // --- Admissions & Contact ---
+  { label: "Admission Form", url: "https://forms.gle/S234T8QQgLCSvd5GA" },
+  { label: "Contact Form", url: "https://forms.gle/wL59oarRVWdysP9u8" },
+  { label: "Book Appointment (WhatsApp)", url: "https://wa.link/x6klar" },
+  { label: "Call", url: "tel:91 7388311148" },
+  { label: "WhatsApp", url: "https://wa.link/oqxekr" },
+  { label: "Email", url: "mailto:babitaclasses7@gmail.com" },
+  { label: "Live Chat (Tawk.to)", url: "https://tawk.to/chat/61443488d326717cb681ea86/1ffp6qehd" },
+  { label: "Get Directions (Google Maps)", url: "https://www.google.com/maps/dir//Babita+Classes/data=!4m8!4m7!1m0!1m5!1m1!1s0x399c47f6a85c1aa7:0x29a8f94a3ea949a1!2m2!1d80.32515819999999!2d26.445072999999997" },
+
+  // --- Social Media & Reviews ---
+  { label: "Facebook Page", url: "https://www.facebook.com/babitaclasses" },
+  { label: "Instagram", url: "https://www.instagram.com/babitaclasses" },
+  { label: "YouTube Channel", url: "https://youtube.com/channel/UCHFpmflS9Fl-uu6lasO7tQQ" },
+  { label: "Google Search", url: "https://www.google.com/search?q=%23babitaclasses" },
+  { label: "Write a Review", url: "https://g.page/r/CaFJqT5K-agpEAI/review" },
+  { label: "Justdial", url: "https://jsdl.in/DT-35XUCII7NPA" },
+  { label: "WhatsApp Share", url: "https://api.whatsapp.com/send?text=https://babitaclasses.website2.me/" },
+
+  // --- Videos & Media ---
+  { label: "Films by Babita Classes", url: "https://www.youtube.com/watch?v=s_aT2HMHW68&list=PLMTBETejRGZf72ts_UC53rO1wVm88TAKd" },
+  { label: "GORGON (2024)", url: "https://youtu.be/iSzXQCMCOsk?si=UHO6tTXp7PJvqmiG" },
+  { label: "VIDYA (2022)", url: "https://youtu.be/s_aT2HMHW68" },
+  { label: "MYSTERIOUS THIEF (2023)", url: "https://youtu.be/0BWsukdcsro" },
+  { label: "YouTube: Behind The Scenes of Gorgon", url: "https://youtu.be/qQeHVqT0PP4?si=iiidejJBVEgnNgec" },
+  { label: "PT Videos (Facebook)", url: "https://fb.watch/6Wo4_b00UF/" },
+  { label: "News Article in Swatantra Prabhat Kanpur", url: "https://babitaclasses.vercel.app/blog" },
+
+  // --- Legal & Misc ---
+  { label: "Terms & Conditions", url: "https://babitaclasses.vercel.app/legal/terms-and-conditions" },
+  { label: "Privacy Policy", url: "https://babitaclasses.vercel.app/legal/privacy-policy" },
+  { label: "QR Code (Download)", url: "https://drive.google.com/uc?export=download&id=16FkbkFryh3mgBVIDRv2NgTDARwgFEVOk" },
+];
 
   // Wrap the link-filter input so the clear button positions correctly
   const linkFilter = document.getElementById("link-filter");
