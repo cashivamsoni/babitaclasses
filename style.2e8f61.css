@@ -1060,20 +1060,7 @@ footer.ft {
   padding-top: 56px;
   overflow: hidden;
 }
-/* faint ledger-line texture, a quiet nod to marksheets/report cards */
-footer.ft::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,.035) 0px,
-    rgba(255,255,255,.035) 1px,
-    transparent 1px,
-    transparent 34px
-  );
-  pointer-events: none;
-}
+/* ledger-line texture removed — showed as visible horizontal stripes */
 
 .ft-inner {
   position: relative;
@@ -1226,11 +1213,6 @@ footer.ft::before {
   .ft-safe-bottom { height: 150px; } /* scroll-to-top + assistant buttons sit closer together on narrow screens */
 }
 
-@media (max-width: 768px) {
-  /* the faint ledger-line texture reads as distracting horizontal
-     stripes on small/dark-mode screens — drop it on mobile only */
-  footer.ft::before { display: none; }
-}
 
 /* ---------- Blog-specific styles ---------- */
 .blog-feed {
