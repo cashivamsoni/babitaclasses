@@ -1226,6 +1226,12 @@ footer.ft::before {
   .ft-safe-bottom { height: 150px; } /* scroll-to-top + assistant buttons sit closer together on narrow screens */
 }
 
+@media (max-width: 768px) {
+  /* the faint ledger-line texture reads as distracting horizontal
+     stripes on small/dark-mode screens — drop it on mobile only */
+  footer.ft::before { display: none; }
+}
+
 /* ---------- Blog-specific styles ---------- */
 .blog-feed {
   display: flex;
