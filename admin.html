@@ -608,12 +608,12 @@
         <p class="eyebrow">Notice Board</p>
 
         <label for="marqueeInput">Top Marquee Text</label>
-        <textarea id="marqueeInput" rows="3"></textarea>
+        <textarea id="marqueeInput" rows="3" name="marqueeInput" autocomplete="off" data-lpignore="true" data-form-type="other"></textarea>
         <button id="marqueeSaveBtn" type="button">Save Marquee</button>
         <p id="marqueeStatus" class="msg"></p>
 
         <label for="noticeInput">Add a Notice</label>
-        <input type="text" id="noticeInput" placeholder="e.g. Diwali holidays from ...">
+        <input type="text" id="noticeInput" placeholder="e.g. Diwali holidays from ..." name="noticeInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <button id="noticeAddBtn" type="button">Add Notice</button>
         <p id="noticeStatus" class="msg"></p>
         <p class="hint">Newest 3 notices show the "New" badge automatically.</p>
@@ -628,16 +628,16 @@
         <p class="eyebrow">What's New Section</p>
 
         <label for="wnTextInput">Text</label>
-        <textarea id="wnTextInput" rows="3"></textarea>
+        <textarea id="wnTextInput" rows="3" name="wnTextInput" autocomplete="off" data-lpignore="true" data-form-type="other"></textarea>
 
         <label for="wnImageUrlInput">Image URL</label>
-        <input type="text" id="wnImageUrlInput" placeholder="https://... or /images/...">
+        <input type="text" id="wnImageUrlInput" placeholder="https://... or /images/..." name="wnImageUrlInput" autocomplete="off" data-lpignore="true" data-form-type="other">
 
         <label for="wnBtnTextInput">Button Text</label>
-        <input type="text" id="wnBtnTextInput" placeholder="e.g. Open Facebook Post">
+        <input type="text" id="wnBtnTextInput" placeholder="e.g. Open Facebook Post" name="wnBtnTextInput" autocomplete="off" data-lpignore="true" data-form-type="other">
 
         <label for="wnBtnUrlInput">Button URL</label>
-        <input type="text" id="wnBtnUrlInput" placeholder="https://...">
+        <input type="text" id="wnBtnUrlInput" placeholder="https://..." name="wnBtnUrlInput" autocomplete="off" data-lpignore="true" data-form-type="other">
 
         <button id="wnSaveBtn" type="button">Save What's New</button>
         <p id="wnStatus" class="msg"></p>
@@ -647,7 +647,7 @@
         <p class="eyebrow">Gallery Images</p>
         <p class="hint" style="margin-top:0;">Public site slideshow shows the first 8 photos, in this order.</p>
         <label for="galleryImageInput">Add a Photo</label>
-        <input type="text" id="galleryImageInput" placeholder="https://... or /images/...">
+        <input type="text" id="galleryImageInput" placeholder="https://... or /images/..." name="galleryImageInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <button id="galleryAddBtn" type="button">Add Photo</button>
         <p id="galleryAddStatus" class="msg"></p>
         <button id="gallerySelectModeBtn" type="button" class="small-btn">Select</button>
@@ -662,9 +662,9 @@
       <div class="section-block">
         <p class="eyebrow">Function Videos</p>
         <label for="videoTitleInput">Title</label>
-        <input type="text" id="videoTitleInput" placeholder="e.g. Holi Celebration 2026">
+        <input type="text" id="videoTitleInput" placeholder="e.g. Holi Celebration 2026" name="videoTitleInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <label for="videoUrlInput">Video/Post URL</label>
-        <input type="text" id="videoUrlInput" placeholder="https://youtu.be/...">
+        <input type="text" id="videoUrlInput" placeholder="https://youtu.be/..." name="videoUrlInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <button id="videoAddBtn" type="button">Add Video</button>
         <p id="videoStatus" class="msg"></p>
         <button id="videoSelectModeBtn" type="button" class="small-btn">Select</button>
@@ -739,9 +739,9 @@
       <div class="section-block">
         <p class="eyebrow">Students</p>
         <label for="studentNameInput">Name</label>
-        <input type="text" id="studentNameInput" placeholder="e.g. Vasu Kumar">
+        <input type="text" id="studentNameInput" placeholder="e.g. Vasu Kumar" name="studentNameInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <label for="studentRollInput">Roll Number (optional)</label>
-        <input type="text" id="studentRollInput" placeholder="e.g. 07">
+        <input type="text" id="studentRollInput" placeholder="e.g. 07" name="studentRollInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <p class="hint" style="margin-top:0;">Leave blank to auto-assign the next free number in A–Z order. A number you type here is reserved for this student and can't be reused elsewhere.</p>
         <button id="studentAddBtn" type="button">Add Student</button>
         <p id="studentStatus" class="msg"></p>
@@ -765,10 +765,10 @@
         <p class="hint" style="margin-top:0;">The 25 original posts stay untouched — new posts you add here show above them.</p>
 
         <label for="blogTitleInput">Title</label>
-        <input type="text" id="blogTitleInput" placeholder="e.g. Diwali Celebration 2026">
+        <input type="text" id="blogTitleInput" placeholder="e.g. Diwali Celebration 2026" name="blogTitleInput" autocomplete="off" data-lpignore="true" data-form-type="other">
 
         <label for="blogDateInput">Date (optional)</label>
-        <input type="text" id="blogDateInput" placeholder="e.g. 28 July 2026">
+        <input type="text" id="blogDateInput" placeholder="e.g. 28 July 2026" name="blogDateInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <p class="hint">Leave blank to auto-fill with today's date. If you type a date, that date is used instead — even if it isn't today.</p>
 
         <p class="hint">Preview text on the card is automatically taken from your first text block.</p>
@@ -821,16 +821,16 @@
       <div class="section-block">
         <p class="eyebrow">Term Details</p>
         <label for="resultTermNameInput">Term Name</label>
-        <input type="text" id="resultTermNameInput" placeholder="e.g. Term - 2">
+        <input type="text" id="resultTermNameInput" placeholder="e.g. Term - 2" name="resultTermNameInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <label for="resultSessionInput">Session</label>
-        <input type="text" id="resultSessionInput" placeholder="e.g. 2025-26">
+        <input type="text" id="resultSessionInput" placeholder="e.g. 2025-26" name="resultSessionInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <label for="resultSetCodeInput">Set Code</label>
-        <input type="text" id="resultSetCodeInput" placeholder="e.g. Set-A 3/22">
+        <input type="text" id="resultSetCodeInput" placeholder="e.g. Set-A 3/22" name="resultSetCodeInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <label for="resultDateInput">Declared Date (optional)</label>
-        <input type="text" id="resultDateInput" placeholder="e.g. 27 July 2025">
+        <input type="text" id="resultDateInput" placeholder="e.g. 27 July 2025" name="resultDateInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <p class="hint">Leave blank to auto-fill with today's date. If you type a date, that date is used instead — even if it isn't today.</p>
         <label for="resultMaxMarksInput">Max Marks</label>
-        <input type="text" id="resultMaxMarksInput" placeholder="e.g. 100">
+        <input type="text" id="resultMaxMarksInput" placeholder="e.g. 100" name="resultMaxMarksInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <button id="resultSaveDetailsBtn" type="button">Save Term Details</button>
         <p id="resultDetailsStatus" class="msg"></p>
       </div>
@@ -838,11 +838,11 @@
       <div class="section-block">
         <p class="eyebrow">Students</p>
         <label for="resultRollInput">Roll No.</label>
-        <input type="text" id="resultRollInput" placeholder="e.g. 07">
+        <input type="text" id="resultRollInput" placeholder="e.g. 07" name="resultRollInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <label for="resultNameInput">Name</label>
-        <input type="text" id="resultNameInput" placeholder="e.g. Riya">
+        <input type="text" id="resultNameInput" placeholder="e.g. Riya" name="resultNameInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <label for="resultMarksInput">Marks</label>
-        <input type="text" id="resultMarksInput" placeholder="e.g. 88.5">
+        <input type="text" id="resultMarksInput" placeholder="e.g. 88.5" name="resultMarksInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <p class="hint" style="margin-top:0;">Percentage is calculated automatically from Marks and the term's Max Marks.</p>
         <p class="hint">Rank is calculated automatically from marks (highest marks = Rank 1) and updates whenever any student's marks change.</p>
         <p class="hint" style="margin-top:4px;">Result ID is generated automatically: session (2526) + TM/TS for Term/Test + term or test number + roll (2 digits) — e.g. Term-1, session 2025-26, roll 07 → 2526TM107.</p>
@@ -866,9 +866,9 @@
       <div class="section-block">
         <p class="eyebrow">Popup Text</p>
         <label for="popupTitleInput">Title</label>
-        <input type="text" id="popupTitleInput" placeholder="e.g. Welcome!">
+        <input type="text" id="popupTitleInput" placeholder="e.g. Welcome!" name="popupTitleInput" autocomplete="off" data-lpignore="true" data-form-type="other">
         <label for="popupBodyInput">Message</label>
-        <textarea id="popupBodyInput" rows="4"></textarea>
+        <textarea id="popupBodyInput" rows="4" name="popupBodyInput" autocomplete="off" data-lpignore="true" data-form-type="other"></textarea>
         <button id="popupSaveBtn" type="button">Save Popup Text</button>
         <p id="popupStatus" class="msg"></p>
       </div>
