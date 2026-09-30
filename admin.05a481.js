@@ -46,6 +46,31 @@ let previousMarqueeText = "";
 let previousWnState = {};
 let previousGalleryUrls = [];
 
+// ---------- Stop browser autofill / clipboard suggestions from prefilling fields ----------
+// Samsung Internet (and some other mobile browsers) can insert copied links or
+// saved data into fields they cannot identify. Login fields are left untouched.
+function hardenField(el) {
+  if (!el || el.dataset.noAutofill === "1") return;
+  const tag = el.tagName;
+  if (tag !== "INPUT" && tag !== "TEXTAREA") return;
+  if (tag === "INPUT" && !["text", "search", "url", "tel", "number", ""].includes(el.type)) return;
+  if (el.id === "emailInput" || el.id === "passwordInput") return;
+  el.dataset.noAutofill = "1";
+  el.setAttribute("autocomplete", "off");
+  el.setAttribute("data-lpignore", "true");
+  el.setAttribute("data-form-type", "other");
+  if (!el.getAttribute("name")) el.setAttribute("name", "f_" + (el.id || Math.random().toString(36).slice(2, 9)));
+}
+function hardenAllFields(root) {
+  if (!root || !root.querySelectorAll) return;
+  if (root.matches && root.matches("input, textarea")) hardenField(root);
+  root.querySelectorAll("input, textarea").forEach(hardenField);
+}
+hardenAllFields(document);
+new MutationObserver((mutations) => {
+  for (const m of mutations) m.addedNodes.forEach((n) => { if (n.nodeType === 1) hardenAllFields(n); });
+}).observe(document.documentElement, { childList: true, subtree: true });
+
 // ---------- Elements ----------
 const loginView = document.getElementById("loginView");
 const adminHub = document.getElementById("adminHub");
@@ -586,6 +611,8 @@ function openModal({ title, message = null, fields = null, confirmText = "OK", c
         const input = document.createElement("input");
         input.type = f.type || "text";
         input.id = "modalField" + i;
+        input.name = "modalField" + i;
+        input.setAttribute("autocomplete", "off");
         input.value = f.value ?? "";
         if (f.placeholder) input.placeholder = f.placeholder;
         modalBodyEl.appendChild(input);
