@@ -242,6 +242,7 @@ function openModal(id) {
   if (el) {
     el.style.display = "flex";
     document.body.style.overflow = "hidden"; // lock scroll
+    bcSetPostHash(id); // keep the address bar = shareable link of this post
   }
 }
 
@@ -250,6 +251,7 @@ function closeModal(id) {
   if (el) {
     el.style.display = "none";
     document.body.style.overflow = ""; // restore scroll
+    bcClearPostHash();
   }
 }
 
@@ -260,6 +262,7 @@ window.addEventListener("click", function (event) {
     if (event.target === overlay) {
       overlay.style.display = "none";
       document.body.style.overflow = ""; // restore scroll
+      bcClearPostHash();
     }
   });
 
@@ -270,6 +273,150 @@ window.addEventListener("click", function (event) {
     document.body.style.overflow = ""; // restore scroll
   }
 });
+
+/* ---------- Blog: Share a specific post (opens that post's modal) ---------- */
+/* Share link format:  https://babitaclasses.vercel.app/blog#post-<id>
+   <id> is the number for the static posts (modal25 -> #post-25) and the
+   Firestore document id for posts added from the admin panel
+   (modal<docId> -> #post-<docId>). The "#post-" prefix is deliberately NOT
+   "#blog…", so it never collides with the search-list anchors (#blog25)
+   that just scroll to the card. */
+const BC_BLOG_URL = "https://babitaclasses.vercel.app/blog";
+
+function bcSetPostHash(modalId) {
+  if (!document.querySelector(".blog-feed") || !/^modal.+/.test(modalId || "")) return;
+  try {
+    history.replaceState(null, "", "#post-" + modalId.slice(5));
+  } catch (e) {}
+}
+
+function bcClearPostHash() {
+  if (!/^#post-/.test(window.location.hash)) return;
+  try {
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  } catch (e) {}
+}
+
+function bcShowToast(msg) {
+  let t = document.getElementById("bcToast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "bcToast";
+    t.setAttribute("role", "status");
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(bcShowToast._timer);
+  bcShowToast._timer = setTimeout(function () {
+    t.classList.remove("show");
+  }, 2200);
+}
+
+async function bcSharePost(key, title) {
+  const url = BC_BLOG_URL + "#post-" + key;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: title, text: title + " — Babita Classes", url: url });
+    } catch (err) {
+      // AbortError = the person closed the share sheet; nothing to do.
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    bcShowToast("Link copied!");
+  } catch (err) {
+    window.prompt("Copy this link:", url);
+  }
+}
+
+/* Adds a Share button next to "Read More" on every card and inside every post modal.
+   Works for the static posts and for the Firebase-loaded ones (called again after
+   those are inserted), so neither the HTML nor the admin template needs editing. */
+function bcEnhanceBlogShare() {
+  const shareIcon = '<i class="fa fa-share-alt" aria-hidden="true"></i>';
+
+  document.querySelectorAll(".blog-card[id^='blog']").forEach(function (card) {
+    if (card.querySelector(".bc-card-actions")) return;
+    const readBtn = card.querySelector(".read-more-btn");
+    if (!readBtn) return;
+    const h3 = card.querySelector("h3");
+    const row = document.createElement("div");
+    row.className = "bc-card-actions";
+    readBtn.parentNode.insertBefore(row, readBtn);
+    row.appendChild(readBtn);
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "bc-share-btn";
+    btn.setAttribute("data-key", card.id.slice(4));
+    btn.setAttribute("data-title", h3 ? h3.textContent.trim() : "Babita Classes Blog");
+    btn.setAttribute("aria-label", "Share this post");
+    btn.title = "Share this post";
+    btn.innerHTML = shareIcon + " Share";
+    row.appendChild(btn);
+  });
+
+  document.querySelectorAll(".modal-overlay[id^='modal']").forEach(function (modal) {
+    const header = modal.querySelector(".modal-header");
+    if (!header || header.querySelector(".bc-modal-share")) return;
+    const h2 = header.querySelector("h2");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "bc-share-btn bc-modal-share";
+    btn.setAttribute("data-key", modal.id.slice(5));
+    btn.setAttribute("data-title", h2 ? h2.textContent.trim() : "Babita Classes Blog");
+    btn.setAttribute("aria-label", "Share this post");
+    btn.title = "Share this post";
+    btn.innerHTML = shareIcon;
+    header.appendChild(btn);
+  });
+}
+
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest(".bc-share-btn");
+  if (!btn) return;
+  e.preventDefault();
+  bcSharePost(btn.getAttribute("data-key"), btn.getAttribute("data-title"));
+});
+
+/* Opens the post named in the URL (#post-<id>), if it exists on the page yet. */
+function bcOpenPostFromHash() {
+  const m = /^#post-(.+)$/.exec(window.location.hash);
+  if (!m) return false;
+  let key;
+  try {
+    key = decodeURIComponent(m[1]);
+  } catch (e) {
+    return false;
+  }
+  const modal = document.getElementById("modal" + key);
+  if (!modal || !modal.classList.contains("modal-overlay")) return false;
+  if (getComputedStyle(modal).display === "none") {
+    // Someone following a shared link wants the post, not the welcome popup.
+    const welcome = document.getElementById("popupOverlayUnique");
+    if (welcome) welcome.style.display = "none";
+    openModal(modal.id);
+  }
+  return true;
+}
+
+/* Called once the Firebase-added posts are in the DOM (or failed to load). */
+function bcBlogPostsReady() {
+  if (!document.querySelector(".blog-feed")) return;
+  bcEnhanceBlogShare();
+  bcOpenPostFromHash();
+}
+
+(function () {
+  if (!document.querySelector(".blog-feed")) return;
+  // Static posts are already in the HTML, so share buttons + deep links work
+  // immediately; Firebase posts get the same treatment via bcBlogPostsReady().
+  bcEnhanceBlogShare();
+  bcOpenPostFromHash();
+  window.addEventListener("hashchange", bcOpenPostFromHash);
+})();
 
 /* ---------- Image Lightbox (What's New banner, Gallery, Blog post images) ---------- */
 (function () {
@@ -1065,8 +1212,10 @@ if (slideshow) {
           document.body.insertAdjacentHTML("beforeend", modalsHtml);
         }
       }
+      if (typeof bcBlogPostsReady === "function") bcBlogPostsReady();
     } catch (err) {
       // Keep the fallback content already in the HTML.
+      if (typeof bcBlogPostsReady === "function") bcBlogPostsReady();
     }
   })();
 })();
